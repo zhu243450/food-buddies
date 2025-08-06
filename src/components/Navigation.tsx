@@ -16,8 +16,8 @@ const Navigation = () => {
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-      <Card className="bg-card/98 backdrop-blur-xl border-2 border-primary/30 shadow-xl rounded-3xl overflow-hidden">
-        <div className="flex items-center justify-center p-2">
+      <Card className="bg-card border-4 border-primary/40 shadow-2xl rounded-3xl overflow-hidden">
+        <div className="flex items-center justify-center p-3">
           {navItems.map((item, index) => {
             const isActive = location.pathname === item.path;
             const isSpecial = item.special;
@@ -29,12 +29,12 @@ const Navigation = () => {
                   size="sm"
                   onClick={() => navigate(item.path)}
                   className={`
-                    relative flex flex-col items-center gap-1 h-auto py-3 px-4 mx-1 rounded-2xl transition-all duration-300 transform
+                    relative flex flex-col items-center gap-1 h-auto py-4 px-5 mx-1 rounded-2xl transition-all duration-300 transform
                     ${isSpecial 
-                      ? "bg-accent text-accent-foreground shadow-lg hover:shadow-xl hover:scale-110 scale-105 w-16 h-16 border-2 border-accent/30" 
+                      ? "bg-accent text-accent-foreground shadow-xl hover:shadow-2xl hover:scale-110 scale-105 w-18 h-18 border-4 border-accent font-bold" 
                       : isActive 
-                        ? "bg-primary text-primary-foreground shadow-lg scale-105 border-2 border-primary/50" 
-                        : "text-foreground hover:text-primary hover:bg-primary/20 hover:scale-105 border-2 border-transparent"
+                        ? "bg-primary text-primary-foreground shadow-xl scale-105 border-4 border-primary/60 font-bold" 
+                        : "text-foreground hover:text-primary hover:bg-primary/30 hover:scale-105 border-4 border-transparent hover:border-primary/40 font-semibold"
                     }
                   `}
                 >
@@ -52,11 +52,11 @@ const Navigation = () => {
                   )}
                   
                   <div className="flex items-center justify-center">
-                    <item.icon className={`${isSpecial ? "w-6 h-6" : "w-5 h-5"}`} />
+                    <item.icon className={`${isSpecial ? "w-7 h-7" : "w-6 h-6"}`} />
                   </div>
                   
                   {!isSpecial && (
-                    <span className="text-xs font-semibold">{item.label}</span>
+                    <span className="text-xs font-bold">{item.label}</span>
                   )}
                 </Button>
                 
