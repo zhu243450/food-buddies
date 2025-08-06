@@ -75,10 +75,33 @@ const DinnerDetail = () => {
         `)
         .eq("dinner_id", id);
 
+      // 获取发起人的资料
+      const { data: creatorProfile, error: creatorError } = await supabase
+        .from("profiles")
+        .select("nickname, avatar_url")
+        .eq("user_id", dinnerData.created_by)
+        .single();
+
       if (participantError) {
         console.error("Error fetching participants:", participantError);
       } else {
-        setParticipants(participantData || []);
+        // 创建发起人的参与者对象
+        const creatorParticipant = {
+          id: `creator-${dinnerData.created_by}`,
+          user_id: dinnerData.created_by,
+          joined_at: dinnerData.created_at,
+          profiles: creatorProfile || { nickname: "发起人", avatar_url: null }
+        };
+
+        // 检查发起人是否已经在参与者列表中
+        const isCreatorInParticipants = participantData?.some(p => p.user_id === dinnerData.created_by);
+        
+        // 如果发起人不在参与者列表中，则添加发起人
+        const allParticipants = isCreatorInParticipants 
+          ? participantData || []
+          : [creatorParticipant, ...(participantData || [])];
+
+        setParticipants(allParticipants);
         setIsParticipant(participantData?.some(p => p.user_id === user.id) || false);
       }
 
@@ -131,7 +154,27 @@ const DinnerDetail = () => {
           )
         `)
         .eq("dinner_id", dinner.id);
-      setParticipants(data || []);
+      
+      // 获取发起人资料并更新参与者列表
+      const { data: creatorProfile } = await supabase
+        .from("profiles")
+        .select("nickname, avatar_url")
+        .eq("user_id", dinner.created_by)
+        .single();
+
+      const creatorParticipant = {
+        id: `creator-${dinner.created_by}`,
+        user_id: dinner.created_by,
+        joined_at: dinner.created_at,
+        profiles: creatorProfile || { nickname: "发起人", avatar_url: null }
+      };
+
+      const isCreatorInParticipants = data?.some(p => p.user_id === dinner.created_by);
+      const allParticipants = isCreatorInParticipants 
+        ? data || []
+        : [creatorParticipant, ...(data || [])];
+
+      setParticipants(allParticipants);
     }
 
     setJoining(false);
@@ -232,43 +275,42 @@ const DinnerDetail = () => {
               </div>
             )}
 
-            {participants.length > 0 && (
-              <div className="p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5">
-                <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-primary" />
-                  参与者
-                </h3>
-                <div className="space-y-3">
-                  {participants.map((participant) => (
-                    <div 
-                      key={participant.id} 
-                      className="flex items-center gap-3 p-3 rounded-lg bg-card shadow-sm border border-accent/20 hover:bg-accent/10 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/user/${participant.user_id}`)}
-                    >
-                      {participant.profiles?.avatar_url ? (
-                        <img 
-                          src={participant.profiles.avatar_url} 
-                          alt={participant.profiles?.nickname}
-                          className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-bold">
-                          {participant.profiles?.nickname?.charAt(0) || "?"}
-                        </div>
-                      )}
-                      <span className="font-medium hover:text-primary transition-colors">
-                        {participant.profiles?.nickname || "匿名用户"}
-                      </span>
-                      {participant.user_id === dinner.created_by && (
-                        <Badge variant="default" className="text-xs bg-gradient-to-r from-primary to-accent">
-                          👑 发起人
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
+            {/* 总是显示参与者区域，包括发起人 */}
+            <div className="p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5">
+              <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-primary" />
+                参与者
+              </h3>
+              <div className="space-y-3">
+                {participants.map((participant) => (
+                  <div 
+                    key={participant.id} 
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card shadow-sm border border-accent/20 hover:bg-accent/10 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/user/${participant.user_id}`)}
+                  >
+                    {participant.profiles?.avatar_url ? (
+                      <img 
+                        src={participant.profiles.avatar_url} 
+                        alt={participant.profiles?.nickname}
+                        className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary font-bold">
+                        {participant.profiles?.nickname?.charAt(0) || "?"}
+                      </div>
+                    )}
+                    <span className="font-medium hover:text-primary transition-colors">
+                      {participant.profiles?.nickname || "匿名用户"}
+                    </span>
+                    {participant.user_id === dinner.created_by && (
+                      <Badge variant="default" className="text-xs bg-gradient-to-r from-primary to-accent">
+                        👑 发起人
+                      </Badge>
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
             {canJoin && (
               <Button 
