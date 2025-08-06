@@ -31,28 +31,20 @@ const Navigation = () => {
                   className={`
                     relative flex flex-col items-center gap-1 h-auto py-4 px-5 mx-1 rounded-2xl transition-all duration-300 transform
                     ${isSpecial 
-                      ? "bg-accent text-black shadow-xl hover:shadow-2xl hover:scale-110 scale-105 w-18 h-18 border-4 border-accent font-bold" 
+                      ? "bg-accent text-black shadow-lg hover:shadow-xl hover:scale-105 w-16 h-16 border-2 border-accent/50 font-bold" 
                       : isActive 
                         ? "bg-primary text-black shadow-xl scale-105 border-4 border-primary font-bold" 
                         : "text-primary bg-primary/10 hover:text-black hover:bg-primary hover:scale-105 border-4 border-primary/50 hover:border-primary font-semibold"
                     }
                   `}
                 >
-                  {/* 特殊按钮的装饰 */}
-                  {isSpecial && (
-                    <>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse"></div>
-                      <Sparkles className="absolute -top-2 -left-1 w-3 h-3 text-primary animate-bounce" />
-                    </>
-                  )}
-                  
                   {/* 活跃指示器 */}
                   {isActive && !isSpecial && (
                     <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rounded-full shadow-md"></div>
                   )}
                   
                   <div className="flex items-center justify-center">
-                    <item.icon className={`${isSpecial ? "w-7 h-7" : "w-6 h-6"}`} />
+                    <item.icon className={`${isSpecial ? "w-6 h-6" : "w-6 h-6"}`} />
                   </div>
                   
                   {!isSpecial && (

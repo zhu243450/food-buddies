@@ -185,11 +185,11 @@ const MyDinners = () => {
         </div>
 
         <Tabs defaultValue="joined" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-primary/10 to-accent/10 p-1 rounded-xl">
-            <TabsTrigger value="joined" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground">
+          <TabsList className="grid w-full grid-cols-2 bg-card border-2 border-primary/30 p-1 rounded-xl">
+            <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground border-2 border-transparent data-[state=active]:bg-primary data-[state=active]:text-black data-[state=active]:border-primary font-bold">
               我参与的饭局
             </TabsTrigger>
-            <TabsTrigger value="created" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="created" className="rounded-lg bg-background text-foreground border-2 border-transparent data-[state=active]:bg-accent data-[state=active]:text-black data-[state=active]:border-accent font-bold">
               我发布的饭局
             </TabsTrigger>
           </TabsList>
@@ -203,8 +203,8 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有参与任何饭局</p>
                 <Button 
                   onClick={() => navigate("/discover")}
-                  className="bg-primary text-black hover:bg-primary/80 hover:text-black font-bold px-10 py-4 text-xl shadow-2xl border-4 border-primary/40 hover:border-primary/60"
-                  size="lg"
+                  className="bg-primary text-white hover:bg-primary/80 hover:text-white font-semibold px-6 py-3 text-base shadow-lg border-2 border-primary/40"
+                  size="default"
                 >
                   去发现饭局
                 </Button>
@@ -227,8 +227,8 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有发布任何饭局</p>
                 <Button 
                   onClick={() => navigate("/create-dinner")}
-                  className="bg-accent text-black hover:bg-accent/80 hover:text-black font-bold px-10 py-4 text-xl shadow-2xl border-4 border-accent/40 hover:border-accent/60"
-                  size="lg"
+                  className="bg-accent text-white hover:bg-accent/80 hover:text-white font-semibold px-6 py-3 text-base shadow-lg border-2 border-accent/40"
+                  size="default"
                 >
                   发布饭局
                 </Button>
