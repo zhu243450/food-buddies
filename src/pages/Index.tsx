@@ -27,7 +27,7 @@ const Index = () => {
         <Button 
           onClick={() => navigate("/auth")} 
           size="lg" 
-          className="w-48 h-12 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          className="w-48 h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
         >
           开始使用
         </Button>

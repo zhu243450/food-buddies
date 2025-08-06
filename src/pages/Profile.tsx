@@ -305,7 +305,7 @@ const Profile = () => {
                 type="submit" 
                 variant="accent"
                 size="lg"
-                className="w-full text-xl font-bold shadow-glow hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:shadow-md" 
+                className="w-full text-xl font-bold shadow-glow hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:shadow-md bg-accent text-black hover:bg-accent/90 hover:text-black" 
                 disabled={loading}
               >
                 {loading ? (

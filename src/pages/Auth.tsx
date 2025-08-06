@@ -136,7 +136,7 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full bg-primary text-background hover:bg-primary/90 font-bold" disabled={loading}>
+                <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90 hover:text-black font-bold" disabled={loading}>
                   {loading ? "登录中..." : "登录"}
                 </Button>
               </form>
@@ -165,7 +165,7 @@ const Auth = () => {
                     minLength={6}
                   />
                 </div>
-                <Button type="submit" className="w-full bg-accent text-background hover:bg-accent/90 font-bold" disabled={loading}>
+                <Button type="submit" className="w-full bg-accent text-black hover:bg-accent/90 hover:text-black font-bold" disabled={loading}>
                   {loading ? "注册中..." : "注册"}
                 </Button>
               </form>

@@ -172,13 +172,13 @@ const MyDinners = () => {
             我的饭搭子
           </h1>
           <div className="flex gap-2">
-            <Button onClick={() => navigate("/discover")} variant="outline" className="border-4 border-primary bg-primary text-background hover:bg-primary/90 hover:text-background font-bold text-base px-6 py-3 shadow-lg">
+            <Button onClick={() => navigate("/discover")} variant="outline" className="border-4 border-primary bg-primary text-black hover:bg-primary/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg">
               发现饭局
             </Button>
-            <Button onClick={() => navigate("/profile")} variant="outline" className="border-4 border-accent bg-accent text-background hover:bg-accent/90 hover:text-background font-bold text-base px-6 py-3 shadow-lg">
+            <Button onClick={() => navigate("/profile")} variant="outline" className="border-4 border-accent bg-accent text-black hover:bg-accent/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg">
               完善资料
             </Button>
-            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-destructive bg-destructive/10 hover:text-background hover:bg-destructive border-4 border-destructive">
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-destructive bg-destructive/10 hover:text-black hover:bg-destructive border-4 border-destructive">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
@@ -203,7 +203,7 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有参与任何饭局</p>
                 <Button 
                   onClick={() => navigate("/discover")}
-                  className="bg-primary text-background hover:bg-primary/80 font-bold px-10 py-4 text-xl shadow-2xl border-4 border-primary/40 hover:border-primary/60"
+                  className="bg-primary text-black hover:bg-primary/80 hover:text-black font-bold px-10 py-4 text-xl shadow-2xl border-4 border-primary/40 hover:border-primary/60"
                   size="lg"
                 >
                   去发现饭局
@@ -227,7 +227,7 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有发布任何饭局</p>
                 <Button 
                   onClick={() => navigate("/create-dinner")}
-                  className="bg-accent text-background hover:bg-accent/80 font-bold px-10 py-4 text-xl shadow-2xl border-4 border-accent/40 hover:border-accent/60"
+                  className="bg-accent text-black hover:bg-accent/80 hover:text-black font-bold px-10 py-4 text-xl shadow-2xl border-4 border-accent/40 hover:border-accent/60"
                   size="lg"
                 >
                   发布饭局

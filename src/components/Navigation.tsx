@@ -31,10 +31,10 @@ const Navigation = () => {
                   className={`
                     relative flex flex-col items-center gap-1 h-auto py-4 px-5 mx-1 rounded-2xl transition-all duration-300 transform
                     ${isSpecial 
-                      ? "bg-accent text-background shadow-xl hover:shadow-2xl hover:scale-110 scale-105 w-18 h-18 border-4 border-accent font-bold" 
+                      ? "bg-accent text-black shadow-xl hover:shadow-2xl hover:scale-110 scale-105 w-18 h-18 border-4 border-accent font-bold" 
                       : isActive 
-                        ? "bg-primary text-background shadow-xl scale-105 border-4 border-primary font-bold" 
-                        : "text-primary bg-primary/10 hover:text-background hover:bg-primary hover:scale-105 border-4 border-primary/50 hover:border-primary font-semibold"
+                        ? "bg-primary text-black shadow-xl scale-105 border-4 border-primary font-bold" 
+                        : "text-primary bg-primary/10 hover:text-black hover:bg-primary hover:scale-105 border-4 border-primary/50 hover:border-primary font-semibold"
                     }
                   `}
                 >

@@ -186,7 +186,7 @@ const CreateDinner = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl" 
+                className="w-full h-12 text-lg font-semibold bg-accent text-black hover:bg-accent/90 hover:text-black transition-all duration-300 shadow-lg hover:shadow-xl" 
                 disabled={loading}
               >
                 {loading ? "发布中..." : "🎉 发布饭局"}
