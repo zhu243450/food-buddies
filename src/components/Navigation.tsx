@@ -16,8 +16,8 @@ const Navigation = () => {
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-      <Card className="bg-card border-4 border-primary/40 shadow-2xl rounded-3xl overflow-hidden">
-        <div className="flex items-center justify-center p-3">
+      <Card className="bg-card border-2 border-primary/30 shadow-xl rounded-3xl overflow-hidden">
+        <div className="flex items-center justify-center p-2">
           {navItems.map((item, index) => {
             const isActive = location.pathname === item.path;
             const isSpecial = item.special;
@@ -29,12 +29,12 @@ const Navigation = () => {
                   size="sm"
                   onClick={() => navigate(item.path)}
                   className={`
-                    relative flex flex-col items-center gap-1 h-auto py-4 px-5 mx-1 rounded-2xl transition-all duration-300 transform
+                    relative flex flex-col items-center gap-1 h-auto py-3 px-4 mx-1 rounded-2xl transition-all duration-300 transform
                     ${isSpecial 
                       ? "bg-accent text-black shadow-lg hover:shadow-xl hover:scale-105 w-16 h-16 border-2 border-accent/50 font-bold" 
                       : isActive 
-                        ? "bg-primary text-black shadow-xl scale-105 border-4 border-primary font-bold" 
-                        : "text-primary bg-primary/10 hover:text-black hover:bg-primary hover:scale-105 border-4 border-primary/50 hover:border-primary font-semibold"
+                        ? "bg-primary text-black shadow-lg scale-105 border-2 border-primary font-bold" 
+                        : "text-primary bg-primary/10 hover:text-black hover:bg-primary hover:scale-105 border-2 border-primary/50 hover:border-primary font-semibold"
                     }
                   `}
                 >
@@ -44,17 +44,17 @@ const Navigation = () => {
                   )}
                   
                   <div className="flex items-center justify-center">
-                    <item.icon className={`${isSpecial ? "w-6 h-6" : "w-6 h-6"}`} />
+                    <item.icon className="w-5 h-5" />
                   </div>
                   
                   {!isSpecial && (
-                    <span className="text-xs font-bold">{item.label}</span>
+                    <span className="text-xs font-semibold">{item.label}</span>
                   )}
                 </Button>
                 
                 {/* 特殊按钮的标签 */}
                 {isSpecial && (
-                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-primary whitespace-nowrap">
+                  <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-primary whitespace-nowrap">
                     {item.label}
                   </div>
                 )}

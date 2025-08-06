@@ -185,11 +185,11 @@ const MyDinners = () => {
         </div>
 
         <Tabs defaultValue="joined" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-card border-2 border-primary/30 p-1 rounded-xl">
-            <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground border-2 border-transparent data-[state=active]:bg-primary data-[state=active]:text-black data-[state=active]:border-primary font-bold">
+          <TabsList className="grid w-full grid-cols-2 bg-card p-1 rounded-xl">
+            <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground data-[state=active]:bg-primary data-[state=active]:text-black font-bold">
               我参与的饭局
             </TabsTrigger>
-            <TabsTrigger value="created" className="rounded-lg bg-background text-foreground border-2 border-transparent data-[state=active]:bg-accent data-[state=active]:text-black data-[state=active]:border-accent font-bold">
+            <TabsTrigger value="created" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold">
               我发布的饭局
             </TabsTrigger>
           </TabsList>
@@ -203,7 +203,7 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有参与任何饭局</p>
                 <Button 
                   onClick={() => navigate("/discover")}
-                  className="bg-primary text-white hover:bg-primary/80 hover:text-white font-semibold px-6 py-3 text-base shadow-lg border-2 border-primary/40"
+                  className="bg-primary text-yellow-400 hover:bg-primary/80 hover:text-yellow-300 font-semibold px-6 py-3 text-base shadow-lg border-2 border-primary/40"
                   size="default"
                 >
                   去发现饭局
