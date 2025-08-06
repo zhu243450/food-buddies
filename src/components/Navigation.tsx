@@ -47,17 +47,8 @@ const Navigation = () => {
                     <item.icon className="w-5 h-5" />
                   </div>
                   
-                  {!isSpecial && (
-                    <span className="text-xs font-semibold">{item.label}</span>
-                  )}
+                  <span className="text-xs font-semibold">{item.label}</span>
                 </Button>
-                
-                {/* 特殊按钮的标签 */}
-                {isSpecial && (
-                  <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 text-xs font-semibold text-primary whitespace-nowrap">
-                    {item.label}
-                  </div>
-                )}
               </div>
             );
           })}
