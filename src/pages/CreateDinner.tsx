@@ -89,8 +89,8 @@ const CreateDinner = () => {
     <div className="min-h-screen bg-background p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
-          <CardHeader className="bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-t-lg">
-            <CardTitle className="text-xl flex items-center gap-2">
+          <CardHeader className="bg-gradient-to-r from-primary to-accent text-black rounded-t-lg">
+            <CardTitle className="text-xl flex items-center gap-2 text-black">
               <Plus className="w-5 h-5" />
               发布饭局
             </CardTitle>

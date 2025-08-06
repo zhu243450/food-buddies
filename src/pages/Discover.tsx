@@ -12,6 +12,7 @@ import type { Dinner } from '@/types/database';
 const Discover = () => {
   const [user, setUser] = useState<User | null>(null);
   const [dinners, setDinners] = useState<Dinner[]>([]);
+  const [joinedDinnerIds, setJoinedDinnerIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -30,6 +31,9 @@ const Discover = () => {
 
   useEffect(() => {
     const fetchDinners = async () => {
+      if (!user) return;
+
+      // Fetch all dinners
       const { data, error } = await supabase
         .from("dinners")
         .select("*")
@@ -41,6 +45,19 @@ const Discover = () => {
       } else {
         setDinners(data || []);
       }
+
+      // Fetch joined dinner IDs
+      const { data: joinedData, error: joinedError } = await supabase
+        .from("dinner_participants")
+        .select("dinner_id")
+        .eq("user_id", user.id);
+
+      if (joinedError) {
+        console.error("Error fetching joined dinners:", joinedError);
+      } else {
+        setJoinedDinnerIds(joinedData?.map(item => item.dinner_id) || []);
+      }
+
       setLoading(false);
     };
 
@@ -113,14 +130,27 @@ const Discover = () => {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {dinners.map((dinner) => (
+            {dinners.map((dinner) => {
+              const isJoined = joinedDinnerIds.includes(dinner.id);
+              return (
               <Card 
                 key={dinner.id} 
-                className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5"
+                className={`cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg relative ${
+                  isJoined 
+                    ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/30' 
+                    : 'bg-gradient-to-br from-card to-accent/5'
+                }`}
                 onClick={() => navigate(`/dinner/${dinner.id}`)}
               >
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+                    {isJoined && (
+                      <Badge className="bg-primary text-black border-primary/30 text-xs font-bold">
+                        ✓ 已参与
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription className="text-muted-foreground">
                     {truncateDescription(dinner.description)}
                   </CardDescription>
@@ -162,7 +192,8 @@ const Discover = () => {
                   )}
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>

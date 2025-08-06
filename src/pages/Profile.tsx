@@ -299,10 +299,14 @@ const Profile = () => {
               </div>
 
               {/* 接受陌生人拼饭 */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border border-accent/20">
+              <div className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                formData.accept_strangers
+                  ? 'bg-accent text-black border-accent shadow-md'
+                  : 'bg-background border-border/30 hover:border-accent/50'
+              }`}>
                 <div>
-                  <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer text-foreground">接受陌生人拼饭</Label>
-                  <p className="text-xs text-muted-foreground">让更多人发现你</p>
+                  <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">接受陌生人拼饭</Label>
+                  <p className="text-xs opacity-80">让更多人发现你</p>
                 </div>
                 <Switch
                   id="accept_strangers"
