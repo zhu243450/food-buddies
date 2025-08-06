@@ -7,18 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, MapPin, Users, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from '@supabase/supabase-js';
-
-interface Dinner {
-  id: string;
-  title: string;
-  description: string;
-  dinner_time: string;
-  location: string;
-  max_participants: number;
-  food_preferences: string[];
-  friends_only: boolean;
-  created_by: string;
-}
+import type { Dinner } from '@/types/database';
 
 interface Participant {
   id: string;

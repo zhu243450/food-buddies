@@ -7,19 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, MapPin, Users, LogOut } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
-
-interface Dinner {
-  id: string;
-  title: string;
-  description: string;
-  dinner_time: string;
-  location: string;
-  max_participants: number;
-  food_preferences: string[];
-  friends_only: boolean;
-  created_by: string;
-  participant_count?: number;
-}
+import type { Dinner } from '@/types/database';
 
 const MyDinners = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -49,9 +37,18 @@ const MyDinners = () => {
       const { data: joinedData, error: joinedError } = await supabase
         .from("dinner_participants")
         .select(`
-          dinners (
-            *,
-            dinner_participants(count)
+          dinners!inner (
+            id,
+            title,
+            description,
+            dinner_time,
+            location,
+            max_participants,
+            food_preferences,
+            friends_only,
+            created_by,
+            created_at,
+            updated_at
           )
         `)
         .eq("user_id", user.id);
@@ -59,31 +56,21 @@ const MyDinners = () => {
       if (joinedError) {
         console.error("Error fetching joined dinners:", joinedError);
       } else {
-        const joinedDinnersWithCount = joinedData?.map(item => ({
-          ...item.dinners,
-          participant_count: item.dinners?.dinner_participants?.length || 0
-        })) || [];
-        setJoinedDinners(joinedDinnersWithCount);
+        const joinedDinnersData = joinedData?.map(item => (item as any).dinners) || [];
+        setJoinedDinners(joinedDinnersData);
       }
 
       // 获取我创建的饭局
       const { data: createdData, error: createdError } = await supabase
         .from("dinners")
-        .select(`
-          *,
-          dinner_participants(count)
-        `)
+        .select("*")
         .eq("created_by", user.id)
         .order("dinner_time", { ascending: true });
 
       if (createdError) {
         console.error("Error fetching created dinners:", createdError);
       } else {
-        const createdDinnersWithCount = createdData?.map(dinner => ({
-          ...dinner,
-          participant_count: dinner.dinner_participants?.length || 0
-        })) || [];
-        setCreatedDinners(createdDinnersWithCount);
+        setCreatedDinners(createdData || []);
       }
 
       setLoading(false);
@@ -136,7 +123,7 @@ const MyDinners = () => {
         
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="w-4 h-4" />
-          {dinner.participant_count || 0} / {dinner.max_participants} 人
+          0 / {dinner.max_participants} 人
         </div>
 
         {dinner.food_preferences && dinner.food_preferences.length > 0 && (

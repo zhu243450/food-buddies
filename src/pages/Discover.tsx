@@ -6,19 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, MapPin, Users } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
-
-interface Dinner {
-  id: string;
-  title: string;
-  description: string;
-  dinner_time: string;
-  location: string;
-  max_participants: number;
-  food_preferences: string[];
-  friends_only: boolean;
-  created_by: string;
-  participant_count?: number;
-}
+import type { Dinner } from '@/types/database';
 
 const Discover = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,21 +31,14 @@ const Discover = () => {
     const fetchDinners = async () => {
       const { data, error } = await supabase
         .from("dinners")
-        .select(`
-          *,
-          dinner_participants(count)
-        `)
+        .select("*")
         .gt("dinner_time", new Date().toISOString())
         .order("dinner_time", { ascending: true });
 
       if (error) {
         console.error("Error fetching dinners:", error);
       } else {
-        const dinnersWithCount = data?.map(dinner => ({
-          ...dinner,
-          participant_count: dinner.dinner_participants?.length || 0
-        })) || [];
-        setDinners(dinnersWithCount);
+        setDinners(data || []);
       }
       setLoading(false);
     };
@@ -137,10 +118,10 @@ const Discover = () => {
                     {dinner.location}
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="w-4 h-4" />
-                    {dinner.participant_count || 0} / {dinner.max_participants} 人
-                  </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="w-4 h-4" />
+            0 / {dinner.max_participants} 人
+          </div>
 
                   {dinner.food_preferences && dinner.food_preferences.length > 0 && (
                     <div className="flex flex-wrap gap-1">
