@@ -31,10 +31,10 @@ const Navigation = () => {
                   className={`
                     relative flex flex-col items-center gap-1 h-auto py-4 px-5 mx-1 rounded-2xl transition-all duration-300 transform
                     ${isSpecial 
-                      ? "bg-accent text-accent-foreground shadow-xl hover:shadow-2xl hover:scale-110 scale-105 w-18 h-18 border-4 border-accent font-bold" 
+                      ? "bg-accent text-background shadow-xl hover:shadow-2xl hover:scale-110 scale-105 w-18 h-18 border-4 border-accent font-bold" 
                       : isActive 
-                        ? "bg-primary text-primary-foreground shadow-xl scale-105 border-4 border-primary font-bold" 
-                        : "text-primary bg-primary/10 hover:text-primary-foreground hover:bg-primary hover:scale-105 border-4 border-primary/50 hover:border-primary font-semibold"
+                        ? "bg-primary text-background shadow-xl scale-105 border-4 border-primary font-bold" 
+                        : "text-primary bg-primary/10 hover:text-background hover:bg-primary hover:scale-105 border-4 border-primary/50 hover:border-primary font-semibold"
                     }
                   `}
                 >
@@ -48,7 +48,7 @@ const Navigation = () => {
                   
                   {/* 活跃指示器 */}
                   {isActive && !isSpecial && (
-                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary-foreground rounded-full shadow-md"></div>
+                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rounded-full shadow-md"></div>
                   )}
                   
                   <div className="flex items-center justify-center">
