@@ -132,6 +132,8 @@ const Profile = () => {
       .upsert({
         user_id: user.id,
         ...formData,
+      }, {
+        onConflict: 'user_id'
       });
 
     if (error) {
