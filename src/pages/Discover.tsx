@@ -13,6 +13,7 @@ const Discover = () => {
   const [user, setUser] = useState<User | null>(null);
   const [dinners, setDinners] = useState<Dinner[]>([]);
   const [joinedDinnerIds, setJoinedDinnerIds] = useState<string[]>([]);
+  const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -56,6 +57,25 @@ const Discover = () => {
         console.error("Error fetching joined dinners:", joinedError);
       } else {
         setJoinedDinnerIds(joinedData?.map(item => item.dinner_id) || []);
+      }
+
+      // Fetch participant counts for all dinners
+      if (data && data.length > 0) {
+        const dinnerIds = data.map(dinner => dinner.id);
+        const { data: participantData, error: participantError } = await supabase
+          .from("dinner_participants")
+          .select("dinner_id")
+          .in("dinner_id", dinnerIds);
+
+        if (participantError) {
+          console.error("Error fetching participant counts:", participantError);
+        } else {
+          const counts: Record<string, number> = {};
+          participantData?.forEach(participant => {
+            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
+          });
+          setParticipantCounts(counts);
+        }
       }
 
       setLoading(false);
@@ -132,6 +152,7 @@ const Discover = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {dinners.map((dinner) => {
               const isJoined = joinedDinnerIds.includes(dinner.id);
+              const participantCount = participantCounts[dinner.id] || 0;
               return (
               <Card 
                 key={dinner.id} 
@@ -166,9 +187,16 @@ const Discover = () => {
                     <span className="font-medium">{dinner.location}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/10 p-2 rounded-lg">
+                  <div className={`flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg ${
+                    participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
+                  }`}>
                     <Users className="w-4 h-4 text-primary" />
-                    <span className="font-bold text-primary">0 / {dinner.max_participants} 人</span>
+                    <span className="font-bold text-primary">{participantCount} / {dinner.max_participants} 人</span>
+                    {participantCount >= dinner.max_participants && (
+                      <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
+                        已满员
+                      </Badge>
+                    )}
                   </div>
 
                   {dinner.food_preferences && dinner.food_preferences.length > 0 && (

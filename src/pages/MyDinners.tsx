@@ -14,6 +14,7 @@ const MyDinners = () => {
   const [user, setUser] = useState<User | null>(null);
   const [joinedDinners, setJoinedDinners] = useState<Dinner[]>([]);
   const [createdDinners, setCreatedDinners] = useState<Dinner[]>([]);
+  const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -74,10 +75,54 @@ const MyDinners = () => {
         setCreatedDinners(createdData || []);
       }
 
+      // 获取所有饭局的参与者数量
+      const allDinnerIds = [
+        ...(joinedData?.map(item => (item as any).dinners.id) || []),
+        ...(createdData?.map(dinner => dinner.id) || [])
+      ];
+
+      if (allDinnerIds.length > 0) {
+        const { data: participantData, error: participantError } = await supabase
+          .from("dinner_participants")
+          .select("dinner_id")
+          .in("dinner_id", allDinnerIds);
+
+        if (participantError) {
+          console.error("Error fetching participant counts:", participantError);
+        } else {
+          const counts: Record<string, number> = {};
+          participantData?.forEach(participant => {
+            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
+          });
+          setParticipantCounts(counts);
+        }
+      }
+
       setLoading(false);
     };
 
     fetchMyDinners();
+
+    // 设置实时监听参与者变化
+    const channel = supabase
+      .channel('dinner-participants-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'dinner_participants'
+        },
+        () => {
+          // 当有人加入或离开饭局时重新获取数据
+          fetchMyDinners();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const handleSignOut = async () => {
@@ -96,59 +141,80 @@ const MyDinners = () => {
     });
   };
 
-  const DinnerCard = ({ dinner }: { dinner: Dinner }) => (
-    <Card 
-      className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5"
-      onClick={() => navigate(`/dinner/${dinner.id}`)}
-    >
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
-        {dinner.description && (
-          <CardDescription className="text-muted-foreground">
-            {dinner.description.length > 50 
-              ? dinner.description.substring(0, 50) + "..."
-              : dinner.description}
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-          <CalendarDays className="w-4 h-4 text-primary" />
-          <span className="font-medium">{formatDateTime(dinner.dinner_time)}</span>
-        </div>
-        
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-          <MapPin className="w-4 h-4 text-primary" />
-          <span className="font-medium">{dinner.location}</span>
-        </div>
-        
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/10 p-2 rounded-lg">
-          <Users className="w-4 h-4 text-primary" />
-          <span className="font-bold text-primary">0 / {dinner.max_participants} 人</span>
-        </div>
-
-        {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {dinner.food_preferences.map((preference) => (
-              <Badge 
-                key={preference} 
-                variant="secondary" 
-                className="text-xs bg-gradient-to-r from-primary/20 to-accent/20 text-primary border-primary/30"
-              >
-                {preference}
+  const DinnerCard = ({ dinner }: { dinner: Dinner }) => {
+    const participantCount = participantCounts[dinner.id] || 0;
+    const isCreatedByMe = dinner.created_by === user?.id;
+    
+    return (
+      <Card 
+        className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5"
+        onClick={() => navigate(`/dinner/${dinner.id}`)}
+      >
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+            {isCreatedByMe && participantCount > 0 && (
+              <Badge className="bg-primary text-black border-primary/30 text-xs font-bold animate-pulse">
+                🔥 {participantCount}人已参与
               </Badge>
-            ))}
+            )}
           </div>
-        )}
+          {dinner.description && (
+            <CardDescription className="text-muted-foreground">
+              {dinner.description.length > 50 
+                ? dinner.description.substring(0, 50) + "..."
+                : dinner.description}
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
+            <CalendarDays className="w-4 h-4 text-primary" />
+            <span className="font-medium">{formatDateTime(dinner.dinner_time)}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
+            <MapPin className="w-4 h-4 text-primary" />
+            <span className="font-medium">{dinner.location}</span>
+          </div>
+          
+          <div className={`flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg ${
+            participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
+          }`}>
+            <Users className="w-4 h-4 text-primary" />
+            <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
+              {participantCount} / {dinner.max_participants} 人
+            </span>
+            {participantCount >= dinner.max_participants && (
+              <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
+                已满员
+              </Badge>
+            )}
+          </div>
 
-        {dinner.friends_only && (
-          <Badge variant="outline" className="text-xs border-accent text-accent">
-            🔒 仅限熟人
-          </Badge>
-        )}
-      </CardContent>
-    </Card>
-  );
+          {dinner.food_preferences && dinner.food_preferences.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {dinner.food_preferences.map((preference) => (
+                <Badge 
+                  key={preference} 
+                  variant="secondary" 
+                  className="text-xs bg-gradient-to-r from-primary/20 to-accent/20 text-primary border-primary/30"
+                >
+                  {preference}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {dinner.friends_only && (
+            <Badge variant="outline" className="text-xs border-accent text-accent">
+              🔒 仅限熟人
+            </Badge>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (!user) return null;
 
