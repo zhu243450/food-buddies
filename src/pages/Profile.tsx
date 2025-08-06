@@ -255,12 +255,11 @@ const Profile = () => {
                   {FOOD_PREFERENCES.map((preference) => (
                     <div 
                       key={preference} 
-                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
                         formData.food_preferences.includes(preference)
                           ? 'bg-primary text-black border-primary shadow-md'
                           : 'bg-background border-border/30 hover:border-primary/50'
                       }`}
-                      onClick={() => handleFoodPreferenceChange(preference, !formData.food_preferences.includes(preference))}
                     >
                       <Checkbox
                         id={preference}
@@ -281,12 +280,11 @@ const Profile = () => {
                   {MEAL_TIMES.map((mealTime) => (
                     <div 
                       key={mealTime} 
-                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
                         formData.meal_times.includes(mealTime)
                           ? 'bg-accent text-black border-accent shadow-md'
                           : 'bg-background border-border/30 hover:border-accent/50'
                       }`}
-                      onClick={() => handleMealTimeChange(mealTime, !formData.meal_times.includes(mealTime))}
                     >
                       <Checkbox
                         id={mealTime}
