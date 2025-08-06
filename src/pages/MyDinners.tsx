@@ -238,13 +238,13 @@ const MyDinners = () => {
             我的饭搭子
           </h1>
           <div className="flex gap-2">
-            <Button onClick={() => navigate("/discover")} className="bg-primary text-black hover:bg-primary/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg">
+            <Button onClick={() => navigate("/discover")} className="bg-primary text-black hover:bg-primary/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg border-2 border-accent">
               发现饭局
             </Button>
-            <Button onClick={() => navigate("/profile")} className="bg-accent text-black hover:bg-accent/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg">
+            <Button onClick={() => navigate("/profile")} className="bg-accent text-black hover:bg-accent/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg border-2 border-accent">
               完善资料
             </Button>
-            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-destructive bg-destructive/10 hover:text-black hover:bg-destructive">
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-destructive bg-destructive/10 hover:text-black hover:bg-destructive border-2 border-accent">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
@@ -269,7 +269,7 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有参与任何饭局</p>
                 <Button 
                   onClick={() => navigate("/discover")}
-                  className="bg-primary text-yellow-400 hover:bg-primary/80 hover:text-yellow-300 font-semibold px-6 py-3 text-base shadow-lg border-2 border-primary/40"
+                  className="bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold px-6 py-3 text-base shadow-lg border-2 border-accent"
                   size="default"
                 >
                   去发现饭局
@@ -293,7 +293,7 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有发布任何饭局</p>
                 <Button 
                   onClick={() => navigate("/create-dinner")}
-                  className="bg-accent text-white hover:bg-accent/80 hover:text-white font-semibold px-6 py-3 text-base shadow-lg border-2 border-accent/40"
+                  className="bg-accent text-black hover:bg-accent/90 hover:text-black font-semibold px-6 py-3 text-base shadow-lg border-2 border-accent"
                   size="default"
                 >
                   发布饭局
