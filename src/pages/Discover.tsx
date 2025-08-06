@@ -90,7 +90,7 @@ const Discover = () => {
           </h1>
           <Button 
             onClick={() => navigate("/create-dinner")}
-            className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold border-2 border-accent/30"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             发布饭局
@@ -105,7 +105,8 @@ const Discover = () => {
             <p className="text-muted-foreground text-lg mb-4">暂无饭局，快来发布第一个吧！</p>
             <Button 
               onClick={() => navigate("/create-dinner")}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 py-3 text-lg shadow-lg"
+              size="lg"
             >
               立即发布
             </Button>

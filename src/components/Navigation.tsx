@@ -16,7 +16,7 @@ const Navigation = () => {
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-      <Card className="bg-gradient-to-r from-card/95 via-background/90 to-card/95 backdrop-blur-xl border-2 border-primary/20 shadow-glow rounded-3xl overflow-hidden">
+      <Card className="bg-card/98 backdrop-blur-xl border-2 border-primary/30 shadow-xl rounded-3xl overflow-hidden">
         <div className="flex items-center justify-center p-2">
           {navItems.map((item, index) => {
             const isActive = location.pathname === item.path;
@@ -31,24 +31,24 @@ const Navigation = () => {
                   className={`
                     relative flex flex-col items-center gap-1 h-auto py-3 px-4 mx-1 rounded-2xl transition-all duration-300 transform
                     ${isSpecial 
-                      ? "bg-gradient-accent text-white shadow-glow hover:shadow-xl hover:scale-110 scale-105 w-16 h-16" 
+                      ? "bg-accent text-accent-foreground shadow-lg hover:shadow-xl hover:scale-110 scale-105 w-16 h-16 border-2 border-accent/30" 
                       : isActive 
-                        ? "bg-gradient-primary text-white shadow-lg scale-105" 
-                        : "text-muted-foreground hover:text-primary hover:bg-primary/10 hover:scale-105"
+                        ? "bg-primary text-primary-foreground shadow-lg scale-105 border-2 border-primary/50" 
+                        : "text-foreground hover:text-primary hover:bg-primary/20 hover:scale-105 border-2 border-transparent"
                     }
                   `}
                 >
                   {/* 特殊按钮的装饰 */}
                   {isSpecial && (
                     <>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full animate-pulse"></div>
-                      <Sparkles className="absolute -top-2 -left-1 w-3 h-3 text-accent/70 animate-bounce" />
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                      <Sparkles className="absolute -top-2 -left-1 w-3 h-3 text-primary animate-bounce" />
                     </>
                   )}
                   
                   {/* 活跃指示器 */}
                   {isActive && !isSpecial && (
-                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-md"></div>
+                    <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary-foreground rounded-full shadow-md"></div>
                   )}
                   
                   <div className="flex items-center justify-center">

@@ -172,13 +172,13 @@ const MyDinners = () => {
             我的饭搭子
           </h1>
           <div className="flex gap-2">
-            <Button onClick={() => navigate("/discover")} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
+            <Button onClick={() => navigate("/discover")} variant="outline" className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold">
               发现饭局
             </Button>
-            <Button onClick={() => navigate("/profile")} variant="outline" className="border-accent/30 text-accent hover:bg-accent/10">
+            <Button onClick={() => navigate("/profile")} variant="outline" className="border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground font-semibold">
               完善资料
             </Button>
-            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-foreground hover:text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive/30">
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
@@ -203,7 +203,8 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有参与任何饭局</p>
                 <Button 
                   onClick={() => navigate("/discover")}
-                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-8 py-3 text-lg shadow-lg"
+                  size="lg"
                 >
                   去发现饭局
                 </Button>
@@ -226,7 +227,8 @@ const MyDinners = () => {
                 <p className="text-muted-foreground text-lg mb-4">您还没有发布任何饭局</p>
                 <Button 
                   onClick={() => navigate("/create-dinner")}
-                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                  className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-8 py-3 text-lg shadow-lg"
+                  size="lg"
                 >
                   发布饭局
                 </Button>
