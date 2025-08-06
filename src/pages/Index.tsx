@@ -18,18 +18,16 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#333' }}>
-          饭搭子
-        </h1>
-        <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '2rem' }}>
+    <div className="min-h-screen flex items-center justify-center bg-background p-5">
+      <div className="text-center space-y-6 max-w-md">
+        <h1 className="text-5xl font-bold text-foreground mb-4">饭搭子</h1>
+        <p className="text-xl text-muted-foreground mb-8">
           找到你的完美饭搭子，一起享受美食时光
         </p>
         <Button 
           onClick={() => navigate("/auth")} 
           size="lg" 
-          style={{ width: '200px', padding: '12px 24px', fontSize: '1.1rem' }}
+          className="w-48 h-12 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           开始使用
         </Button>
