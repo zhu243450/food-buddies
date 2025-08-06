@@ -172,13 +172,13 @@ const MyDinners = () => {
             我的饭搭子
           </h1>
           <div className="flex gap-2">
-            <Button onClick={() => navigate("/discover")} variant="outline" className="border-4 border-primary bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-bold text-base px-6 py-3 shadow-lg">
+            <Button onClick={() => navigate("/discover")} variant="outline" className="border-4 border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground font-bold text-base px-6 py-3 shadow-lg">
               发现饭局
             </Button>
-            <Button onClick={() => navigate("/profile")} variant="outline" className="border-4 border-accent bg-accent/10 text-accent hover:bg-accent hover:text-accent-foreground font-bold text-base px-6 py-3 shadow-lg">
+            <Button onClick={() => navigate("/profile")} variant="outline" className="border-4 border-accent bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground font-bold text-base px-6 py-3 shadow-lg">
               完善资料
             </Button>
-            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-foreground hover:text-destructive hover:bg-destructive/10 border-4 border-transparent hover:border-destructive bg-destructive/5">
+            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-destructive bg-destructive/10 hover:text-destructive-foreground hover:bg-destructive border-4 border-destructive">
               <LogOut className="w-5 h-5" />
             </Button>
           </div>
