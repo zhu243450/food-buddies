@@ -154,44 +154,44 @@ const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-secondary/20 p-4 pb-24">
       <div className="max-w-2xl mx-auto">
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
-          <CardHeader className="bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-t-lg">
-            <CardTitle className="text-xl flex items-center gap-2">
-              <UserIcon className="w-5 h-5" />
-              完善个人资料
+        <Card className="border-0 shadow-card bg-gradient-to-br from-card/95 to-accent/5 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-primary text-white rounded-t-xl shadow-glow">
+            <CardTitle className="text-xl flex items-center gap-3 font-bold">
+              <UserIcon className="w-6 h-6" />
+              ✨ 完善个人资料
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="nickname" className="text-sm font-semibold">昵称 *</Label>
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-3">
+                <Label htmlFor="nickname" className="text-base font-bold text-primary">昵称 *</Label>
                 <Input
                   id="nickname"
                   value={formData.nickname}
                   onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
                   required
-                  className="border-2 focus:border-primary transition-colors"
+                  className="h-12 border-2 border-primary/30 focus:border-primary bg-background/50 backdrop-blur-sm rounded-xl shadow-md transition-all"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">性别</Label>
+              <div className="space-y-3">
+                <Label className="text-base font-bold text-primary">性别</Label>
                 <Select value={formData.gender} onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}>
-                  <SelectTrigger className="border-2 focus:border-primary transition-colors">
+                  <SelectTrigger className="h-12 border-2 border-primary/30 focus:border-primary bg-background/50 backdrop-blur-sm rounded-xl shadow-md transition-all">
                     <SelectValue placeholder="请选择性别" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="男">男</SelectItem>
-                    <SelectItem value="女">女</SelectItem>
-                    <SelectItem value="其他">其他</SelectItem>
+                  <SelectContent className="bg-card/95 backdrop-blur-md border-primary/30 rounded-xl shadow-xl">
+                    <SelectItem value="男" className="hover:bg-primary/10 rounded-lg">👨 男</SelectItem>
+                    <SelectItem value="女" className="hover:bg-primary/10 rounded-lg">👩 女</SelectItem>
+                    <SelectItem value="其他" className="hover:bg-primary/10 rounded-lg">🌈 其他</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="birth_year" className="text-sm font-semibold">出生年份</Label>
+              <div className="space-y-3">
+                <Label htmlFor="birth_year" className="text-base font-bold text-primary">出生年份</Label>
                 <Input
                   id="birth_year"
                   type="number"
@@ -199,58 +199,73 @@ const Profile = () => {
                   max={new Date().getFullYear()}
                   value={formData.birth_year}
                   onChange={(e) => setFormData(prev => ({ ...prev, birth_year: parseInt(e.target.value) }))}
-                  className="border-2 focus:border-primary transition-colors"
+                  className="h-12 border-2 border-primary/30 focus:border-primary bg-background/50 backdrop-blur-sm rounded-xl shadow-md transition-all"
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">饮食偏好</Label>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-4">
+                <Label className="text-base font-bold text-primary flex items-center gap-2">
+                  🍱 饮食偏好
+                </Label>
+                <div className="grid grid-cols-2 gap-4">
                   {FOOD_PREFERENCES.map((preference) => (
-                    <div key={preference} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
+                    <div key={preference} className="flex items-center space-x-3 p-4 rounded-xl bg-gradient-to-r from-secondary/20 to-accent/10 hover:from-secondary/30 hover:to-accent/20 transition-all duration-300 shadow-md hover:shadow-lg border border-primary/10">
                       <Checkbox
                         id={preference}
                         checked={formData.food_preferences.includes(preference)}
                         onCheckedChange={(checked) => handleFoodPreferenceChange(preference, !!checked)}
+                        className="scale-125"
                       />
-                      <Label htmlFor={preference} className="text-sm cursor-pointer">{preference}</Label>
+                      <Label htmlFor={preference} className="text-sm font-semibold cursor-pointer flex-1">{preference}</Label>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">喜欢吃饭时间</Label>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-4">
+                <Label className="text-base font-bold text-primary flex items-center gap-2">
+                  ⏰ 喜欢吃饭时间
+                </Label>
+                <div className="grid grid-cols-2 gap-4">
                   {MEAL_TIMES.map((mealTime) => (
-                    <div key={mealTime} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
+                    <div key={mealTime} className="flex items-center space-x-3 p-4 rounded-xl bg-gradient-to-r from-secondary/20 to-accent/10 hover:from-secondary/30 hover:to-accent/20 transition-all duration-300 shadow-md hover:shadow-lg border border-primary/10">
                       <Checkbox
                         id={mealTime}
                         checked={formData.meal_times.includes(mealTime)}
                         onCheckedChange={(checked) => handleMealTimeChange(mealTime, !!checked)}
+                        className="scale-125"
                       />
-                      <Label htmlFor={mealTime} className="text-sm cursor-pointer">{mealTime}</Label>
+                      <Label htmlFor={mealTime} className="text-sm font-semibold cursor-pointer flex-1">{mealTime}</Label>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 rounded-lg bg-accent/10">
+              <div className="flex items-center justify-between p-6 rounded-xl bg-gradient-to-r from-accent/20 to-primary/10 shadow-lg border border-accent/30">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🤝</span>
+                  <div>
+                    <Label htmlFor="accept_strangers" className="text-base font-bold cursor-pointer text-primary">接受陌生人拼饭</Label>
+                    <p className="text-sm text-muted-foreground">让更多人发现你的精彩</p>
+                  </div>
+                </div>
                 <Switch
                   id="accept_strangers"
                   checked={formData.accept_strangers}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, accept_strangers: checked }))}
+                  className="scale-125"
                 />
-                <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">接受陌生人拼饭</Label>
               </div>
 
-              <div className="space-y-4">
-                <Label className="text-sm font-semibold">头像</Label>
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-20 h-20">
+              <div className="space-y-6">
+                <Label className="text-base font-bold text-primary flex items-center gap-2">
+                  📸 个人头像
+                </Label>
+                <div className="flex items-center gap-6 p-6 rounded-xl bg-gradient-to-r from-secondary/20 to-accent/10 shadow-lg border border-primary/10">
+                  <Avatar className="w-24 h-24 ring-4 ring-primary/30 ring-offset-4 ring-offset-background shadow-lg">
                     <AvatarImage src={formData.avatar_url} alt="头像预览" />
-                    <AvatarFallback className="text-lg">
-                      {formData.nickname ? formData.nickname[0] : <UserIcon className="w-8 h-8" />}
+                    <AvatarFallback className="text-xl font-bold bg-gradient-primary text-white">
+                      {formData.nickname ? formData.nickname[0] : <UserIcon className="w-10 h-10" />}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -263,21 +278,21 @@ const Profile = () => {
                     />
                     <Label 
                       htmlFor="avatar-upload" 
-                      className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
+                      className="cursor-pointer inline-flex items-center gap-3 px-6 py-3 bg-gradient-secondary text-secondary-foreground rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105 font-semibold shadow-md"
                     >
                       {uploading ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                           上传中...
                         </>
                       ) : (
                         <>
-                          <Camera className="w-4 h-4" />
+                          <Camera className="w-5 h-5" />
                           选择头像
                         </>
                       )}
                     </Label>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-sm text-muted-foreground mt-2 font-medium">
                       支持 JPG、PNG 格式，建议尺寸 400x400px
                     </p>
                   </div>
@@ -286,10 +301,19 @@ const Profile = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transition-all duration-300 shadow-lg hover:shadow-xl" 
+                variant="accent"
+                size="lg"
+                className="w-full text-xl font-bold shadow-glow hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:shadow-md" 
                 disabled={loading}
               >
-                {loading ? "保存中..." : "💾 保存资料"}
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    保存中...
+                  </>
+                ) : (
+                  <>💾 保存资料</>
+                )}
               </Button>
             </form>
           </CardContent>
