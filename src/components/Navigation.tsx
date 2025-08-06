@@ -62,7 +62,7 @@ const Navigation = () => {
                 
                 {/* 特殊按钮的标签 */}
                 {isSpecial && (
-                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-primary whitespace-nowrap">
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-primary whitespace-nowrap">
                     {item.label}
                   </div>
                 )}
