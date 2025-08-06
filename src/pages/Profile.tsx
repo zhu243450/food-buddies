@@ -9,9 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
-import { User as UserIcon, Heart, Sparkles } from "lucide-react";
+import { User as UserIcon, Upload, Camera } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
 
 const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
@@ -20,6 +21,7 @@ const MEAL_TIMES = ["早餐", "午饭", "晚饭", "夜宵"];
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     nickname: "",
     gender: "",
@@ -81,6 +83,42 @@ const Profile = () => {
         ? [...prev.meal_times, mealTime]
         : prev.meal_times.filter(m => m !== mealTime)
     }));
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, avatar_url: data.publicUrl }));
+      
+      toast({
+        title: "上传成功",
+        description: "头像已更新",
+      });
+    } catch (error: any) {
+      toast({
+        title: "上传失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -206,16 +244,44 @@ const Profile = () => {
                 <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">接受陌生人拼饭</Label>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="avatar_url" className="text-sm font-semibold">头像链接</Label>
-                <Input
-                  id="avatar_url"
-                  type="url"
-                  value={formData.avatar_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="border-2 focus:border-primary transition-colors"
-                />
+              <div className="space-y-4">
+                <Label className="text-sm font-semibold">头像</Label>
+                <div className="flex items-center gap-4">
+                  <Avatar className="w-20 h-20">
+                    <AvatarImage src={formData.avatar_url} alt="头像预览" />
+                    <AvatarFallback className="text-lg">
+                      {formData.nickname ? formData.nickname[0] : <UserIcon className="w-8 h-8" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                      id="avatar-upload"
+                    />
+                    <Label 
+                      htmlFor="avatar-upload" 
+                      className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80 transition-colors"
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          上传中...
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="w-4 h-4" />
+                          选择头像
+                        </>
+                      )}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      支持 JPG、PNG 格式，建议尺寸 400x400px
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <Button 
