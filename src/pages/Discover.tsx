@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users } from "lucide-react";
+import { CalendarDays, MapPin, Users, Search, Sparkles } from "lucide-react";
+import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -80,53 +81,73 @@ const Discover = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">发现饭局</h1>
-          <Button onClick={() => navigate("/create-dinner")}>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+            <Search className="w-8 h-8 text-primary" />
+            发现饭局
+          </h1>
+          <Button 
+            onClick={() => navigate("/create-dinner")}
+            className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
             发布饭局
           </Button>
         </div>
 
         {dinners.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">暂无饭局，快来发布第一个吧！</p>
+          <div className="text-center py-12">
+            <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
+              <Sparkles className="w-12 h-12 text-primary" />
+            </div>
+            <p className="text-muted-foreground text-lg mb-4">暂无饭局，快来发布第一个吧！</p>
+            <Button 
+              onClick={() => navigate("/create-dinner")}
+              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+            >
+              立即发布
+            </Button>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {dinners.map((dinner) => (
               <Card 
                 key={dinner.id} 
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5"
                 onClick={() => navigate(`/dinner/${dinner.id}`)}
               >
-                <CardHeader>
-                  <CardTitle className="text-lg">{dinner.title}</CardTitle>
-                  <CardDescription>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+                  <CardDescription className="text-muted-foreground">
                     {truncateDescription(dinner.description)}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDays className="w-4 h-4" />
-                    {formatDateTime(dinner.dinner_time)}
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
+                    <CalendarDays className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{formatDateTime(dinner.dinner_time)}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    {dinner.location}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{dinner.location}</span>
                   </div>
                   
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="w-4 h-4" />
-            0 / {dinner.max_participants} 人
-          </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/10 p-2 rounded-lg">
+                    <Users className="w-4 h-4 text-primary" />
+                    <span className="font-bold text-primary">0 / {dinner.max_participants} 人</span>
+                  </div>
 
                   {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-2">
                       {dinner.food_preferences.map((preference) => (
-                        <Badge key={preference} variant="secondary" className="text-xs">
+                        <Badge 
+                          key={preference} 
+                          variant="secondary" 
+                          className="text-xs bg-gradient-to-r from-primary/20 to-accent/20 text-primary border-primary/30"
+                        >
                           {preference}
                         </Badge>
                       ))}
@@ -134,8 +155,8 @@ const Discover = () => {
                   )}
 
                   {dinner.friends_only && (
-                    <Badge variant="outline" className="text-xs">
-                      仅限熟人
+                    <Badge variant="outline" className="text-xs border-accent text-accent">
+                      🔒 仅限熟人
                     </Badge>
                   )}
                 </CardContent>
@@ -144,6 +165,7 @@ const Discover = () => {
           </div>
         )}
       </div>
+      <Navigation />
     </div>
   );
 };
