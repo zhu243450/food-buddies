@@ -44,12 +44,12 @@ All colors MUST be HSL.
     --radius: 1rem;
 
     /* 年轻化渐变和阴影 */
-    --gradient-primary: linear-gradient(135deg, hsl(315 85% 60%), hsl(25 95% 65%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 100% 85%), hsl(280 70% 85%));
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 65%), hsl(315 85% 60%));
+    --gradient-primary: linear-gradient(135deg, hsl(315, 85%, 60%), hsl(25, 95%, 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195, 100%, 85%), hsl(280, 70%, 85%));
+    --gradient-accent: linear-gradient(135deg, hsl(25, 95%, 65%), hsl(315, 85%, 60%));
     
-    --shadow-glow: 0 0 30px hsl(315 85% 60% / 0.3);
-    --shadow-card: 0 10px 40px hsl(315 85% 60% / 0.1);
+    --shadow-glow: 0 0 30px hsl(315, 85%, 60%, 0.3);
+    --shadow-card: 0 10px 40px hsl(315, 85%, 60%, 0.1);
 
     --sidebar-background: 280 30% 98%;
     --sidebar-foreground: 230 50% 25%;
@@ -96,12 +96,12 @@ All colors MUST be HSL.
     --ring: 315 100% 70%;
 
     /* 暗色模式渐变 */
-    --gradient-primary: linear-gradient(135deg, hsl(315 100% 70%), hsl(25 100% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 80% 50%), hsl(280 70% 50%));
-    --gradient-accent: linear-gradient(135deg, hsl(25 100% 70%), hsl(315 100% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(315, 100%, 70%), hsl(25, 100%, 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195, 80%, 50%), hsl(280, 70%, 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(25, 100%, 70%), hsl(315, 100%, 70%));
     
-    --shadow-glow: 0 0 40px hsl(315 100% 70% / 0.4);
-    --shadow-card: 0 10px 40px hsl(315 100% 70% / 0.2);
+    --shadow-glow: 0 0 40px hsl(315, 100%, 70%, 0.4);
+    --shadow-card: 0 10px 40px hsl(315, 100%, 70%, 0.2);
 
     --sidebar-background: 230 40% 8%;
     --sidebar-foreground: 280 15% 90%;

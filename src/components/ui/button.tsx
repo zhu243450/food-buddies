@@ -5,20 +5,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative",
   {
     variants: {
       variant: {
-        default: "bg-gradient-primary text-white shadow-glow hover:shadow-lg hover:scale-105 transform",
+        default: "bg-primary text-primary-foreground shadow-glow hover:bg-primary/90 hover:shadow-lg hover:scale-105 transform",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg",
         outline:
-          "border-2 border-primary bg-transparent text-primary hover:bg-gradient-primary hover:text-white hover:border-transparent shadow-md",
+          "border-2 border-primary bg-background text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary shadow-md",
         secondary:
-          "bg-gradient-secondary text-secondary-foreground hover:shadow-lg hover:scale-105 transform",
-        ghost: "hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-sm",
-        link: "text-primary underline-offset-4 hover:underline hover:text-accent",
-        accent: "bg-gradient-accent text-white shadow-glow hover:shadow-lg hover:scale-105 transform",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/90 hover:shadow-lg hover:scale-105 transform",
+        ghost: "bg-transparent hover:bg-accent/20 hover:text-accent-foreground backdrop-blur-sm",
+        link: "bg-transparent text-primary underline-offset-4 hover:underline hover:text-accent",
+        accent: "bg-accent text-accent-foreground shadow-glow hover:bg-accent/90 hover:shadow-lg hover:scale-105 transform",
         neon: "bg-accent text-accent-foreground shadow-glow hover:shadow-xl hover:scale-110 transform border border-accent/50",
       },
       size: {
