@@ -253,12 +253,20 @@ const Profile = () => {
                 <Label className="text-sm font-medium text-foreground mb-2 block">饮食偏好</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {FOOD_PREFERENCES.map((preference) => (
-                    <div key={preference} className="flex items-center space-x-2 p-2 rounded-lg bg-background border border-border/30 hover:border-primary/50 transition-colors">
+                    <div 
+                      key={preference} 
+                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                        formData.food_preferences.includes(preference)
+                          ? 'bg-primary text-black border-primary shadow-md'
+                          : 'bg-background border-border/30 hover:border-primary/50'
+                      }`}
+                      onClick={() => handleFoodPreferenceChange(preference, !formData.food_preferences.includes(preference))}
+                    >
                       <Checkbox
                         id={preference}
                         checked={formData.food_preferences.includes(preference)}
                         onCheckedChange={(checked) => handleFoodPreferenceChange(preference, !!checked)}
-                        className="scale-90"
+                        className="scale-110"
                       />
                       <Label htmlFor={preference} className="text-xs font-medium cursor-pointer flex-1">{preference}</Label>
                     </div>
@@ -271,12 +279,20 @@ const Profile = () => {
                 <Label className="text-sm font-medium text-foreground mb-2 block">喜欢的用餐时间</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {MEAL_TIMES.map((mealTime) => (
-                    <div key={mealTime} className="flex items-center space-x-2 p-2 rounded-lg bg-background border border-border/30 hover:border-primary/50 transition-colors">
+                    <div 
+                      key={mealTime} 
+                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                        formData.meal_times.includes(mealTime)
+                          ? 'bg-accent text-black border-accent shadow-md'
+                          : 'bg-background border-border/30 hover:border-accent/50'
+                      }`}
+                      onClick={() => handleMealTimeChange(mealTime, !formData.meal_times.includes(mealTime))}
+                    >
                       <Checkbox
                         id={mealTime}
                         checked={formData.meal_times.includes(mealTime)}
                         onCheckedChange={(checked) => handleMealTimeChange(mealTime, !!checked)}
-                        className="scale-90"
+                        className="scale-110"
                       />
                       <Label htmlFor={mealTime} className="text-sm font-medium cursor-pointer flex-1">{mealTime}</Label>
                     </div>
