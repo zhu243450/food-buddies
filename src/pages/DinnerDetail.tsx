@@ -240,7 +240,11 @@ const DinnerDetail = () => {
                 </h3>
                 <div className="space-y-3">
                   {participants.map((participant) => (
-                    <div key={participant.id} className="flex items-center gap-3 p-3 rounded-lg bg-card shadow-sm border border-accent/20">
+                    <div 
+                      key={participant.id} 
+                      className="flex items-center gap-3 p-3 rounded-lg bg-card shadow-sm border border-accent/20 hover:bg-accent/10 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/user/${participant.user_id}`)}
+                    >
                       {participant.profiles?.avatar_url ? (
                         <img 
                           src={participant.profiles.avatar_url} 
@@ -252,7 +256,9 @@ const DinnerDetail = () => {
                           {participant.profiles?.nickname?.charAt(0) || "?"}
                         </div>
                       )}
-                      <span className="font-medium">{participant.profiles?.nickname || "匿名用户"}</span>
+                      <span className="font-medium hover:text-primary transition-colors">
+                        {participant.profiles?.nickname || "匿名用户"}
+                      </span>
                       {participant.user_id === dinner.created_by && (
                         <Badge variant="default" className="text-xs bg-gradient-to-r from-primary to-accent">
                           👑 发起人
