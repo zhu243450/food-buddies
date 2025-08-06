@@ -33,8 +33,8 @@ const Navigation = () => {
                     ${isSpecial 
                       ? "bg-accent text-black shadow-lg hover:shadow-xl hover:scale-105 w-16 h-16 border-2 border-accent/50 font-bold" 
                       : isActive 
-                        ? "bg-primary text-black shadow-lg scale-105 border-2 border-primary font-bold" 
-                        : "text-primary bg-primary/10 hover:text-black hover:bg-primary hover:scale-105 border-2 border-primary/50 hover:border-primary font-semibold"
+                        ? "text-primary bg-transparent border-2 border-primary/30 font-bold" 
+                        : "text-primary bg-transparent hover:text-primary hover:bg-primary/10 hover:scale-105 border-2 border-transparent font-semibold"
                     }
                   `}
                 >
