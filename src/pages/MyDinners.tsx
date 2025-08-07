@@ -252,7 +252,7 @@ const MyDinners = () => {
 
         <Tabs defaultValue="joined" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-transparent p-2 rounded-xl gap-2">
-            <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground data-[state=active]:bg-primary data-[state=active]:text-black font-bold mx-1 px-4 py-3">
+            <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
               我参与的饭局
             </TabsTrigger>
             <TabsTrigger value="created" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
