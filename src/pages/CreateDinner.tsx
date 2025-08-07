@@ -6,9 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Zap, Clock, Users2, MapPin, AlertTriangle } from "lucide-react";
@@ -16,11 +14,39 @@ import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import MapLocationPicker from "@/components/MapLocationPicker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MultiSelect } from "@/components/ui/multi-select";
 import type { User } from '@supabase/supabase-js';
 
-const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
-const DIETARY_RESTRICTIONS = ["不吃辣", "不吃肉", "不吃海鲜", "不吃牛肉", "不吃猪肉", "素食主义"];
-const PERSONALITY_TAGS = ["健谈", "内向", "活跃", "安静", "幽默", "认真", "随和", "爱聊天"];
+const FOOD_PREFERENCES = [
+  { label: "川菜", value: "川菜" },
+  { label: "火锅", value: "火锅" },
+  { label: "粤菜", value: "粤菜" },
+  { label: "日料", value: "日料" },
+  { label: "韩餐", value: "韩餐" },
+  { label: "西餐", value: "西餐" },
+  { label: "素食", value: "素食" }
+];
+
+const DIETARY_RESTRICTIONS = [
+  { label: "不吃辣", value: "不吃辣" },
+  { label: "不吃肉", value: "不吃肉" },
+  { label: "不吃海鲜", value: "不吃海鲜" },
+  { label: "不吃牛肉", value: "不吃牛肉" },
+  { label: "不吃猪肉", value: "不吃猪肉" },
+  { label: "素食主义", value: "素食主义" }
+];
+
+const PERSONALITY_TAGS = [
+  { label: "健谈", value: "健谈" },
+  { label: "内向", value: "内向" },
+  { label: "活跃", value: "活跃" },
+  { label: "安静", value: "安静" },
+  { label: "幽默", value: "幽默" },
+  { label: "认真", value: "认真" },
+  { label: "随和", value: "随和" },
+  { label: "爱聊天", value: "爱聊天" }
+];
+
 const DINNER_MODES = [
   { value: "instant", label: "🔥 闪约模式", desc: "今天就想吃，有空的来" },
   { value: "scheduled", label: "📅 预约模式", desc: "我这个周末有空，一起吃个饭？" },
@@ -90,32 +116,6 @@ const CreateDinner = () => {
     getUser();
   }, [navigate]);
 
-  const handleFoodPreferenceChange = (preference: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      food_preferences: checked 
-        ? [...prev.food_preferences, preference]
-        : prev.food_preferences.filter(p => p !== preference)
-    }));
-  };
-
-  const handlePersonalityTagChange = (tag: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      personality_tags: checked 
-        ? [...prev.personality_tags, tag]
-        : prev.personality_tags.filter(t => t !== tag)
-    }));
-  };
-
-  const handleDietaryRestrictionChange = (restriction: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      dietary_restrictions: checked 
-        ? [...prev.dietary_restrictions, restriction]
-        : prev.dietary_restrictions.filter(r => r !== restriction)
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,21 +197,21 @@ const CreateDinner = () => {
                   <Zap className="w-4 h-4 text-primary" />
                   饭局模式 *
                 </Label>
-                <RadioGroup 
-                  value={formData.dinner_mode} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, dinner_mode: value }))}
-                  className="grid gap-3"
-                >
-                  {DINNER_MODES.map((mode) => (
-                    <div key={mode.value} className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-accent/10 transition-colors">
-                      <RadioGroupItem value={mode.value} id={mode.value} />
-                      <div className="flex-1">
-                        <Label htmlFor={mode.value} className="font-medium cursor-pointer">{mode.label}</Label>
-                        <p className="text-sm text-muted-foreground">{mode.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </RadioGroup>
+                <Select value={formData.dinner_mode} onValueChange={(value) => setFormData(prev => ({ ...prev, dinner_mode: value }))}>
+                  <SelectTrigger className="border-2 focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DINNER_MODES.map((mode) => (
+                      <SelectItem key={mode.value} value={mode.value}>
+                        <div>
+                          <div className="font-medium">{mode.label}</div>
+                          <div className="text-sm text-muted-foreground">{mode.desc}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* 紧急程度 */}
@@ -347,52 +347,37 @@ const CreateDinner = () => {
 
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">饮食偏好要求</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {FOOD_PREFERENCES.map((preference) => (
-                    <div key={preference} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
-                      <Checkbox
-                        id={preference}
-                        checked={formData.food_preferences.includes(preference)}
-                        onCheckedChange={(checked) => handleFoodPreferenceChange(preference, !!checked)}
-                      />
-                      <Label htmlFor={preference} className="text-sm cursor-pointer">{preference}</Label>
-                    </div>
-                  ))}
-                </div>
+                <MultiSelect
+                  options={FOOD_PREFERENCES}
+                  value={formData.food_preferences}
+                  onChange={(value) => setFormData(prev => ({ ...prev, food_preferences: value }))}
+                  placeholder="选择饮食偏好..."
+                  className="border-2 focus:border-primary"
+                />
               </div>
 
               {/* 个性标签 */}
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">个性标签</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {PERSONALITY_TAGS.map((tag) => (
-                    <div key={tag} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
-                      <Checkbox
-                        id={`personality-${tag}`}
-                        checked={formData.personality_tags.includes(tag)}
-                        onCheckedChange={(checked) => handlePersonalityTagChange(tag, !!checked)}
-                      />
-                      <Label htmlFor={`personality-${tag}`} className="text-sm cursor-pointer">{tag}</Label>
-                    </div>
-                  ))}
-                </div>
+                <MultiSelect
+                  options={PERSONALITY_TAGS}
+                  value={formData.personality_tags}
+                  onChange={(value) => setFormData(prev => ({ ...prev, personality_tags: value }))}
+                  placeholder="选择个性标签..."
+                  className="border-2 focus:border-primary"
+                />
               </div>
 
               {/* 饮食禁忌 */}
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">饮食禁忌</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {DIETARY_RESTRICTIONS.map((restriction) => (
-                    <div key={restriction} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
-                      <Checkbox
-                        id={`dietary-${restriction}`}
-                        checked={formData.dietary_restrictions.includes(restriction)}
-                        onCheckedChange={(checked) => handleDietaryRestrictionChange(restriction, !!checked)}
-                      />
-                      <Label htmlFor={`dietary-${restriction}`} className="text-sm cursor-pointer">{restriction}</Label>
-                    </div>
-                  ))}
-                </div>
+                <MultiSelect
+                  options={DIETARY_RESTRICTIONS}
+                  value={formData.dietary_restrictions}
+                  onChange={(value) => setFormData(prev => ({ ...prev, dietary_restrictions: value }))}
+                  placeholder="选择饮食禁忌..."
+                  className="border-2 focus:border-primary"
+                />
               </div>
 
               <div className="flex items-center space-x-3 p-3 rounded-lg bg-accent/10">
