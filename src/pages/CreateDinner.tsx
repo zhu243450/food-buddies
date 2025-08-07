@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Zap, Clock, Users2, MapPin } from "lucide-react";
+import { Plus, Zap, Clock, Users2, MapPin, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import MapLocationPicker from "@/components/MapLocationPicker";
@@ -41,6 +41,11 @@ const CreateDinner = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [restriction, setRestriction] = useState<{
+    can_create_dinner: boolean;
+    restriction_reason: string;
+    restriction_end_date?: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -67,6 +72,19 @@ const CreateDinner = () => {
         return;
       }
       setUser(user);
+      
+      // 检查用户创建饭局的限制
+      try {
+        const { data, error } = await supabase.rpc('check_user_cancellation_restrictions', {
+          user_id_param: user.id
+        });
+
+        if (!error && data && data.length > 0) {
+          setRestriction(data[0]);
+        }
+      } catch (error) {
+        console.error("Error checking restrictions:", error);
+      }
     };
 
     getUser();
@@ -102,6 +120,16 @@ const CreateDinner = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    
+    // 检查是否有创建限制
+    if (restriction && !restriction.can_create_dinner) {
+      toast({
+        title: "无法发布饭局",
+        description: restriction.restriction_reason,
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
     
@@ -147,6 +175,21 @@ const CreateDinner = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
+            {restriction && !restriction.can_create_dinner && (
+              <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30">
+                <div className="flex items-center gap-2 text-destructive font-semibold mb-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  无法发布饭局
+                </div>
+                <p className="text-destructive text-sm">{restriction.restriction_reason}</p>
+                {restriction.restriction_end_date && (
+                  <p className="text-destructive text-sm mt-1">
+                    限制将于 {new Date(restriction.restriction_end_date).toLocaleString("zh-CN")} 解除
+                  </p>
+                )}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* 饭局模式选择 */}
               <div className="space-y-3">
@@ -364,9 +407,11 @@ const CreateDinner = () => {
               <Button 
                 type="submit" 
                 className="w-full h-12 text-lg font-semibold bg-accent text-black hover:bg-accent/90 hover:text-black transition-all duration-300 shadow-lg hover:shadow-xl" 
-                disabled={loading}
+                disabled={loading || (restriction && !restriction.can_create_dinner)}
               >
-                {loading ? "发布中..." : "🎉 发布饭局"}
+                {loading ? "发布中..." : 
+                 (restriction && !restriction.can_create_dinner) ? "暂时无法发布" : 
+                 "🎉 发布饭局"}
               </Button>
             </form>
           </CardContent>

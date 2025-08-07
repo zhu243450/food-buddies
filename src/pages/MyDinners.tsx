@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Users, LogOut, Heart, Sparkles, Users2 } from "lucide-react";
+import { CalendarDays, MapPin, Users, LogOut, Heart, Sparkles, Users2, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -16,7 +18,11 @@ const MyDinners = () => {
   const [createdDinners, setCreatedDinners] = useState<Dinner[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [selectedDinner, setSelectedDinner] = useState<Dinner | null>(null);
+  const [cancelling, setCancelling] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const getUser = async () => {
@@ -55,7 +61,8 @@ const MyDinners = () => {
             dietary_restrictions,
             created_by,
             created_at,
-            updated_at
+            updated_at,
+            status
           )
         `)
         .eq("user_id", user.id);
@@ -63,7 +70,7 @@ const MyDinners = () => {
       if (joinedError) {
         console.error("Error fetching joined dinners:", joinedError);
       } else {
-        const joinedDinnersData = joinedData?.map(item => (item as any).dinners) || [];
+        const joinedDinnersData = joinedData?.map(item => (item as any).dinners).filter((dinner: any) => dinner.status === 'active' || !dinner.status) || [];
         setJoinedDinners(joinedDinnersData);
       }
 
@@ -77,7 +84,9 @@ const MyDinners = () => {
       if (createdError) {
         console.error("Error fetching created dinners:", createdError);
       } else {
-        setCreatedDinners(createdData || []);
+        // 过滤只显示活跃的饭局
+        const activeDinners = createdData?.filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
+        setCreatedDinners(activeDinners);
       }
 
       // 获取所有饭局的参与者数量
@@ -120,7 +129,7 @@ const MyDinners = () => {
         },
         () => {
           // 当有人加入或离开饭局时重新获取数据
-          fetchMyDinners();
+          window.location.reload();
         }
       )
       .subscribe();
@@ -164,15 +173,75 @@ const MyDinners = () => {
     }
   };
 
+  const handleCancelDinner = async (reason?: string) => {
+    if (!user || !selectedDinner) return;
+
+    setCancelling(true);
+
+    try {
+      const { data, error } = await supabase.rpc('cancel_dinner', {
+        dinner_id_param: selectedDinner.id,
+        user_id_param: user.id,
+        cancellation_reason_param: reason
+      });
+
+      if (error) throw error;
+
+      const result = data[0];
+      if (result.success) {
+        toast({
+          title: selectedDinner.created_by === user.id ? "饭局已取消" : "已退出饭局",
+          description: result.message,
+          variant: result.is_late_cancellation ? "destructive" : "default",
+        });
+
+        // 重新获取数据
+        window.location.reload();
+      } else {
+        toast({
+          title: "操作失败",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "操作失败",
+        description: error.message || "取消操作时发生错误",
+        variant: "destructive",
+      });
+    } finally {
+      setCancelling(false);
+      setShowCancelDialog(false);
+      setSelectedDinner(null);
+    }
+  };
+
+  const handleCancelClick = (dinner: Dinner, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setSelectedDinner(dinner);
+    setShowCancelDialog(true);
+  };
+
   const DinnerCard = ({ dinner }: { dinner: Dinner }) => {
     const participantCount = participantCounts[dinner.id] || 0;
     const isCreatedByMe = dinner.created_by === user?.id;
     
+    const canCancel = (dinner as any).status === 'active' || !(dinner as any).status;
+    
     return (
-      <Card 
-        className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5"
-        onClick={() => navigate(`/dinner/${dinner.id}`)}
-      >
+      <Card className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group">
+        <div onClick={() => navigate(`/dinner/${dinner.id}`)}>
+          {canCancel && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive"
+              onClick={(e) => handleCancelClick(dinner, e)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -268,6 +337,7 @@ const MyDinners = () => {
             </Badge>
           )}
         </CardContent>
+        </div>
       </Card>
     );
   };
@@ -365,6 +435,19 @@ const MyDinners = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {selectedDinner && (
+        <CancelDinnerDialog
+          open={showCancelDialog}
+          onOpenChange={setShowCancelDialog}
+          onConfirm={handleCancelDinner}
+          dinnerTitle={selectedDinner.title}
+          dinnerTime={selectedDinner.dinner_time}
+          isCreator={selectedDinner.created_by === user?.id}
+          loading={cancelling}
+        />
+      )}
+      
       <Navigation />
     </div>
   );

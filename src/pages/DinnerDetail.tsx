@@ -4,9 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare } from "lucide-react";
+import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
+import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -28,6 +29,8 @@ const DinnerDetail = () => {
   const [isParticipant, setIsParticipant] = useState(false);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -208,6 +211,49 @@ const DinnerDetail = () => {
     setJoining(false);
   };
 
+  const handleCancelDinner = async (reason?: string) => {
+    if (!user || !dinner) return;
+
+    setCancelling(true);
+
+    try {
+      const { data, error } = await supabase.rpc('cancel_dinner', {
+        dinner_id_param: dinner.id,
+        user_id_param: user.id,
+        cancellation_reason_param: reason
+      });
+
+      if (error) throw error;
+
+      const result = data[0];
+      if (result.success) {
+        toast({
+          title: dinner.created_by === user.id ? "饭局已取消" : "已退出饭局",
+          description: result.message,
+          variant: result.is_late_cancellation ? "destructive" : "default",
+        });
+
+        // 如果是创建者取消，或者是参与者退出，都跳转到我的饭局页面
+        navigate("/my-dinners");
+      } else {
+        toast({
+          title: "操作失败",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "操作失败",
+        description: error.message || "取消操作时发生错误",
+        variant: "destructive",
+      });
+    } finally {
+      setCancelling(false);
+      setShowCancelDialog(false);
+    }
+  };
+
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("zh-CN", {
@@ -359,27 +405,58 @@ const DinnerDetail = () => {
                     您已参与此饭局
                   </div>
                 </div>
-                <Button 
-                  onClick={() => navigate("/chat-list")}
-                  className="w-full bg-secondary text-black hover:bg-secondary/90 font-semibold"
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  进入聊天
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    onClick={() => navigate("/chat-list")}
+                    className="bg-secondary text-black hover:bg-secondary/90 font-semibold"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    进入聊天
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowCancelDialog(true)}
+                    className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    退出饭局
+                  </Button>
+                </div>
               </div>
             )}
 
             {dinner.created_by === user.id && (
-              <div className="text-center p-4 rounded-lg bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200">
-                <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold text-lg">
-                  <UserCheck className="w-5 h-5" />
-                  这是您发起的饭局
+              <div className="space-y-3">
+                <div className="text-center p-4 rounded-lg bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200">
+                  <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold text-lg">
+                    <UserCheck className="w-5 h-5" />
+                    这是您发起的饭局
+                  </div>
                 </div>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowCancelDialog(true)}
+                  className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  取消饭局
+                </Button>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+      
+      <CancelDinnerDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        onConfirm={handleCancelDinner}
+        dinnerTitle={dinner.title}
+        dinnerTime={dinner.dinner_time}
+        isCreator={dinner.created_by === user.id}
+        loading={cancelling}
+      />
+      
       <Navigation />
     </div>
   );
