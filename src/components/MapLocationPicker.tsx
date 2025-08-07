@@ -111,26 +111,54 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const searchLocation = async () => {
     if (!searchQuery.trim()) return;
 
+    console.log('开始搜索:', searchQuery);
+
     try {
       // 使用 Nominatim API 搜索 (免费)
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=cn&accept-language=zh-CN,zh&limit=1`
-      );
-      const data = await response.json();
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=cn&accept-language=zh-CN,zh&limit=1`;
+      console.log('搜索URL:', url);
       
-      if (data.length > 0) {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'FoodBuddies/1.0'
+        }
+      });
+      
+      console.log('响应状态:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('搜索结果:', data);
+      
+      if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lng = parseFloat(data[0].lon);
         const placeName = data[0].display_name;
+        
+        console.log('找到位置:', { lat, lng, placeName });
         
         map.current?.setView([lat, lng], 15);
         addMarker(lat, lng);
         
         setSelectedLocation(placeName);
         setSearchQuery(placeName);
+      } else {
+        console.log('没有找到搜索结果');
+        // 如果没有找到结果，尝试用更简单的搜索词
+        const simplifiedQuery = searchQuery.replace(/市|区|县|镇|街道|路|号/, '');
+        if (simplifiedQuery !== searchQuery && simplifiedQuery.trim()) {
+          console.log('尝试简化搜索:', simplifiedQuery);
+          setSearchQuery(simplifiedQuery);
+          return;
+        }
       }
     } catch (error) {
       console.error('搜索失败:', error);
+      // 如果API失败，至少更新搜索框显示
+      alert(`搜索失败: ${error.message}. 请尝试点击地图手动选择位置。`);
     }
   };
 
