@@ -82,5 +82,262 @@
     "help": "Help Center",
     "copyright": "© 2024 DineMate. All rights reserved.",
     "language": "Language"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: August 7, 2024",
+    "sections": {
+      "collection": {
+        "title": "1. Information Collection",
+        "description": "When you use DineMate services, we may collect the following information:",
+        "items": [
+          "Personal identification information: name, email address, phone number",
+          "Profile information: avatar, bio, food preferences",
+          "Location information: to match nearby dinners (with your authorization)",
+          "Usage information: app usage records, device information"
+        ]
+      },
+      "usage": {
+        "title": "2. Information Usage",
+        "description": "We use the collected information to:",
+        "items": [
+          "Provide and improve our services",
+          "Match suitable dinners and users",
+          "Send important notifications and updates",
+          "Ensure platform security and prevent fraud"
+        ]
+      },
+      "sharing": {
+        "title": "3. Information Sharing",
+        "description": "We will not sell, trade, or transfer your personal information to third parties, except when:",
+        "items": [
+          "We have your explicit consent",
+          "Required by law or government agencies",
+          "To protect our rights, property, or safety"
+        ]
+      },
+      "security": {
+        "title": "4. Data Security",
+        "description": "We adopt industry-standard security measures to protect your personal information, including data encryption, access control, and regular security audits."
+      },
+      "rights": {
+        "title": "5. Your Rights",
+        "description": "You have the right to:",
+        "items": [
+          "Access and update your personal information",
+          "Delete your account and related data",
+          "Restrict or object to certain data processing",
+          "Data portability"
+        ]
+      },
+      "contact": {
+        "title": "6. Contact Us",
+        "description": "If you have any questions about this privacy policy, please contact us through the following methods:"
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: August 7, 2024",
+    "sections": {
+      "description": {
+        "title": "1. Service Description",
+        "content": "DineMate (\"we\", \"platform\") is a social dining platform that provides services for users to publish and participate in dining activities. By using our services, you agree to comply with these terms of service."
+      },
+      "responsibilities": {
+        "title": "2. User Responsibilities",
+        "description": "As a platform user, you need to:",
+        "items": [
+          "Provide true and accurate personal information",
+          "Take responsibility for content you publish",
+          "Respect other users, no harassment or malicious behavior",
+          "Comply with local laws and regulations",
+          "Fulfill your commitment to participate in dining activities on time"
+        ]
+      },
+      "rules": {
+        "title": "3. Platform Rules",
+        "description": "To maintain a good community environment, we prohibit:",
+        "items": [
+          "Publishing false information or conducting fraudulent activities",
+          "Publishing illegal, harmful or inappropriate content",
+          "Maliciously canceling committed dining activities",
+          "Harassing or threatening other users",
+          "Using automated tools or bots"
+        ]
+      },
+      "cancellation": {
+        "title": "4. Cancellation Policy",
+        "description": "To protect the interests of all users, we have established the following cancellation policy:",
+        "items": [
+          "Cancel 24+ hours in advance: no restrictions",
+          "Cancel within 24 hours: will affect credit record",
+          "Multiple consecutive last-minute cancellations: may be restricted from publishing new activities"
+        ]
+      },
+      "disclaimer": {
+        "title": "5. Disclaimer",
+        "description": "DineMate as a platform provider:",
+        "items": [
+          "Is not responsible for offline dining activities between users",
+          "Does not guarantee the accuracy of all information",
+          "Is not liable for any losses arising from using the service",
+          "Recommends users pay attention to personal and property safety during dining"
+        ]
+      },
+      "changes": {
+        "title": "6. Service Changes",
+        "content": "We reserve the right to modify, suspend or terminate services at any time. Major changes will be notified to users in advance."
+      },
+      "disputes": {
+        "title": "7. Dispute Resolution",
+        "content": "Disputes arising from the use of this service should first be resolved through friendly consultation. If consultation fails, it shall be submitted to the People's Court of Dongguan City, Guangdong Province for jurisdiction."
+      },
+      "contact": {
+        "title": "8. Contact Us",
+        "description": "If you have any questions about the terms of service, please contact us:"
+      }
+    }
+  },
+  "about": {
+    "title": "About DineMate",
+    "subtitle": "Connecting food, sharing happiness. Making every meal a beautiful memory.",
+    "description": "DineMate is a platform focused on social dining, dedicated to helping people discover like-minded partners and enjoy food together. Whether you want to meet new friends, explore local cuisine, or organize an interesting gathering, DineMate can provide you with the perfect solution.",
+    "mission": "We believe that sharing food is not just about satisfying taste buds, but also an important way to build relationships and spread warmth. Through our platform, you can easily find nearby dining activities or initiate your own food gatherings.",
+    "company": {
+      "title": "Company Information",
+      "basic": {
+        "title": "Basic Information",
+        "name": "Company Name: Zhixiang Cloud Technology Development (Dongguan, Guangdong) Co., Ltd.",
+        "address": "Registered Address: No. 22-1, Tangpu East Road, Tangxia Town, Dongguan City, Guangdong Province",
+        "email": "Contact Email: weishang99@gmail.com",
+        "phone": "Contact Phone: +86 19068522408"
+      },
+      "business": {
+        "title": "Business Scope",
+        "items": [
+          "• Internet information services",
+          "• Software development and technical services",
+          "• Data processing and storage services",
+          "• Enterprise management consulting"
+        ]
+      }
+    },
+    "contact": {
+      "title": "Contact Us",
+      "email": {
+        "title": "Email Contact",
+        "customer": "Customer Service: weishang99@gmail.com",
+        "business": "Business Cooperation: weishang99@gmail.com"
+      },
+      "phone": {
+        "title": "Phone Contact",
+        "number": "Customer Hotline: +86 19068522408",
+        "hours": "Working Hours: 9:00-18:00",
+        "days": "(Monday to Friday)"
+      },
+      "address": {
+        "title": "Office Address",
+        "line1": "Dongguan City, Guangdong Province",
+        "line2": "No. 22-1, Tangpu East Road, Tangxia Town"
+      }
+    },
+    "registration": {
+      "title": "Registration Information",
+      "website": "Website Registration No.: Jing ICP Bei 2024000001",
+      "culture": "Network Culture Business License: Jing Wang Wen [2024] 0001-001",
+      "telecom": "Value-added Telecommunications Business License: Jing B2-20240001",
+      "food": "Food Business License: JY11010000000001"
+    }
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Frequently asked questions and user guides",
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "items": [
+        {
+          "question": "How to publish a dinner?",
+          "answer": "Click the publish dinner button on the homepage, fill in dinner details including time, location, participant limit, food preferences, etc., then submit for review."
+        },
+        {
+          "question": "How to join a dinner?",
+          "answer": "Browse the dinner list on the discover page, click on interesting dinners to view details, then click the join button. The dinner creator will receive a notification."
+        },
+        {
+          "question": "Can I cancel a dinner I joined?",
+          "answer": "Yes, but we recommend notifying 24 hours in advance. Frequent last-minute cancellations may affect your credit rating and limit future participation rights."
+        },
+        {
+          "question": "How to set food preferences?",
+          "answer": "You can set your food preferences and restrictions on your profile page. The system will recommend more suitable dinners based on this information."
+        },
+        {
+          "question": "What safety measures are there?",
+          "answer": "We recommend dining in public places, protecting personal privacy information, and contacting customer service immediately if there are any abnormal situations. The platform records user behavior to maintain community safety."
+        },
+        {
+          "question": "How to contact other users?",
+          "answer": "After joining a dinner, you can communicate with other participants through the in-platform chat function to discuss dining arrangements and share food experiences."
+        },
+        {
+          "question": "What to do if my account is restricted?",
+          "answer": "If your account is restricted due to multiple last-minute cancellations, please contact customer service to explain the situation. We will handle it based on specific circumstances."
+        },
+        {
+          "question": "How to delete my account?",
+          "answer": "If you need to delete your account, please send an email to weishang99@gmail.com, and we will process your request within 7 working days."
+        }
+      ]
+    },
+    "guide": {
+      "title": "Quick User Guide",
+      "newUser": {
+        "title": "New User Getting Started",
+        "steps": [
+          "Complete your profile information",
+          "Set food preferences and restrictions",
+          "Browse nearby dinners",
+          "Join your first dinner",
+          "Communicate with other users"
+        ]
+      },
+      "publish": {
+        "title": "Tips for Publishing Dinners",
+        "tips": [
+          "Choose appropriate time and location",
+          "Describe dinner features in detail",
+          "Set reasonable participant limits",
+          "Clarify food preference requirements",
+          "Reply to participant messages promptly"
+        ]
+      }
+    },
+    "support": {
+      "title": "Contact Customer Service",
+      "chat": {
+        "title": "Online Customer Service",
+        "hours": "Working Hours: 9:00-21:00"
+      },
+      "email": {
+        "title": "Email Support",
+        "address": "weishang99@gmail.com"
+      },
+      "phone": {
+        "title": "Phone Customer Service",
+        "number": "+86 19068522408"
+      }
+    },
+    "safety": {
+      "title": "Safety Tips",
+      "warning": "Please Pay Attention to Safety",
+      "tips": [
+        "Choose public places for dining, avoid private residences",
+        "Don't reveal too much personal privacy information",
+        "Report inappropriate behavior immediately",
+        "Recommend informing friends of dining arrangements",
+        "Maintain rational consumption to avoid disputes"
+      ]
+    }
   }
 }
