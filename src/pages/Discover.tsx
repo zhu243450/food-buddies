@@ -332,25 +332,28 @@ const Discover = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+        {/* 标题区域 */}
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2">
             <Search className="w-8 h-8 text-primary" />
             发现饭局
           </h1>
-          <div className="flex gap-2">
-            <DinnerFiltersComponent 
-              filters={filters}
-              onFiltersChange={setFilters}
-              activeFilterCount={getActiveFilterCount()}
-            />
-            <Button 
-              onClick={() => navigate("/create-dinner")}
-              className="bg-accent text-black hover:bg-accent/90 hover:text-black shadow-lg hover:shadow-xl transition-all duration-300 font-semibold border-2 border-accent/30"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              发布饭局
-            </Button>
-          </div>
+        </div>
+
+        {/* 居中的按钮区域 */}
+        <div className="flex justify-center gap-3 mb-6">
+          <DinnerFiltersComponent 
+            filters={filters}
+            onFiltersChange={setFilters}
+            activeFilterCount={getActiveFilterCount()}
+          />
+          <Button 
+            onClick={() => navigate("/create-dinner")}
+            className="bg-accent text-black hover:bg-accent/90 hover:text-black shadow-lg hover:shadow-xl transition-all duration-300 font-semibold border-2 border-accent/30"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            发布饭局
+          </Button>
         </div>
 
         {filteredDinners.length === 0 ? (
