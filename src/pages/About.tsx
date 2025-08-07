@@ -55,10 +55,10 @@ export const About = () => {
                 <div>
                   <h4 className="font-medium mb-2">基本信息</h4>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>公司名称：北京聚餐科技有限公司</p>
-                    <p>统一社会信用代码：91110000000000000X</p>
-                    <p>成立时间：2024年1月</p>
-                    <p>注册资本：100万元人民币</p>
+                    <p>公司名称：智享云上科技发展（广东东莞市）有限责任公司</p>
+                    <p>注册地址：广东省东莞市塘厦镇塘莆东路22号之一</p>
+                    <p>联系邮箱：weishang99@gmail.com</p>
+                    <p>联系电话：+86 19068522408</p>
                   </div>
                 </div>
                 <div>
@@ -86,9 +86,8 @@ export const About = () => {
                   <div>
                     <h4 className="font-medium mb-1">邮箱联系</h4>
                     <p className="text-sm text-muted-foreground">
-                      客服邮箱：support@dinemate.org<br />
-                      商务合作：business@dinemate.org<br />
-                      法务事务：legal@dinemate.org
+                      客服邮箱：weishang99@gmail.com<br />
+                      商务合作：weishang99@gmail.com
                     </p>
                   </div>
                 </div>
@@ -98,7 +97,7 @@ export const About = () => {
                   <div>
                     <h4 className="font-medium mb-1">电话联系</h4>
                     <p className="text-sm text-muted-foreground">
-                      客服热线：400-123-4567<br />
+                      客服热线：+86 19068522408<br />
                       工作时间：9:00-18:00<br />
                       （周一至周五）
                     </p>
@@ -110,9 +109,8 @@ export const About = () => {
                   <div>
                     <h4 className="font-medium mb-1">办公地址</h4>
                     <p className="text-sm text-muted-foreground">
-                      北京市朝阳区<br />
-                      建国门外大街1号<br />
-                      国贸大厦A座2001室
+                      广东省东莞市<br />
+                      塘厦镇塘莆东路22号之一
                     </p>
                   </div>
                 </div>

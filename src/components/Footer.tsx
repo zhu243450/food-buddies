@@ -16,6 +16,9 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground">
               连接美食，分享快乐。让每一次聚餐都成为美好回忆。
             </p>
+            <p className="text-xs text-muted-foreground">
+              智享云上科技发展（广东东莞市）有限责任公司
+            </p>
           </div>
 
           {/* 快速链接 */}
@@ -56,8 +59,8 @@ export const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-sm font-medium">{t('footer.contact')}</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>邮箱：support@dinemate.org</p>
-              <p>电话：+86 400-123-4567</p>
+              <p>邮箱：weishang99@gmail.com</p>
+              <p>电话：+86 19068522408</p>
               <div className="pt-2">
                 <LanguageSwitcher />
               </div>
@@ -69,7 +72,7 @@ export const Footer = () => {
         
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
           <p>{t('footer.copyright')}</p>
-          <p>ICP备案号：京ICP备2024000001号</p>
+          <p>智享云上科技发展（广东东莞市）有限责任公司</p>
         </div>
       </div>
     </footer>
