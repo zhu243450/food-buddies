@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
-import { User as UserIcon, Upload, Camera, Shield, LogOut } from "lucide-react";
+import { User as UserIcon, Upload, Camera, Shield } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
 
 const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
@@ -164,18 +164,6 @@ const Profile = () => {
     setLoading(false);
   };
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "登出失败",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      navigate("/auth");
-    }
-  };
 
   if (!user) return null;
 
@@ -368,16 +356,6 @@ const Profile = () => {
                 )}
               </Button>
 
-              {/* 登出按钮 */}
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={handleLogout}
-                className="w-full h-11 border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold rounded-lg"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                退出登录
-              </Button>
             </form>
           </CardContent>
         </Card>
