@@ -95,18 +95,29 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log('开始登录:', { email });
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    console.log('登录结果:', { data, error });
+
     if (error) {
+      console.error('登录错误:', error);
       toast({
         title: "登录失败",
         description: error.message === "Invalid login credentials" 
           ? "邮箱或密码错误" 
           : error.message,
         variant: "destructive",
+      });
+    } else {
+      console.log('登录成功，用户信息:', data.user);
+      toast({
+        title: "登录成功",
+        description: "正在跳转...",
       });
     }
     
