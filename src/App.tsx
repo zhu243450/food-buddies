@@ -21,6 +21,8 @@ import { Terms } from "./pages/Terms";
 import { About } from "./pages/About";
 import { Help } from "./pages/Help";
 import { Footer } from "./components/Footer";
+import { useTranslation } from "react-i18next";
+import "./i18n";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,16 +34,18 @@ const queryClient = new QueryClient({
 });
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="text-center space-y-4 max-w-md">
-        <h2 className="text-2xl font-bold text-destructive">应用出现错误</h2>
+        <h2 className="text-2xl font-bold text-destructive">{t('error.title')}</h2>
         <p className="text-muted-foreground">{error.message}</p>
         <button 
           onClick={resetErrorBoundary}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
         >
-          重新加载
+          {t('error.reload')}
         </button>
       </div>
     </div>

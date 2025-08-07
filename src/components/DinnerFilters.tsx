@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,20 +31,31 @@ interface DinnerFiltersProps {
   activeFilterCount: number;
 }
 
-const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
-const DIETARY_RESTRICTIONS = ["不吃辣", "不吃肉", "不吃海鲜", "不吃牛肉", "不吃猪肉", "素食主义"];
-const DINNER_MODES = [
-  { value: "instant", label: "🔥 闪约" },
-  { value: "scheduled", label: "📅 预约" },
-  { value: "group", label: "👥 团饭" }
+// 这些常量将通过翻译函数处理
+const getFoodPreferences = (t: any) => [
+  t('foodPrefs.sichuan'), t('foodPrefs.hotpot'), t('foodPrefs.cantonese'), 
+  t('foodPrefs.japanese'), t('foodPrefs.korean'), t('foodPrefs.western'), t('foodPrefs.vegetarian')
 ];
-const URGENCY_LEVELS = [
-  { value: "urgent", label: "🚨 紧急" },
-  { value: "normal", label: "⏰ 正常" },
-  { value: "flexible", label: "🌊 灵活" }
+
+const getDietaryRestrictions = (t: any) => [
+  t('dietary.noSpicy'), t('dietary.noMeat'), t('dietary.noSeafood'), 
+  t('dietary.noBeef'), t('dietary.noPork'), t('dietary.vegetarian')
+];
+
+const getDinnerModes = (t: any) => [
+  { value: "instant", label: `🔥 ${t('dinner.instant')}` },
+  { value: "scheduled", label: `📅 ${t('dinner.scheduled')}` },
+  { value: "group", label: `👥 ${t('dinner.group')}` }
+];
+
+const getUrgencyLevels = (t: any) => [
+  { value: "urgent", label: `🚨 ${t('dinner.urgent')}` },
+  { value: "normal", label: `⏰ ${t('dinner.normal')}` },
+  { value: "flexible", label: `🌊 ${t('dinner.flexible')}` }
 ];
 
 export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterCount }: DinnerFiltersProps) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const { toast } = useToast();
@@ -67,12 +79,18 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
     });
   };
 
+  // 获取动态数据
+  const FOOD_PREFERENCES = getFoodPreferences(t);
+  const DIETARY_RESTRICTIONS = getDietaryRestrictions(t);
+  const DINNER_MODES = getDinnerModes(t);
+  const URGENCY_LEVELS = getUrgencyLevels(t);
+
   // 获取用户当前位置
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
       toast({
-        title: "不支持定位",
-        description: "您的浏览器不支持地理位置服务",
+        title: t('location.notSupported'),
+        description: t('location.notSupportedDesc'),
         variant: "destructive",
       });
       return;
@@ -98,18 +116,18 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
             
             handleFilterChange("location", location);
             toast({
-              title: "定位成功",
-              description: `当前位置：${location}`,
+              title: t('location.success'),
+              description: t('location.currentLocation', { location }),
             });
           } else {
-            throw new Error("无法获取位置信息");
+            throw new Error(t('location.cannotGetLocation'));
           }
         } catch (error) {
           console.error('反向地理编码失败:', error);
           handleFilterChange("location", `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           toast({
-            title: "定位成功",
-            description: "已获取坐标位置",
+            title: t('location.success'),
+            description: t('location.coordinatesObtained'),
           });
         }
         
@@ -117,22 +135,22 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
       },
       (error) => {
         console.error('定位失败:', error);
-        let errorMessage = "定位失败";
+        let errorMessage = t('location.failed');
         
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = "用户拒绝了位置访问请求";
+            errorMessage = t('location.permissionDenied');
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = "位置信息不可用";
+            errorMessage = t('location.unavailable');
             break;
           case error.TIMEOUT:
-            errorMessage = "定位请求超时";
+            errorMessage = t('location.timeout');
             break;
         }
         
         toast({
-          title: "定位失败",
+          title: t('location.failed'),
           description: errorMessage,
           variant: "destructive",
         });
@@ -181,7 +199,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
       <SheetTrigger asChild>
         <Button variant="outline" className="relative border-2 border-primary/30 hover:bg-primary/10">
           <Filter className="w-4 h-4 mr-2" />
-          筛选饭局
+          {t('common.filter')}
           {activeFilterCount > 0 && (
             <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-primary text-black text-xs">
               {activeFilterCount}
@@ -193,10 +211,10 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            筛选条件
+            {t('common.filter')}
           </SheetTitle>
           <SheetDescription>
-            设置筛选条件找到最适合的饭局
+            {t('filter.description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -206,7 +224,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Users2 className="w-4 h-4 text-primary" />
-                性别偏好
+                {t('dinner.genderPreference')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -218,10 +236,10 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">不限</SelectItem>
-                  <SelectItem value="same_gender">同性优先</SelectItem>
-                  <SelectItem value="opposite_gender">异性优先</SelectItem>
-                  <SelectItem value="no_preference">无性别偏好者</SelectItem>
+                  <SelectItem value="all">{t('filter.genderAll')}</SelectItem>
+                  <SelectItem value="same_gender">{t('filter.sameGender')}</SelectItem>
+                  <SelectItem value="opposite_gender">{t('filter.oppositeGender')}</SelectItem>
+                  <SelectItem value="no_preference">{t('filter.noGenderPref')}</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
@@ -232,12 +250,12 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                时间筛选
+                {t('filter.timeFilter')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium mb-2 block">时间范围</Label>
+                <Label className="text-sm font-medium mb-2 block">{t('filter.timeRange')}</Label>
                 <Select 
                   value={filters.timeRange} 
                   onValueChange={(value) => handleFilterChange("timeRange", value)}
@@ -246,22 +264,22 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">不限</SelectItem>
-                    <SelectItem value="today">今天</SelectItem>
-                    <SelectItem value="tomorrow">明天</SelectItem>
-                    <SelectItem value="this_week">本周</SelectItem>
-                    <SelectItem value="weekend">周末</SelectItem>
+                    <SelectItem value="all">{t('filter.timeAll')}</SelectItem>
+                    <SelectItem value="today">{t('filter.today')}</SelectItem>
+                    <SelectItem value="tomorrow">{t('filter.tomorrow')}</SelectItem>
+                    <SelectItem value="this_week">{t('filter.thisWeek')}</SelectItem>
+                    <SelectItem value="weekend">{t('filter.weekend')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label className="text-sm font-medium mb-2 block">时间段</Label>
+                <Label className="text-sm font-medium mb-2 block">{t('filter.timeSlots')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    { value: "lunch", label: "中午 (11:00-14:00)" },
-                    { value: "dinner", label: "晚餐 (17:00-21:00)" },
-                    { value: "supper", label: "夜宵 (21:00-24:00)" }
+                    { value: "lunch", label: t('filter.lunch') },
+                    { value: "dinner", label: t('filter.dinnerTime') },
+                    { value: "supper", label: t('filter.supper') }
                   ].map((time) => (
                     <Button
                       key={time.value}
@@ -283,18 +301,18 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary" />
-                地点筛选
+                {t('filter.locationFilter')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="location" className="text-sm font-medium">位置关键词</Label>
+                <Label htmlFor="location" className="text-sm font-medium">{t('filter.locationKeyword')}</Label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     id="location"
                     value={filters.location}
                     onChange={(e) => handleFilterChange("location", e.target.value)}
-                    placeholder="输入地区、商圈或地标"
+                    placeholder={t('filter.locationPlaceholder')}
                     className="flex-1"
                   />
                   <Button
@@ -303,7 +321,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
                     onClick={getCurrentLocation}
                     disabled={isLocating}
                     className="shrink-0"
-                    title="获取当前位置"
+                    title={t('filter.getCurrentLocation')}
                   >
                     <Navigation className={`w-4 h-4 ${isLocating ? 'animate-spin' : ''}`} />
                   </Button>
@@ -312,7 +330,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
               
               <div>
                 <Label className="text-sm font-medium mb-3 block">
-                  搜索半径: {filters.radius}km
+                  {t('filter.searchRadius', { radius: filters.radius })}
                 </Label>
                 <Slider
                   value={[filters.radius]}
@@ -331,7 +349,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Utensils className="w-4 h-4 text-primary" />
-                饭局模式
+                {t('dinner.mode')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -354,7 +372,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
           {/* 紧急程度 */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">紧急程度</CardTitle>
+              <CardTitle className="text-base">{t('dinner.urgencyLevel')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
@@ -376,7 +394,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
           {/* 饮食偏好 */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">饮食偏好</CardTitle>
+              <CardTitle className="text-base">{t('dinner.foodPreferences')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
@@ -399,7 +417,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
           {/* 饮食禁忌 */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">饮食禁忌</CardTitle>
+              <CardTitle className="text-base">{t('dinner.dietaryRestrictions')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
@@ -422,12 +440,12 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
           {/* 人数范围 */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">人数上限</CardTitle>
+              <CardTitle className="text-base">{t('dinner.maxParticipants')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div>
                 <Label className="text-sm font-medium mb-3 block">
-                  {filters.maxParticipants[0]} - {filters.maxParticipants[1]} 人
+                  {t('filter.participantsRange', { min: filters.maxParticipants[0], max: filters.maxParticipants[1] })}
                 </Label>
                 <Slider
                   value={filters.maxParticipants}
@@ -449,13 +467,13 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
               className="flex-1"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              重置
+              {t('common.clear')}
             </Button>
             <Button
               onClick={() => setIsOpen(false)}
               className="flex-1 bg-primary text-black hover:bg-primary/90"
             >
-              应用筛选 ({getActiveFilterCount()})
+              {t('filter.applyFilters', { count: getActiveFilterCount() })}
             </Button>
           </div>
         </div>
