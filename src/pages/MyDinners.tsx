@@ -44,16 +44,38 @@ const MyDinners = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // 监听认证状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('MyDinners页面认证状态变化:', { event, session });
+        
+        if (!session?.user) {
+          console.log('用户未登录，重定向到auth页面');
+          navigate("/auth", { replace: true });
+          return;
+        }
+        
+        setUser(session.user);
+      }
+    );
+
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
+      console.log('MyDinners页面检查用户会话');
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('当前会话:', session);
+      
+      if (!session?.user) {
+        console.log('用户未登录，重定向到auth页面');
+        navigate("/auth", { replace: true });
         return;
       }
-      setUser(user);
+      
+      setUser(session.user);
     };
 
     getUser();
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   useEffect(() => {

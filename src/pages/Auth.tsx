@@ -32,7 +32,8 @@ const Auth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          navigate("/my-dinners");
+          console.log('Auth页面检测到用户登录，重定向到my-dinners');
+          navigate("/my-dinners", { replace: true });
         }
       }
     );
@@ -42,7 +43,8 @@ const Auth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        navigate("/my-dinners");
+        console.log('Auth页面检测到已有会话，重定向到my-dinners');
+        navigate("/my-dinners", { replace: true });
       }
     });
 
