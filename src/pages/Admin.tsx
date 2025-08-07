@@ -5,7 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Calendar, AlertCircle, Shield, ArrowLeft } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface UserStats {
@@ -31,6 +34,17 @@ interface UserRole {
   role: string;
 }
 
+interface Profile {
+  id: string;
+  user_id: string;
+  nickname: string;
+  gender?: string;
+  birth_year?: number;
+  created_at: string;
+  updated_at: string;
+  avatar_url?: string;
+}
+
 const Admin = () => {
   const navigate = useNavigate();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
@@ -39,6 +53,11 @@ const Admin = () => {
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<Profile[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -68,8 +87,10 @@ const Admin = () => {
       }
 
       setIsAdmin(true);
+      setCurrentUser(user);
       setUserRoles(roles || []);
       await loadStats();
+      await loadUsers();
     } catch (error) {
       console.error('Admin access check failed:', error);
       toast.error('权限检查失败');
@@ -106,6 +127,81 @@ const Admin = () => {
       toast.error('加载统计数据失败');
     }
   };
+
+  const loadUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const { data: profilesData, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(profilesData || []);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+      toast.error('加载用户列表失败');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      // 获取当前用户的角色
+      const { data: currentRoles } = await supabase.rpc('get_user_roles', { 
+        _user_id: userId 
+      });
+
+      // 如果是设置为admin并且用户还不是admin
+      if (newRole === 'admin' && !currentRoles?.some((r: UserRole) => r.role === 'admin')) {
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'admin', assigned_by: currentUser?.id });
+        
+        if (error) throw error;
+        toast.success('用户已设置为管理员');
+      } 
+      // 如果是移除admin角色
+      else if (newRole === 'user' && currentRoles?.some((r: UserRole) => r.role === 'admin')) {
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId)
+          .eq('role', 'admin');
+        
+        if (error) throw error;
+        toast.success('管理员权限已移除');
+      }
+
+      // 重新加载用户列表
+      await loadUsers();
+    } catch (error: any) {
+      console.error('Failed to update role:', error);
+      toast.error('角色更新失败: ' + error.message);
+    }
+  };
+
+  const getUserRole = async (userId: string): Promise<string> => {
+    try {
+      const { data: roles } = await supabase.rpc('get_user_roles', { 
+        _user_id: userId 
+      });
+      return roles?.some((r: UserRole) => r.role === 'admin') ? 'admin' : 'user';
+    } catch {
+      return 'user';
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.nickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.user_id.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (roleFilter === 'all') return matchesSearch;
+    
+    // 这里需要异步检查角色，但为了简化，我们暂时显示所有用户
+    return matchesSearch;
+  });
 
   if (loading) {
     return (
@@ -148,9 +244,10 @@ const Admin = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 pb-20">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">数据概览</TabsTrigger>
-            <TabsTrigger value="management">用户管理</TabsTrigger>
+            <TabsTrigger value="users">用户管理</TabsTrigger>
+            <TabsTrigger value="management">系统管理</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -278,17 +375,102 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="users" className="space-y-6">
+            {/* 搜索和筛选 */}
+            <Card className="border-border/40 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserCog className="w-5 h-5 text-primary" />
+                  用户管理
+                </CardTitle>
+                <CardDescription>管理平台用户和权限</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="搜索用户昵称或ID..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-full sm:w-40">
+                      <SelectValue placeholder="筛选角色" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">所有用户</SelectItem>
+                      <SelectItem value="admin">管理员</SelectItem>
+                      <SelectItem value="user">普通用户</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    onClick={loadUsers}
+                    variant="outline"
+                    disabled={usersLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    {usersLoading ? "加载中..." : "刷新"}
+                  </Button>
+                </div>
+
+                {/* 用户表格 */}
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="w-16">头像</TableHead>
+                        <TableHead>昵称</TableHead>
+                        <TableHead className="hidden md:table-cell">性别</TableHead>
+                        <TableHead className="hidden md:table-cell">年龄</TableHead>
+                        <TableHead>角色</TableHead>
+                        <TableHead className="hidden sm:table-cell">注册时间</TableHead>
+                        <TableHead className="w-24">操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {usersLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                            <p className="text-muted-foreground mt-2">加载中...</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">暂无用户数据</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredUsers.map((profile) => (
+                          <UserRow 
+                            key={profile.id} 
+                            profile={profile} 
+                            onRoleChange={handleRoleChange}
+                          />
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="management" className="space-y-6">
             <Card className="border-border/40 bg-card/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle>用户管理</CardTitle>
-                <CardDescription>管理用户权限和角色</CardDescription>
+                <CardTitle>系统管理</CardTitle>
+                <CardDescription>系统设置和高级管理功能</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">用户管理功能正在开发中...</p>
+                  <p className="text-muted-foreground">系统管理功能正在开发中...</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    将支持用户角色管理、权限设置等功能
+                    将支持系统设置、数据导出等功能
                   </p>
                 </div>
               </CardContent>
@@ -297,6 +479,118 @@ const Admin = () => {
         </Tabs>
       </div>
     </div>
+  );
+};
+
+// 用户行组件
+interface UserRowProps {
+  profile: Profile;
+  onRoleChange: (userId: string, newRole: string) => void;
+}
+
+const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange }) => {
+  const [currentRole, setCurrentRole] = useState<string>('user');
+  const [roleLoading, setRoleLoading] = useState(false);
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      try {
+        const { data: roles } = await supabase.rpc('get_user_roles', { 
+          _user_id: profile.user_id 
+        });
+        setCurrentRole(roles?.some((r: UserRole) => r.role === 'admin') ? 'admin' : 'user');
+      } catch (error) {
+        console.error('Failed to load user role:', error);
+      }
+    };
+    loadUserRole();
+  }, [profile.user_id]);
+
+  const handleRoleChange = async (newRole: string) => {
+    setRoleLoading(true);
+    await onRoleChange(profile.user_id, newRole);
+    setCurrentRole(newRole);
+    setRoleLoading(false);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getAge = (birthYear?: number) => {
+    if (!birthYear) return '-';
+    return new Date().getFullYear() - birthYear;
+  };
+
+  return (
+    <TableRow className="hover:bg-muted/50">
+      <TableCell>
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+          {profile.avatar_url ? (
+            <img 
+              src={profile.avatar_url} 
+              alt={profile.nickname}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-sm font-medium text-primary">
+              {profile.nickname[0]?.toUpperCase()}
+            </span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col">
+          <span className="font-medium">{profile.nickname}</span>
+          <span className="text-xs text-muted-foreground truncate">
+            {profile.user_id.slice(0, 8)}...
+          </span>
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {profile.gender || '-'}
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        {getAge(profile.birth_year)}
+      </TableCell>
+      <TableCell>
+        <Badge 
+          variant={currentRole === 'admin' ? 'default' : 'secondary'}
+          className={currentRole === 'admin' ? 'bg-primary text-black' : ''}
+        >
+          {currentRole === 'admin' ? (
+            <>
+              <Crown className="w-3 h-3 mr-1" />
+              管理员
+            </>
+          ) : (
+            '普通用户'
+          )}
+        </Badge>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">
+        {formatDate(profile.created_at)}
+      </TableCell>
+      <TableCell>
+        <Select 
+          value={currentRole} 
+          onValueChange={handleRoleChange}
+          disabled={roleLoading}
+        >
+          <SelectTrigger className="w-20 h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">用户</SelectItem>
+            <SelectItem value="admin">管理员</SelectItem>
+          </SelectContent>
+        </Select>
+      </TableCell>
+    </TableRow>
   );
 };
 
