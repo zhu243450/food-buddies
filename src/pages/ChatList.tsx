@@ -74,7 +74,7 @@ const ChatList = () => {
               .eq("session_id", session.id)
               .order("created_at", { ascending: false })
               .limit(1)
-              .single();
+              .maybeSingle();
 
             // 获取未读消息数量
             const { count: unreadCount } = await supabase

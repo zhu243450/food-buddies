@@ -66,7 +66,7 @@ const Chat = () => {
           .from("profiles")
           .select("*")
           .eq("user_id", otherUserId)
-          .single();
+          .maybeSingle();
 
         if (profileError) throw profileError;
         setOtherUser(profileData);
@@ -74,15 +74,28 @@ const Chat = () => {
         // 获取聊天消息
         const { data: messagesData, error: messagesError } = await supabase
           .from("chat_messages")
-          .select(`
-            *,
-            sender:profiles!chat_messages_sender_id_fkey(*)
-          `)
+          .select("*")
           .eq("session_id", sessionId)
           .order("created_at", { ascending: true });
 
         if (messagesError) throw messagesError;
-        setMessages(messagesData || []);
+
+        // 获取所有发送者的profile信息
+        const senderIds = [...new Set(messagesData?.map(msg => msg.sender_id) || [])];
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("user_id", senderIds);
+
+        if (profilesError) throw profilesError;
+
+        // 合并消息和profile数据
+        const messagesWithProfiles = messagesData?.map(message => ({
+          ...message,
+          sender: profilesData?.find(profile => profile.user_id === message.sender_id) || null
+        })) || [];
+
+        setMessages(messagesWithProfiles);
 
         // 标记消息为已读
         await supabase
@@ -128,7 +141,7 @@ const Chat = () => {
             .from("profiles")
             .select("*")
             .eq("user_id", newMessage.sender_id)
-            .single();
+            .maybeSingle();
 
           const messageWithProfile: MessageWithProfile = {
             ...newMessage,
