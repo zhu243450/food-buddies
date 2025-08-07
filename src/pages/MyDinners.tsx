@@ -194,32 +194,55 @@ const MyDinners = () => {
     setCancelling(true);
 
     try {
-      const { data, error } = await supabase.rpc('cancel_dinner', {
+      console.log('Calling cancel_dinner RPC with:', {
         dinner_id_param: selectedDinner.id,
         user_id_param: user.id,
         cancellation_reason_param: reason
       });
 
-      if (error) throw error;
+      const { data, error } = await supabase.rpc('cancel_dinner', {
+        dinner_id_param: selectedDinner.id,
+        user_id_param: user.id,
+        cancellation_reason_param: reason || ''
+      });
+
+      console.log('RPC response:', { data, error });
+
+      if (error) {
+        console.error('RPC Error:', error);
+        throw error;
+      }
+
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        throw new Error('函数返回数据格式错误');
+      }
 
       const result = data[0];
-      if (result.success) {
+      console.log('Result:', result);
+
+      if (result.success || result.f1) { // f1 可能是字段名
+        const isCreator = selectedDinner.created_by === user.id;
+        const message = result.message || result.f2 || (isCreator ? "饭局已取消" : "已退出饭局");
+        const isLate = result.is_late_cancellation || result.f4 || false;
+
         toast({
-          title: selectedDinner.created_by === user.id ? "饭局已取消" : "已退出饭局",
-          description: result.message,
-          variant: result.is_late_cancellation ? "destructive" : "default",
+          title: isCreator ? "饭局已取消" : "已退出饭局",
+          description: message,
+          variant: isLate ? "destructive" : "default",
         });
 
         // 重新获取数据
         window.location.reload();
       } else {
+        const message = result.message || result.f2 || "操作失败";
         toast({
           title: "操作失败",
-          description: result.message,
+          description: message,
           variant: "destructive",
         });
       }
     } catch (error: any) {
+      console.error('Cancel dinner error:', error);
       toast({
         title: "操作失败",
         description: error.message || "取消操作时发生错误",
