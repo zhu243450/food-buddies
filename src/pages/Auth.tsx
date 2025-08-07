@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Github, Facebook, Twitter } from "lucide-react";
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import type { User, Session } from '@supabase/supabase-js';
 
 const Auth = () => {
@@ -17,8 +20,10 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -46,6 +51,16 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!agreeToTerms) {
+      toast({
+        title: "请同意服务条款",
+        description: "您需要同意隐私政策和服务条款才能注册",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
     
     const redirectUrl = `${window.location.origin}/`;
@@ -239,12 +254,39 @@ const Auth = () => {
                     minLength={6}
                   />
                 </div>
-                <Button type="submit" className="w-full bg-accent text-black hover:bg-accent/90 hover:text-black font-bold" disabled={loading}>
+                
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="terms" 
+                    checked={agreeToTerms}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+                  />
+                  <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
+                    {t('auth.privacyAgreement')}{' '}
+                    <Link to="/privacy" className="text-primary hover:underline">
+                      {t('auth.privacyPolicy')}
+                    </Link>{' '}
+                    {t('auth.and')}{' '}
+                    <Link to="/terms" className="text-primary hover:underline">
+                      {t('auth.termsOfService')}
+                    </Link>
+                  </Label>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-accent text-black hover:bg-accent/90 hover:text-black font-bold" 
+                  disabled={loading || !agreeToTerms}
+                >
                   {loading ? "注册中..." : "注册"}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
+          
+          <div className="mt-6 flex justify-center">
+            <LanguageSwitcher />
+          </div>
         </CardContent>
       </Card>
     </div>

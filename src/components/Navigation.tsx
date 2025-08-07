@@ -1,17 +1,19 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, Search, Plus, User, MessageCircle } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const navItems = [
-    { icon: Home, label: "首页", path: "/my-dinners" },
-    { icon: Search, label: "发现", path: "/discover" },
+    { icon: Home, label: t('nav.myDinners'), path: "/my-dinners" },
+    { icon: Search, label: t('nav.discover'), path: "/discover" },
     { icon: Plus, label: "发布", path: "/create-dinner", special: true },
-    { icon: MessageCircle, label: "聊天", path: "/chat-list" },
-    { icon: User, label: "我的", path: "/profile" },
+    { icon: MessageCircle, label: t('nav.chat'), path: "/chat-list" },
+    { icon: User, label: t('nav.profile'), path: "/profile" },
   ];
 
   return (

@@ -16,6 +16,11 @@ import Chat from "./pages/Chat";
 import ChatList from "./pages/ChatList";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import { Privacy } from "./pages/Privacy";
+import { Terms } from "./pages/Terms";
+import { About } from "./pages/About";
+import { Help } from "./pages/Help";
+import { Footer } from "./components/Footer";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,9 +67,14 @@ const App = () => (
             <Route path="/chat-list" element={<ChatList />} />
             <Route path="/chat/:sessionId" element={<Chat />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/help" element={<Help />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <Footer />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
