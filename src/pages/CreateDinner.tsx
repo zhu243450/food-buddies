@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +65,7 @@ const GENDER_PREFERENCES = [
 ];
 
 const CreateDinner = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -124,7 +126,7 @@ const CreateDinner = () => {
     // 检查是否有创建限制
     if (restriction && !restriction.can_create_dinner) {
       toast({
-        title: "无法发布饭局",
+        title: t('dinner.cannotCreate'),
         description: restriction.restriction_reason,
         variant: "destructive",
       });
@@ -142,14 +144,14 @@ const CreateDinner = () => {
 
     if (error) {
       toast({
-        title: "发布失败",
+        title: t('dinner.publishFailed'),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "发布成功",
-        description: "您的饭局已成功发布",
+        title: t('dinner.publishSuccess'),
+        description: t('dinner.publishSuccessDesc'),
       });
       navigate("/discover");
     }
@@ -171,7 +173,7 @@ const CreateDinner = () => {
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-black rounded-t-lg">
             <CardTitle className="text-xl flex items-center gap-2 text-black">
               <Plus className="w-5 h-5" />
-              发布饭局
+              {t('dinner.create')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
@@ -179,12 +181,12 @@ const CreateDinner = () => {
               <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/30">
                 <div className="flex items-center gap-2 text-destructive font-semibold mb-2">
                   <AlertTriangle className="w-5 h-5" />
-                  无法发布饭局
+                  {t('dinner.cannotCreate')}
                 </div>
                 <p className="text-destructive text-sm">{restriction.restriction_reason}</p>
                 {restriction.restriction_end_date && (
                   <p className="text-destructive text-sm mt-1">
-                    限制将于 {new Date(restriction.restriction_end_date).toLocaleString("zh-CN")} 解除
+                    {t('dinner.restrictionEndTime', { time: new Date(restriction.restriction_end_date).toLocaleString("zh-CN") })}
                   </p>
                 )}
               </div>
@@ -195,7 +197,7 @@ const CreateDinner = () => {
               <div className="space-y-3">
                 <Label className="text-sm font-semibold flex items-center gap-2">
                   <Zap className="w-4 h-4 text-primary" />
-                  饭局模式 *
+                  {t('dinner.mode')} *
                 </Label>
                 <Select value={formData.dinner_mode} onValueChange={(value) => setFormData(prev => ({ ...prev, dinner_mode: value }))}>
                   <SelectTrigger className="border-2 focus:border-primary">
@@ -218,7 +220,7 @@ const CreateDinner = () => {
               <div className="space-y-3">
                 <Label className="text-sm font-semibold flex items-center gap-2">
                   <Clock className="w-4 h-4 text-primary" />
-                  紧急程度
+                  {t('dinner.urgencyLevel')}
                 </Label>
                 <Select value={formData.urgency_level} onValueChange={(value) => setFormData(prev => ({ ...prev, urgency_level: value }))}>
                   <SelectTrigger className="border-2 focus:border-primary">
@@ -241,7 +243,7 @@ const CreateDinner = () => {
               <div className="space-y-3">
                 <Label className="text-sm font-semibold flex items-center gap-2">
                   <Users2 className="w-4 h-4 text-primary" />
-                  性别偏好
+                  {t('dinner.genderPreference')}
                 </Label>
                 <Select value={formData.gender_preference} onValueChange={(value) => setFormData(prev => ({ ...prev, gender_preference: value }))}>
                   <SelectTrigger className="border-2 focus:border-primary">
@@ -261,31 +263,31 @@ const CreateDinner = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-sm font-semibold">饭局标题 *</Label>
+                <Label htmlFor="title" className="text-sm font-semibold">{t('dinner.title')} *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   required
-                  placeholder="给你的饭局起个名字"
+                  placeholder={t('dinner.titlePlaceholder')}
                   className="border-2 focus:border-primary transition-colors"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-semibold">饭局描述</Label>
+                <Label htmlFor="description" className="text-sm font-semibold">{t('dinner.description')}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="描述一下这次饭局的详情..."
+                  placeholder={t('dinner.descriptionPlaceholder')}
                   rows={4}
                   className="border-2 focus:border-primary transition-colors"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dinner_time" className="text-sm font-semibold">饭局时间 *</Label>
+                <Label htmlFor="dinner_time" className="text-sm font-semibold">{t('dinner.time')} *</Label>
                 <Input
                   id="dinner_time"
                   type="datetime-local"
@@ -297,14 +299,14 @@ const CreateDinner = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location" className="text-sm font-semibold">饭局地点 *</Label>
+                <Label htmlFor="location" className="text-sm font-semibold">{t('dinner.location')} *</Label>
                 <div className="flex gap-2">
                   <Input
                     id="location"
                     value={formData.location}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                     required
-                    placeholder="餐厅名称或具体地址"
+                    placeholder={t('dinner.locationPlaceholder')}
                     className="border-2 focus:border-primary transition-colors flex-1"
                   />
                   <Dialog open={showMapPicker} onOpenChange={setShowMapPicker}>
@@ -320,7 +322,7 @@ const CreateDinner = () => {
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
-                        <DialogTitle>选择饭局地点</DialogTitle>
+                        <DialogTitle>{t('dinner.selectLocation')}</DialogTitle>
                       </DialogHeader>
                       <MapLocationPicker 
                         onLocationSelect={handleLocationSelect}
@@ -332,7 +334,7 @@ const CreateDinner = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="max_participants" className="text-sm font-semibold">人数上限 *</Label>
+                <Label htmlFor="max_participants" className="text-sm font-semibold">{t('dinner.maxParticipants')} *</Label>
                 <Input
                   id="max_participants"
                   type="number"
@@ -346,36 +348,36 @@ const CreateDinner = () => {
               </div>
 
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">饮食偏好要求</Label>
+                <Label className="text-sm font-semibold">{t('dinner.foodPreferences')}</Label>
                 <MultiSelect
                   options={FOOD_PREFERENCES}
                   value={formData.food_preferences}
                   onChange={(value) => setFormData(prev => ({ ...prev, food_preferences: value }))}
-                  placeholder="选择饮食偏好..."
+                  placeholder={t('dinner.selectFoodPreferences')}
                   className="w-full border-2 focus:border-primary"
                 />
               </div>
 
               {/* 个性标签 */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">个性标签</Label>
+                <Label className="text-sm font-semibold">{t('dinner.personalityTags')}</Label>
                 <MultiSelect
                   options={PERSONALITY_TAGS}
                   value={formData.personality_tags}
                   onChange={(value) => setFormData(prev => ({ ...prev, personality_tags: value }))}
-                  placeholder="选择个性标签..."
+                  placeholder={t('dinner.selectPersonalityTags')}
                   className="w-full border-2 focus:border-primary"
                 />
               </div>
 
               {/* 饮食禁忌 */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">饮食禁忌</Label>
+                <Label className="text-sm font-semibold">{t('dinner.dietaryRestrictions')}</Label>
                 <MultiSelect
                   options={DIETARY_RESTRICTIONS}
                   value={formData.dietary_restrictions}
                   onChange={(value) => setFormData(prev => ({ ...prev, dietary_restrictions: value }))}
-                  placeholder="选择饮食禁忌..."
+                  placeholder={t('dinner.selectDietaryRestrictions')}
                   className="w-full border-2 focus:border-primary"
                 />
               </div>
@@ -386,7 +388,7 @@ const CreateDinner = () => {
                   checked={formData.friends_only}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, friends_only: checked }))}
                 />
-                <Label htmlFor="friends_only" className="text-sm font-medium cursor-pointer">只限熟人参与</Label>
+                <Label htmlFor="friends_only" className="text-sm font-medium cursor-pointer">{t('dinner.friendsOnly')}</Label>
               </div>
 
               <Button 
@@ -394,9 +396,9 @@ const CreateDinner = () => {
                 className="w-full h-12 text-lg font-semibold bg-accent text-black hover:bg-accent/90 hover:text-black transition-all duration-300 shadow-lg hover:shadow-xl" 
                 disabled={loading || (restriction && !restriction.can_create_dinner)}
               >
-                {loading ? "发布中..." : 
-                 (restriction && !restriction.can_create_dinner) ? "暂时无法发布" : 
-                 "🎉 发布饭局"}
+                {loading ? t('dinner.publishing') : 
+                 (restriction && !restriction.can_create_dinner) ? t('dinner.cannotCreateNow') : 
+                 `🎉 ${t('dinner.create')}`}
               </Button>
             </form>
           </CardContent>

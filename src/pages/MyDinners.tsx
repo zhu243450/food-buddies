@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ interface Dinner {
 }
 
 const MyDinners = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [joinedDinners, setJoinedDinners] = useState<Dinner[]>([]);
   const [createdDinners, setCreatedDinners] = useState<Dinner[]>([]);
@@ -203,10 +205,10 @@ const MyDinners = () => {
 
   const getModeLabel = (mode: string | undefined) => {
     switch (mode) {
-      case 'instant': return '闪约';
-      case 'scheduled': return '预约';
-      case 'group': return '团饭';
-      default: return '闪约';
+      case 'instant': return t('dinner.instant');
+      case 'scheduled': return t('dinner.scheduled');
+      case 'group': return t('dinner.group');
+      default: return t('dinner.instant');
     }
   };
 
@@ -408,8 +410,8 @@ const MyDinners = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">我的饭搭子</h1>
-          <div className="text-center">加载中...</div>
+          <h1 className="text-2xl font-bold mb-6">{t('nav.myDinners')}</h1>
+          <div className="text-center">{t('common.loading')}</div>
         </div>
       </div>
     );
@@ -422,7 +424,7 @@ const MyDinners = () => {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2 mb-2">
             <Heart className="w-8 h-8 text-primary" />
-            我的饭搭子
+            {t('nav.myDinners')}
           </h1>
           <p className="text-muted-foreground text-sm">
             {joinedDinners.length + createdDinners.length > 0 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
 const Discover = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [allDinners, setAllDinners] = useState<Dinner[]>([]);
   const [filteredDinners, setFilteredDinners] = useState<Dinner[]>([]);
@@ -300,10 +302,10 @@ const Discover = () => {
 
   const getModeLabel = (mode: string | undefined) => {
     switch (mode) {
-      case 'instant': return '闪约';
-      case 'scheduled': return '预约';
-      case 'group': return '团饭';
-      default: return '闪约';
+      case 'instant': return t('dinner.instant');
+      case 'scheduled': return t('dinner.scheduled');
+      case 'group': return t('dinner.group');
+      default: return t('dinner.instant');
     }
   };
 
@@ -322,8 +324,8 @@ const Discover = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">发现饭局</h1>
-          <div className="text-center">加载中...</div>
+          <h1 className="text-2xl font-bold mb-6">{t('nav.discover')}</h1>
+          <div className="text-center">{t('common.loading')}</div>
         </div>
       </div>
     );
@@ -336,7 +338,7 @@ const Discover = () => {
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2">
             <Search className="w-8 h-8 text-primary" />
-            发现饭局
+            {t('nav.discover')}
           </h1>
         </div>
 
@@ -352,7 +354,7 @@ const Discover = () => {
             className="bg-accent text-black hover:bg-accent/90 hover:text-black shadow-lg hover:shadow-xl transition-all duration-300 font-semibold border-2 border-accent/30"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            发布饭局
+            {t('dinner.create')}
           </Button>
         </div>
 
@@ -362,7 +364,7 @@ const Discover = () => {
               <Sparkles className="w-12 h-12 text-primary" />
             </div>
             <p className="text-muted-foreground text-lg mb-4">
-              {allDinners.length === 0 ? '暂无饭局，快来发布第一个吧！' : '没有符合筛选条件的饭局，试试调整筛选条件'}
+              {allDinners.length === 0 ? t('dinner.noDinners') : t('dinner.noFilterResults')}
             </p>
             <div className="flex gap-2 justify-center">
               {allDinners.length > 0 && (
@@ -382,7 +384,7 @@ const Discover = () => {
                   variant="outline"
                   className="font-semibold px-6 py-3 text-base"
                 >
-                  清除筛选
+                  {t('common.clear')}
                 </Button>
               )}
               <Button 
@@ -390,7 +392,7 @@ const Discover = () => {
                 className="bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold px-6 py-3 text-base shadow-lg"
                 size="default"
               >
-                立即发布
+                {t('dinner.publishNow')}
               </Button>
             </div>
           </div>
@@ -399,7 +401,7 @@ const Discover = () => {
             {getActiveFilterCount() > 0 && (
               <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm text-primary font-medium">
-                  已应用 {getActiveFilterCount()} 个筛选条件，找到 {filteredDinners.length} 个饭局
+                  {t('dinner.filtersApplied', { count: getActiveFilterCount(), found: filteredDinners.length })}
                 </p>
               </div>
             )}
@@ -425,13 +427,13 @@ const Discover = () => {
                       </Badge>
                       {dinner.urgency_level && dinner.urgency_level !== 'normal' && (
                         <Badge className={`text-xs ${getUrgencyColor(dinner.urgency_level)}`}>
-                          {dinner.urgency_level === 'urgent' ? '🚨 紧急' : '🌊 灵活'}
+                          {dinner.urgency_level === 'urgent' ? `🚨 ${t('dinner.urgent')}` : `🌊 ${t('dinner.flexible')}`}
                         </Badge>
                       )}
                     </div>
                     {isJoined && (
                       <Badge className="bg-primary text-black border-primary/30 text-xs font-bold">
-                        ✓ 已参与
+                        ✓ {t('dinner.joined')}
                       </Badge>
                     )}
                   </div>
@@ -460,7 +462,7 @@ const Discover = () => {
                     <span className="font-bold text-primary">{participantCount} / {dinner.max_participants} 人</span>
                     {participantCount >= dinner.max_participants && (
                       <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
-                        已满员
+                        {t('dinner.full')}
                       </Badge>
                     )}
                   </div>

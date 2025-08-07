@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,7 @@ interface MessageWithProfile extends ChatMessage {
 }
 
 const Chat = () => {
+  const { t } = useTranslation();
   const { sessionId } = useParams();
   const [user, setUser] = useState<User | null>(null);
   const [session, setChatSession] = useState<ChatSession | null>(null);
@@ -106,7 +108,7 @@ const Chat = () => {
 
       } catch (error: any) {
         toast({
-          title: "加载聊天失败",
+          title: t('chat.loadFailed'),
           description: error.message,
           variant: "destructive",
         });
@@ -189,7 +191,7 @@ const Chat = () => {
       setNewMessage("");
     } catch (error: any) {
       toast({
-        title: "发送失败",
+        title: t('chat.sendFailed'),
         description: error.message,
         variant: "destructive",
       });
@@ -217,7 +219,7 @@ const Chat = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <p className="text-muted-foreground">加载聊天中...</p>
+          <p className="text-muted-foreground">{t('chat.loading')}</p>
         </div>
       </div>
     );
@@ -229,10 +231,10 @@ const Chat = () => {
         <Card className="max-w-md w-full text-center">
           <CardContent className="p-6">
             <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-lg font-semibold mb-2">聊天不存在</h2>
-            <p className="text-muted-foreground mb-4">该聊天会话可能已过期或不存在</p>
+            <h2 className="text-lg font-semibold mb-2">{t('chat.notFound')}</h2>
+            <p className="text-muted-foreground mb-4">{t('chat.notFoundDesc')}</p>
             <Button onClick={() => navigate("/my-dinners")}>
-              返回首页
+              {t('common.back')}
             </Button>
           </CardContent>
         </Card>
@@ -265,7 +267,7 @@ const Chat = () => {
             <CardTitle className="text-base">{otherUser.nickname}</CardTitle>
             {isExpired && (
               <Badge variant="destructive" className="text-xs mt-1">
-                聊天已过期
+                {t('chat.expired')}
               </Badge>
             )}
           </div>
@@ -277,7 +279,7 @@ const Chat = () => {
         {messages.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>还没有消息，开始聊天吧！</p>
+            <p>{t('chat.noMessages')}</p>
           </div>
         ) : (
           messages.map((message) => {
@@ -314,7 +316,7 @@ const Chat = () => {
           {isExpired ? (
             <div className="text-center py-2">
               <Badge variant="destructive">
-                聊天时间已过期，无法发送消息
+                {t('chat.expiredCannotSend')}
               </Badge>
             </div>
           ) : (
@@ -323,7 +325,7 @@ const Chat = () => {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="输入消息..."
+                placeholder={t('chat.inputPlaceholder')}
                 className="flex-1"
                 disabled={sending}
               />
