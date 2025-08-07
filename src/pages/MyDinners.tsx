@@ -39,7 +39,7 @@ const MyDinners = () => {
       const { data: joinedData, error: joinedError } = await supabase
         .from("dinner_participants")
         .select(`
-          dinners!inner (
+          dinners!fk_dinner_participants_dinner_id (
             id,
             title,
             description,
