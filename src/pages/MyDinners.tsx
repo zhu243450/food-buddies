@@ -10,7 +10,26 @@ import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X } from "lucide-
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import type { User } from '@supabase/supabase-js';
-import type { Dinner } from '@/types/database';
+
+interface Dinner {
+  id: string;
+  created_by: string;
+  title: string;
+  description?: string;
+  dinner_time: string;
+  location: string;
+  max_participants: number;
+  food_preferences?: string[];
+  friends_only?: boolean;
+  dinner_mode?: string;
+  urgency_level?: string;
+  gender_preference?: string;
+  personality_tags?: string[];
+  dietary_restrictions?: string[];
+  created_at: string;
+  updated_at: string;
+  status?: string;
+}
 
 const MyDinners = () => {
   const [user, setUser] = useState<User | null>(null);
