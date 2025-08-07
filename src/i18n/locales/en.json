@@ -15,7 +15,8 @@
     "filter": "Filter",
     "clear": "Clear",
     "apply": "Apply",
-    "close": "Close"
+    "close": "Close",
+    "getStarted": "Get Started"
   },
   "nav": {
     "discover": "Discover",

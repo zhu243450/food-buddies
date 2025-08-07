@@ -54,7 +54,7 @@ const Auth = () => {
     
     if (!agreeToTerms) {
       toast({
-        title: "请同意服务条款",
+        title: t('auth.privacyAgreement'),
         description: "您需要同意隐私政策和服务条款才能注册",
         variant: "destructive",
       });
@@ -192,21 +192,21 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">饭搭子</CardTitle>
-          <CardDescription>找到你的完美饭搭子</CardDescription>
+          <CardTitle className="text-2xl">DineMate</CardTitle>
+          <CardDescription>{t('about.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">登录</TabsTrigger>
-              <TabsTrigger value="signup">注册</TabsTrigger>
+              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
             </TabsList>
             
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">邮箱</Label>
+                  <Label htmlFor="signin-email">{t('auth.email')}</Label>
                   <Input
                     id="signin-email"
                     type="email"
@@ -216,7 +216,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">密码</Label>
+                  <Label htmlFor="signin-password">{t('auth.password')}</Label>
                   <Input
                     id="signin-password"
                     type="password"
@@ -226,7 +226,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90 hover:text-black font-bold" disabled={loading}>
-                  {loading ? "登录中..." : "登录"}
+                  {loading ? `${t('auth.signIn')}...` : t('auth.signIn')}
                 </Button>
               </form>
             </TabsContent>
@@ -234,7 +234,7 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">邮箱</Label>
+                  <Label htmlFor="signup-email">{t('auth.email')}</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -244,7 +244,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">密码</Label>
+                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -278,7 +278,7 @@ const Auth = () => {
                   className="w-full bg-accent text-black hover:bg-accent/90 hover:text-black font-bold" 
                   disabled={loading || !agreeToTerms}
                 >
-                  {loading ? "注册中..." : "注册"}
+                  {loading ? `${t('auth.signUp')}...` : t('auth.signUp')}
                 </Button>
               </form>
             </TabsContent>

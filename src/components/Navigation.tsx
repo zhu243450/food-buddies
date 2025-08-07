@@ -11,7 +11,7 @@ const Navigation = () => {
   const navItems = [
     { icon: Home, label: t('nav.myDinners'), path: "/my-dinners" },
     { icon: Search, label: t('nav.discover'), path: "/discover" },
-    { icon: Plus, label: "发布", path: "/create-dinner", special: true },
+    { icon: Plus, label: t('dinner.create'), path: "/create-dinner", special: true },
     { icon: MessageCircle, label: t('nav.chat'), path: "/chat-list" },
     { icon: User, label: t('nav.profile'), path: "/profile" },
   ];
