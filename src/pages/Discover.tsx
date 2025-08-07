@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users, Search, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Users, Search, Sparkles, Zap, Clock, Users2, Filter } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
@@ -112,6 +112,33 @@ const Discover = () => {
       : description;
   };
 
+  const getModeIcon = (mode: string | undefined) => {
+    switch (mode) {
+      case 'instant': return '🔥';
+      case 'scheduled': return '📅';
+      case 'group': return '👥';
+      default: return '🔥';
+    }
+  };
+
+  const getModeLabel = (mode: string | undefined) => {
+    switch (mode) {
+      case 'instant': return '闪约';
+      case 'scheduled': return '预约';
+      case 'group': return '团饭';
+      default: return '闪约';
+    }
+  };
+
+  const getUrgencyColor = (urgency: string | undefined) => {
+    switch (urgency) {
+      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
+      case 'normal': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'flexible': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+  };
+
   if (!user) return null;
 
   if (loading) {
@@ -172,13 +199,25 @@ const Discover = () => {
                 onClick={() => navigate(`/dinner/${dinner.id}`)}
               >
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
+                        {getModeIcon(dinner.dinner_mode)} {getModeLabel(dinner.dinner_mode)}
+                      </Badge>
+                      {dinner.urgency_level && dinner.urgency_level !== 'normal' && (
+                        <Badge className={`text-xs ${getUrgencyColor(dinner.urgency_level)}`}>
+                          {dinner.urgency_level === 'urgent' ? '🚨 紧急' : '🌊 灵活'}
+                        </Badge>
+                      )}
+                    </div>
                     {isJoined && (
                       <Badge className="bg-primary text-black border-primary/30 text-xs font-bold">
                         ✓ 已参与
                       </Badge>
                     )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
                   </div>
                   <CardDescription className="text-muted-foreground">
                     {truncateDescription(dinner.description)}
@@ -219,6 +258,33 @@ const Discover = () => {
                         </Badge>
                       ))}
                     </div>
+                  )}
+
+                  {/* 新增个性标签和饮食禁忌显示 */}
+                  {dinner.personality_tags && dinner.personality_tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {dinner.personality_tags.slice(0, 3).map((tag) => (
+                        <Badge 
+                          key={tag} 
+                          variant="outline" 
+                          className="text-xs bg-accent/10 text-accent border-accent/30"
+                        >
+                          #{tag}
+                        </Badge>
+                      ))}
+                      {dinner.personality_tags.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{dinner.personality_tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
+                    <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
+                      <Users2 className="w-3 h-3 mr-1" />
+                      {dinner.gender_preference === 'same_gender' ? '同性优先' : '异性优先'}
+                    </Badge>
                   )}
 
                   {dinner.friends_only && (

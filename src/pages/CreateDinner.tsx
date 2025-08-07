@@ -8,12 +8,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Plus } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Zap, Clock, Users2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
 
 const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
+const DIETARY_RESTRICTIONS = ["不吃辣", "不吃肉", "不吃海鲜", "不吃牛肉", "不吃猪肉", "素食主义"];
+const PERSONALITY_TAGS = ["健谈", "内向", "活跃", "安静", "幽默", "认真", "随和", "爱聊天"];
+const DINNER_MODES = [
+  { value: "instant", label: "🔥 闪约模式", desc: "今天就想吃，有空的来" },
+  { value: "scheduled", label: "📅 预约模式", desc: "我这个周末有空，一起吃个饭？" },
+  { value: "group", label: "👥 团饭模式", desc: "3~5人拼饭，缓解一对一尴尬" }
+];
+const URGENCY_LEVELS = [
+  { value: "urgent", label: "🚨 紧急", desc: "马上就要吃" },
+  { value: "normal", label: "⏰ 正常", desc: "按时间进行" },
+  { value: "flexible", label: "🌊 灵活", desc: "时间可调整" }
+];
+const GENDER_PREFERENCES = [
+  { value: "no_preference", label: "不限", desc: "无性别偏好" },
+  { value: "same_gender", label: "同性优先", desc: "偏好同性饭友" },
+  { value: "opposite_gender", label: "异性优先", desc: "偏好异性饭友" }
+];
 
 const CreateDinner = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +46,11 @@ const CreateDinner = () => {
     max_participants: 2,
     food_preferences: [] as string[],
     friends_only: false,
+    dinner_mode: "instant",
+    urgency_level: "normal", 
+    gender_preference: "no_preference",
+    personality_tags: [] as string[],
+    dietary_restrictions: [] as string[],
   });
   
   const navigate = useNavigate();
@@ -50,6 +75,24 @@ const CreateDinner = () => {
       food_preferences: checked 
         ? [...prev.food_preferences, preference]
         : prev.food_preferences.filter(p => p !== preference)
+    }));
+  };
+
+  const handlePersonalityTagChange = (tag: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      personality_tags: checked 
+        ? [...prev.personality_tags, tag]
+        : prev.personality_tags.filter(t => t !== tag)
+    }));
+  };
+
+  const handleDietaryRestrictionChange = (restriction: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      dietary_restrictions: checked 
+        ? [...prev.dietary_restrictions, restriction]
+        : prev.dietary_restrictions.filter(r => r !== restriction)
     }));
   };
 
@@ -97,6 +140,75 @@ const CreateDinner = () => {
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 饭局模式选择 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  饭局模式 *
+                </Label>
+                <RadioGroup 
+                  value={formData.dinner_mode} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, dinner_mode: value }))}
+                  className="grid gap-3"
+                >
+                  {DINNER_MODES.map((mode) => (
+                    <div key={mode.value} className="flex items-center space-x-3 p-3 rounded-lg border border-border hover:bg-accent/10 transition-colors">
+                      <RadioGroupItem value={mode.value} id={mode.value} />
+                      <div className="flex-1">
+                        <Label htmlFor={mode.value} className="font-medium cursor-pointer">{mode.label}</Label>
+                        <p className="text-sm text-muted-foreground">{mode.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+
+              {/* 紧急程度 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  紧急程度
+                </Label>
+                <Select value={formData.urgency_level} onValueChange={(value) => setFormData(prev => ({ ...prev, urgency_level: value }))}>
+                  <SelectTrigger className="border-2 focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {URGENCY_LEVELS.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        <div>
+                          <div className="font-medium">{level.label}</div>
+                          <div className="text-sm text-muted-foreground">{level.desc}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 性别偏好 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Users2 className="w-4 h-4 text-primary" />
+                  性别偏好
+                </Label>
+                <Select value={formData.gender_preference} onValueChange={(value) => setFormData(prev => ({ ...prev, gender_preference: value }))}>
+                  <SelectTrigger className="border-2 focus:border-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GENDER_PREFERENCES.map((pref) => (
+                      <SelectItem key={pref.value} value={pref.value}>
+                        <div>
+                          <div className="font-medium">{pref.label}</div>
+                          <div className="text-sm text-muted-foreground">{pref.desc}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-sm font-semibold">饭局标题 *</Label>
                 <Input
@@ -170,6 +282,40 @@ const CreateDinner = () => {
                         onCheckedChange={(checked) => handleFoodPreferenceChange(preference, !!checked)}
                       />
                       <Label htmlFor={preference} className="text-sm cursor-pointer">{preference}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 个性标签 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">个性标签</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {PERSONALITY_TAGS.map((tag) => (
+                    <div key={tag} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
+                      <Checkbox
+                        id={`personality-${tag}`}
+                        checked={formData.personality_tags.includes(tag)}
+                        onCheckedChange={(checked) => handlePersonalityTagChange(tag, !!checked)}
+                      />
+                      <Label htmlFor={`personality-${tag}`} className="text-sm cursor-pointer">{tag}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 饮食禁忌 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">饮食禁忌</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {DIETARY_RESTRICTIONS.map((restriction) => (
+                    <div key={restriction} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-accent/20 transition-colors">
+                      <Checkbox
+                        id={`dietary-${restriction}`}
+                        checked={formData.dietary_restrictions.includes(restriction)}
+                        onCheckedChange={(checked) => handleDietaryRestrictionChange(restriction, !!checked)}
+                      />
+                      <Label htmlFor={`dietary-${restriction}`} className="text-sm cursor-pointer">{restriction}</Label>
                     </div>
                   ))}
                 </div>

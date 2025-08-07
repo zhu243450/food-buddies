@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Users, LogOut, Heart, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Users, LogOut, Heart, Sparkles, Users2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
@@ -48,6 +48,11 @@ const MyDinners = () => {
             max_participants,
             food_preferences,
             friends_only,
+            dinner_mode,
+            urgency_level,
+            gender_preference,
+            personality_tags,
+            dietary_restrictions,
             created_by,
             created_at,
             updated_at
@@ -141,6 +146,24 @@ const MyDinners = () => {
     });
   };
 
+  const getModeIcon = (mode: string | undefined) => {
+    switch (mode) {
+      case 'instant': return '🔥';
+      case 'scheduled': return '📅';
+      case 'group': return '👥';
+      default: return '🔥';
+    }
+  };
+
+  const getModeLabel = (mode: string | undefined) => {
+    switch (mode) {
+      case 'instant': return '闪约';
+      case 'scheduled': return '预约';
+      case 'group': return '团饭';
+      default: return '闪约';
+    }
+  };
+
   const DinnerCard = ({ dinner }: { dinner: Dinner }) => {
     const participantCount = participantCounts[dinner.id] || 0;
     const isCreatedByMe = dinner.created_by === user?.id;
@@ -151,13 +174,20 @@ const MyDinners = () => {
         onClick={() => navigate(`/dinner/${dinner.id}`)}
       >
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
+                {getModeIcon(dinner.dinner_mode)} {getModeLabel(dinner.dinner_mode)}
+              </Badge>
+            </div>
             {isCreatedByMe && participantCount > 0 && (
               <Badge className="bg-primary text-black border-primary/30 text-xs font-bold animate-pulse">
                 🔥 {participantCount}人已参与
               </Badge>
             )}
+          </div>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
           </div>
           {dinner.description && (
             <CardDescription className="text-muted-foreground">
@@ -204,6 +234,32 @@ const MyDinners = () => {
                 </Badge>
               ))}
             </div>
+          )}
+
+          {dinner.personality_tags && dinner.personality_tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {dinner.personality_tags.slice(0, 3).map((tag) => (
+                <Badge 
+                  key={tag} 
+                  variant="outline" 
+                  className="text-xs bg-accent/10 text-accent border-accent/30"
+                >
+                  #{tag}
+                </Badge>
+              ))}
+              {dinner.personality_tags.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{dinner.personality_tags.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
+            <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
+              <Users2 className="w-3 h-3 mr-1" />
+              {dinner.gender_preference === 'same_gender' ? '同性优先' : '异性优先'}
+            </Badge>
           )}
 
           {dinner.friends_only && (
