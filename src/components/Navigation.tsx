@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Home, Search, Plus, User, Sparkles } from "lucide-react";
+import { Home, Search, Plus, User, MessageCircle } from "lucide-react";
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const Navigation = () => {
     { icon: Home, label: "首页", path: "/my-dinners", emoji: "🏠" },
     { icon: Search, label: "发现", path: "/discover", emoji: "🔍" },
     { icon: Plus, label: "发布", path: "/create-dinner", emoji: "➕", special: true },
+    { icon: MessageCircle, label: "聊天", path: "/chat-list", emoji: "💬" },
     { icon: User, label: "我的", path: "/profile", emoji: "👤" },
   ];
 

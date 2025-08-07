@@ -11,6 +11,8 @@ import CreateDinner from "./pages/CreateDinner";
 import Discover from "./pages/Discover";
 import DinnerDetail from "./pages/DinnerDetail";
 import MyDinners from "./pages/MyDinners";
+import Chat from "./pages/Chat";
+import ChatList from "./pages/ChatList";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
           <Route path="/discover" element={<Discover />} />
           <Route path="/dinner/:id" element={<DinnerDetail />} />
           <Route path="/my-dinners" element={<MyDinners />} />
+          <Route path="/chat-list" element={<ChatList />} />
+          <Route path="/chat/:sessionId" element={<Chat />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

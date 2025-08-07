@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck } from "lucide-react";
+import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
@@ -352,11 +352,20 @@ const DinnerDetail = () => {
             )}
 
             {isParticipant && (
-              <div className="text-center p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-                <div className="flex items-center justify-center gap-2 text-green-700 font-semibold text-lg">
-                  <Heart className="w-5 h-5" />
-                  您已参与此饭局
+              <div className="space-y-3">
+                <div className="text-center p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+                  <div className="flex items-center justify-center gap-2 text-green-700 font-semibold text-lg">
+                    <Heart className="w-5 h-5" />
+                    您已参与此饭局
+                  </div>
                 </div>
+                <Button 
+                  onClick={() => navigate("/chat-list")}
+                  className="w-full bg-secondary text-black hover:bg-secondary/90 font-semibold"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  进入聊天
+                </Button>
               </div>
             )}
 

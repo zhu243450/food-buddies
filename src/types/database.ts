@@ -136,6 +136,67 @@ export interface Database {
           joined_at?: string;
         };
       };
+      chat_sessions: {
+        Row: {
+          id: string;
+          dinner_id: string;
+          participant1_id: string;
+          participant2_id: string;
+          status?: string;
+          can_chat_until?: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          dinner_id: string;
+          participant1_id: string;
+          participant2_id: string;
+          status?: string;
+          can_chat_until?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          dinner_id?: string;
+          participant1_id?: string;
+          participant2_id?: string;
+          status?: string;
+          can_chat_until?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          session_id: string;
+          sender_id: string;
+          message_type?: string;
+          content: string;
+          is_read?: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          sender_id: string;
+          message_type?: string;
+          content: string;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          sender_id?: string;
+          message_type?: string;
+          content?: string;
+          is_read?: boolean;
+          created_at?: string;
+        };
+      };
     };
   };
 }
@@ -143,3 +204,5 @@ export interface Database {
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Dinner = Database['public']['Tables']['dinners']['Row'];
 export type DinnerParticipant = Database['public']['Tables']['dinner_participants']['Row'];
+export type ChatSession = Database['public']['Tables']['chat_sessions']['Row'];
+export type ChatMessage = Database['public']['Tables']['chat_messages']['Row'];
