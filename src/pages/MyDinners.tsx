@@ -354,19 +354,18 @@ const MyDinners = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+        {/* 简洁的欢迎区域 */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2 mb-2">
             <Heart className="w-8 h-8 text-primary" />
             我的饭搭子
           </h1>
-          <div className="flex gap-2">
-            <Button onClick={() => navigate("/discover")} className="bg-primary text-black hover:bg-primary/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg border-2 border-accent">
-              发现饭局
-            </Button>
-            <Button onClick={() => navigate("/profile")} className="bg-accent text-black hover:bg-accent/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg border-2 border-accent">
-              完善资料
-            </Button>
-          </div>
+          <p className="text-muted-foreground text-sm">
+            {joinedDinners.length + createdDinners.length > 0 
+              ? `你参与了 ${joinedDinners.length} 个饭局，发布了 ${createdDinners.length} 个饭局`
+              : "开始你的美食社交之旅吧！"
+            }
+          </p>
         </div>
 
         <Tabs defaultValue="joined" className="w-full">
@@ -385,13 +384,14 @@ const MyDinners = () => {
                 <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
                   <Heart className="w-12 h-12 text-primary" />
                 </div>
-                <p className="text-muted-foreground text-lg mb-4">您还没有参与任何饭局</p>
+                <p className="text-muted-foreground text-lg mb-2">您还没有参与任何饭局</p>
+                <p className="text-sm text-muted-foreground mb-4">快去发现志趣相投的饭友吧！</p>
                 <Button 
                   onClick={() => navigate("/discover")}
-                  className="bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold px-6 py-3 text-base shadow-lg border-2 border-accent"
+                  className="bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold px-8 py-3 text-base shadow-lg rounded-full"
                   size="default"
                 >
-                  去发现饭局
+                  🔍 发现饭局
                 </Button>
               </div>
             ) : (
@@ -409,13 +409,14 @@ const MyDinners = () => {
                 <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
                   <Sparkles className="w-12 h-12 text-primary" />
                 </div>
-                <p className="text-muted-foreground text-lg mb-4">您还没有发布任何饭局</p>
+                <p className="text-muted-foreground text-lg mb-2">您还没有发布任何饭局</p>
+                <p className="text-sm text-muted-foreground mb-4">创建饭局，邀请大家一起享受美食时光！</p>
                 <Button 
                   onClick={() => navigate("/create-dinner")}
-                  className="bg-accent text-black hover:bg-accent/90 hover:text-black font-semibold px-6 py-3 text-base shadow-lg border-2 border-accent"
+                  className="bg-accent text-black hover:bg-accent/90 hover:text-black font-semibold px-8 py-3 text-base shadow-lg rounded-full"
                   size="default"
                 >
-                  发布饭局
+                  🍽️ 发布饭局
                 </Button>
               </div>
             ) : (
