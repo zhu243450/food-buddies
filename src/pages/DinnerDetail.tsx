@@ -66,42 +66,55 @@ const DinnerDetail = () => {
       // 获取参与者列表
       const { data: participantData, error: participantError } = await supabase
         .from("dinner_participants")
-        .select(`
-          *,
-          profiles (
-            nickname,
-            avatar_url
-          )
-        `)
+        .select("*")
         .eq("dinner_id", id);
-
-      // 获取发起人的资料
-      const { data: creatorProfile, error: creatorError } = await supabase
-        .from("profiles")
-        .select("nickname, avatar_url")
-        .eq("user_id", dinnerData.created_by)
-        .single();
 
       if (participantError) {
         console.error("Error fetching participants:", participantError);
+        setParticipants([]);
+        setIsParticipant(false);
       } else {
-        // 创建发起人的参与者对象
+        // 获取所有参与者的用户ID（包括发起人）
+        const allUserIds = new Set([dinnerData.created_by]);
+        participantData?.forEach(p => allUserIds.add(p.user_id));
+
+        // 批量获取所有用户的资料
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("user_id, nickname, avatar_url")
+          .in("user_id", Array.from(allUserIds));
+
+        // 创建用户资料映射
+        const profilesMap = new Map();
+        profilesData?.forEach(profile => {
+          profilesMap.set(profile.user_id, profile);
+        });
+
+        // 构建参与者列表
+        const participantsWithProfiles = [];
+        
+        // 添加发起人
+        const creatorProfile = profilesMap.get(dinnerData.created_by);
         const creatorParticipant = {
           id: `creator-${dinnerData.created_by}`,
           user_id: dinnerData.created_by,
           joined_at: dinnerData.created_at,
           profiles: creatorProfile || { nickname: "发起人", avatar_url: null }
         };
+        participantsWithProfiles.push(creatorParticipant);
 
-        // 检查发起人是否已经在参与者列表中
-        const isCreatorInParticipants = participantData?.some(p => p.user_id === dinnerData.created_by);
-        
-        // 如果发起人不在参与者列表中，则添加发起人
-        const allParticipants = isCreatorInParticipants 
-          ? participantData || []
-          : [creatorParticipant, ...(participantData || [])];
+        // 添加其他参与者（排除发起人重复）
+        participantData?.forEach(participant => {
+          if (participant.user_id !== dinnerData.created_by) {
+            const profile = profilesMap.get(participant.user_id);
+            participantsWithProfiles.push({
+              ...participant,
+              profiles: profile || { nickname: "匿名用户", avatar_url: null }
+            });
+          }
+        });
 
-        setParticipants(allParticipants);
+        setParticipants(participantsWithProfiles);
         setIsParticipant(participantData?.some(p => p.user_id === user.id) || false);
       }
 
@@ -146,35 +159,50 @@ const DinnerDetail = () => {
       // 重新获取参与者列表
       const { data } = await supabase
         .from("dinner_participants")
-        .select(`
-          *,
-          profiles (
-            nickname,
-            avatar_url
-          )
-        `)
+        .select("*")
         .eq("dinner_id", dinner.id);
       
-      // 获取发起人资料并更新参与者列表
-      const { data: creatorProfile } = await supabase
-        .from("profiles")
-        .select("nickname, avatar_url")
-        .eq("user_id", dinner.created_by)
-        .single();
+      // 获取所有参与者的用户ID（包括发起人）
+      const allUserIds = new Set([dinner.created_by]);
+      data?.forEach(p => allUserIds.add(p.user_id));
 
+      // 批量获取所有用户的资料
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("user_id, nickname, avatar_url")
+        .in("user_id", Array.from(allUserIds));
+
+      // 创建用户资料映射
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.user_id, profile);
+      });
+
+      // 构建参与者列表
+      const participantsWithProfiles = [];
+      
+      // 添加发起人
+      const creatorProfile = profilesMap.get(dinner.created_by);
       const creatorParticipant = {
         id: `creator-${dinner.created_by}`,
         user_id: dinner.created_by,
         joined_at: dinner.created_at,
         profiles: creatorProfile || { nickname: "发起人", avatar_url: null }
       };
+      participantsWithProfiles.push(creatorParticipant);
 
-      const isCreatorInParticipants = data?.some(p => p.user_id === dinner.created_by);
-      const allParticipants = isCreatorInParticipants 
-        ? data || []
-        : [creatorParticipant, ...(data || [])];
+      // 添加其他参与者（排除发起人重复）
+      data?.forEach(participant => {
+        if (participant.user_id !== dinner.created_by) {
+          const profile = profilesMap.get(participant.user_id);
+          participantsWithProfiles.push({
+            ...participant,
+            profiles: profile || { nickname: "匿名用户", avatar_url: null }
+          });
+        }
+      });
 
-      setParticipants(allParticipants);
+      setParticipants(participantsWithProfiles);
     }
 
     setJoining(false);
