@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
-import { User as UserIcon, Upload, Camera } from "lucide-react";
+import { User as UserIcon, Upload, Camera, Shield, LogOut } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
 
 const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
@@ -22,6 +22,7 @@ const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [formData, setFormData] = useState({
     nickname: "",
     gender: "",
@@ -61,6 +62,16 @@ const Profile = () => {
           accept_strangers: profile.accept_strangers || false,
           avatar_url: profile.avatar_url || "",
         });
+      }
+
+      // 检查是否是管理员
+      try {
+        const { data: roles } = await supabase.rpc('get_user_roles', { 
+          _user_id: user.id 
+        });
+        setIsAdmin(roles?.some((role: any) => role.role === 'admin') || false);
+      } catch (error) {
+        console.error('Failed to check admin role:', error);
       }
     };
 
@@ -151,6 +162,19 @@ const Profile = () => {
     }
     
     setLoading(false);
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "登出失败",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      navigate("/auth");
+    }
   };
 
   if (!user) return null;
@@ -315,6 +339,19 @@ const Profile = () => {
                 />
               </div>
 
+              {/* 管理员入口 */}
+              {isAdmin && (
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/admin')}
+                  className="w-full h-11 border-primary/30 text-primary hover:bg-primary/10 font-semibold rounded-lg"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  管理后台
+                </Button>
+              )}
+
               {/* 提交按钮 */}
               <Button 
                 type="submit" 
@@ -329,6 +366,17 @@ const Profile = () => {
                 ) : (
                   "保存资料"
                 )}
+              </Button>
+
+              {/* 登出按钮 */}
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={handleLogout}
+                className="w-full h-11 border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold rounded-lg"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                退出登录
               </Button>
             </form>
           </CardContent>

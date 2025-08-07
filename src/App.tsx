@@ -13,6 +13,7 @@ import DinnerDetail from "./pages/DinnerDetail";
 import MyDinners from "./pages/MyDinners";
 import Chat from "./pages/Chat";
 import ChatList from "./pages/ChatList";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/my-dinners" element={<MyDinners />} />
           <Route path="/chat-list" element={<ChatList />} />
           <Route path="/chat/:sessionId" element={<Chat />} />
+          <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
