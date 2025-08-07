@@ -11,9 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Zap, Clock, Users2 } from "lucide-react";
+import { Plus, Zap, Clock, Users2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
+import MapLocationPicker from "@/components/MapLocationPicker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import type { User } from '@supabase/supabase-js';
 
 const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
@@ -38,6 +40,7 @@ const GENDER_PREFERENCES = [
 const CreateDinner = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -124,6 +127,11 @@ const CreateDinner = () => {
     }
     
     setLoading(false);
+  };
+
+  const handleLocationSelect = (location: string, coordinates?: { lat: number; lng: number }) => {
+    setFormData(prev => ({ ...prev, location }));
+    setShowMapPicker(false);
   };
 
   if (!user) return null;
@@ -247,14 +255,37 @@ const CreateDinner = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="location" className="text-sm font-semibold">饭局地点 *</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                  required
-                  placeholder="餐厅名称或具体地址"
-                  className="border-2 focus:border-primary transition-colors"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    required
+                    placeholder="餐厅名称或具体地址"
+                    className="border-2 focus:border-primary transition-colors flex-1"
+                  />
+                  <Dialog open={showMapPicker} onOpenChange={setShowMapPicker}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="icon"
+                        className="shrink-0"
+                      >
+                        <MapPin className="w-4 h-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>选择饭局地点</DialogTitle>
+                      </DialogHeader>
+                      <MapLocationPicker 
+                        onLocationSelect={handleLocationSelect}
+                        initialLocation={formData.location}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
 
               <div className="space-y-2">
