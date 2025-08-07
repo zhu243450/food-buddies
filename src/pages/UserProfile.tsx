@@ -105,7 +105,7 @@ const UserProfile = () => {
                   {userProfile.nickname ? userProfile.nickname[0] : <User className="w-8 h-8" />}
                 </AvatarFallback>
               </Avatar>
-              <CardTitle className="text-2xl font-bold">{userProfile.nickname}</CardTitle>
+              <CardTitle className="text-2xl font-bold text-black">{userProfile.nickname}</CardTitle>
               {userProfile.gender && (
                 <Badge variant="secondary" className="bg-white/20 text-black border-none">
                   {userProfile.gender}
@@ -139,7 +139,7 @@ const UserProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Utensils className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-foreground">饮食偏好</h3>
+                  <h3 className="font-semibold text-black">饮食偏好</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.food_preferences.map((preference) => (
@@ -160,7 +160,7 @@ const UserProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-foreground">喜欢的用餐时间</h3>
+                  <h3 className="font-semibold text-black">喜欢的用餐时间</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.meal_times.map((mealTime) => (
@@ -178,7 +178,7 @@ const UserProfile = () => {
 
             {/* 加入时间 */}
             <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-black">
                 加入时间: {new Date(userProfile.created_at).toLocaleDateString("zh-CN")}
               </p>
             </div>

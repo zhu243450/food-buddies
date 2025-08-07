@@ -10,32 +10,32 @@ All colors MUST be HSL.
   :root {
     /* 年轻活泼的渐变配色系统 - TikTok/Instagram风格 */
     --background: 280 15% 97%;
-    --foreground: 230 50% 15%;
+    --foreground: 0 0% 0%; /* 黑色文字 */
 
     --card: 280 30% 98%;
-    --card-foreground: 230 50% 15%;
+    --card-foreground: 0 0% 0%; /* 黑色文字 */
 
     --popover: 280 30% 98%;
-    --popover-foreground: 230 50% 15%;
+    --popover-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 主色调：活力紫红渐变 */
     --primary: 315 85% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 次要色：明亮青蓝 */
     --secondary: 195 100% 85%;
-    --secondary-foreground: 230 50% 20%;
+    --secondary-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 静音色：浅紫灰 */
     --muted: 280 20% 92%;
-    --muted-foreground: 230 30% 45%;
+    --muted-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 强调色：霓虹橙 */
     --accent: 25 95% 65%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 0 0% 0%; /* 黑色文字 */
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 0%; /* 黑色文字 */
 
     --border: 280 20% 85%;
     --input: 280 20% 90%;
@@ -52,11 +52,11 @@ All colors MUST be HSL.
     --shadow-card: 0 10px 40px hsl(315, 85%, 60%, 0.1);
 
     --sidebar-background: 280 30% 98%;
-    --sidebar-foreground: 230 50% 25%;
+    --sidebar-foreground: 0 0% 0%; /* 黑色文字 */
     --sidebar-primary: 315 85% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%; /* 黑色文字 */
     --sidebar-accent: 280 20% 92%;
-    --sidebar-accent-foreground: 230 50% 25%;
+    --sidebar-accent-foreground: 0 0% 0%; /* 黑色文字 */
     --sidebar-border: 280 20% 85%;
     --sidebar-ring: 315 85% 60%;
   }
@@ -64,32 +64,32 @@ All colors MUST be HSL.
   .dark {
     /* 暗色模式：深紫+霓虹色年轻配色 */
     --background: 230 50% 6%;
-    --foreground: 280 15% 95%;
+    --foreground: 0 0% 0%; /* 黑色文字 */
 
     --card: 230 40% 10%;
-    --card-foreground: 280 15% 95%;
+    --card-foreground: 0 0% 0%; /* 黑色文字 */
 
     --popover: 230 40% 10%;
-    --popover-foreground: 280 15% 95%;
+    --popover-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 主色调：霓虹紫红 */
     --primary: 315 100% 70%;
-    --primary-foreground: 230 50% 6%;
+    --primary-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 次要色：深青蓝 */
     --secondary: 195 80% 25%;
-    --secondary-foreground: 315 100% 70%;
+    --secondary-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 静音色：深紫灰 */
     --muted: 230 30% 15%;
-    --muted-foreground: 280 15% 70%;
+    --muted-foreground: 0 0% 0%; /* 黑色文字 */
 
     /* 强调色：霓虹橙 */
     --accent: 25 100% 70%;
-    --accent-foreground: 230 50% 6%;
+    --accent-foreground: 0 0% 0%; /* 黑色文字 */
 
     --destructive: 0 100% 70%;
-    --destructive-foreground: 230 50% 6%;
+    --destructive-foreground: 0 0% 0%; /* 黑色文字 */
 
     --border: 230 30% 20%;
     --input: 230 30% 15%;
@@ -104,11 +104,11 @@ All colors MUST be HSL.
     --shadow-card: 0 10px 40px hsl(315, 100%, 70%, 0.2);
 
     --sidebar-background: 230 40% 8%;
-    --sidebar-foreground: 280 15% 90%;
+    --sidebar-foreground: 0 0% 0%; /* 黑色文字 */
     --sidebar-primary: 315 100% 70%;
-    --sidebar-primary-foreground: 230 50% 6%;
+    --sidebar-primary-foreground: 0 0% 0%; /* 黑色文字 */
     --sidebar-accent: 230 30% 15%;
-    --sidebar-accent-foreground: 280 15% 90%;
+    --sidebar-accent-foreground: 0 0% 0%; /* 黑色文字 */
     --sidebar-border: 230 30% 20%;
     --sidebar-ring: 315 100% 70%;
   }
