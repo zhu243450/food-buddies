@@ -224,7 +224,7 @@ const DinnerDetail = () => {
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-t-lg">
-            <CardTitle className="text-2xl">{dinner.title}</CardTitle>
+            <CardTitle className="text-2xl text-primary-foreground font-bold">{dinner.title}</CardTitle>
             {dinner.description && (
               <CardDescription className="text-primary-foreground/90 text-base">
                 {dinner.description}
