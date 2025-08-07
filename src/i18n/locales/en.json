@@ -41,7 +41,19 @@
     "privacyAgreement": "I have read and agree to the",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
-    "and": "and"
+    "and": "and",
+    "agreeToTermsRequired": "You need to agree to the Privacy Policy and Terms of Service to register",
+    "signUpFailed": "Sign Up Failed",
+    "userAlreadyRegistered": "This email is already registered, please sign in directly",
+    "signUpSuccess": "Sign Up Successful",
+    "checkEmailConfirmation": "Please check your email to confirm your account",
+    "signInFailed": "Sign In Failed",
+    "invalidCredentials": "Invalid email or password",
+    "signInSuccess": "Sign In Successful",
+    "redirecting": "Redirecting...",
+    "wechatLoginFailed": "WeChat Login Failed",
+    "qqLoginFailed": "QQ Login Failed",
+    "tryAgainLater": "Please try again later"
   },
   "dinner": {
     "title": "Dinner Title",

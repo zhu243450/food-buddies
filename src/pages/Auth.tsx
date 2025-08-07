@@ -57,7 +57,7 @@ const Auth = () => {
     if (!agreeToTerms) {
       toast({
         title: t('auth.privacyAgreement'),
-        description: "您需要同意隐私政策和服务条款才能注册",
+        description: t('auth.agreeToTermsRequired'),
         variant: "destructive",
       });
       return;
@@ -77,16 +77,16 @@ const Auth = () => {
 
     if (error) {
       toast({
-        title: "注册失败",
+        title: t('auth.signUpFailed'),
         description: error.message === "User already registered" 
-          ? "该邮箱已经注册，请直接登录" 
+          ? t('auth.userAlreadyRegistered')
           : error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "注册成功",
-        description: "请检查您的邮箱以确认账户",
+        title: t('auth.signUpSuccess'),
+        description: t('auth.checkEmailConfirmation'),
       });
     }
     
@@ -109,17 +109,17 @@ const Auth = () => {
     if (error) {
       console.error('登录错误:', error);
       toast({
-        title: "登录失败",
+        title: t('auth.signInFailed'),
         description: error.message === "Invalid login credentials" 
-          ? "邮箱或密码错误" 
+          ? t('auth.invalidCredentials')
           : error.message,
         variant: "destructive",
       });
     } else {
       console.log('登录成功，用户信息:', data.user);
       toast({
-        title: "登录成功",
-        description: "正在跳转...",
+        title: t('auth.signInSuccess'),
+        description: t('auth.redirecting'),
       });
     }
     
@@ -137,14 +137,14 @@ const Auth = () => {
 
       if (error) {
         toast({
-          title: "登录失败",
+          title: t('auth.signInFailed'),
           description: error.message,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "登录失败", 
+        title: t('auth.signInFailed'), 
         description: error.message,
         variant: "destructive",
       });
@@ -160,15 +160,15 @@ const Auth = () => {
 
       if (error) {
         toast({
-          title: "微信登录失败",
+          title: t('auth.wechatLoginFailed'),
           description: error.message,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "微信登录失败",
-        description: "请稍后重试",
+        title: t('auth.wechatLoginFailed'),
+        description: t('auth.tryAgainLater'),
         variant: "destructive",
       });
     }
@@ -183,15 +183,15 @@ const Auth = () => {
 
       if (error) {
         toast({
-          title: "QQ登录失败",
+          title: t('auth.qqLoginFailed'),
           description: error.message,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "QQ登录失败",
-        description: "请稍后重试",
+        title: t('auth.qqLoginFailed'),
+        description: t('auth.tryAgainLater'),
         variant: "destructive",
       });
     }
