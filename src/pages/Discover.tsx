@@ -59,7 +59,7 @@ const Discover = () => {
         setJoinedDinnerIds(joinedData?.map(item => item.dinner_id) || []);
       }
 
-      // Fetch participant counts for all dinners
+      // Fetch participant counts for all dinners (including creators)
       if (data && data.length > 0) {
         const dinnerIds = data.map(dinner => dinner.id);
         const { data: participantData, error: participantError } = await supabase
@@ -71,9 +71,17 @@ const Discover = () => {
           console.error("Error fetching participant counts:", participantError);
         } else {
           const counts: Record<string, number> = {};
-          participantData?.forEach(participant => {
-            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
+          
+          // First, add creator count for each dinner (creator always counts as 1 participant)
+          data.forEach(dinner => {
+            counts[dinner.id] = 1; // Creator counts as 1
           });
+          
+          // Then add other participants
+          participantData?.forEach(participant => {
+            counts[participant.dinner_id] = (counts[participant.dinner_id] || 1) + 1;
+          });
+          
           setParticipantCounts(counts);
         }
       }
