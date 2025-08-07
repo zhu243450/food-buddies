@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import Navigation from "@/components/Navigation";
 import { User as UserIcon, Upload, Camera, Shield, LogOut } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
@@ -19,6 +20,7 @@ const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西
 const MEAL_TIMES = ["早餐", "午饭", "晚饭", "夜宵"];
 
 const Profile = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -118,12 +120,12 @@ const Profile = () => {
       setFormData(prev => ({ ...prev, avatar_url: data.publicUrl }));
       
       toast({
-        title: "上传成功",
-        description: "头像已更新",
+        title: t('profile.uploadSuccess'),
+        description: t('profile.avatarUpdated'),
       });
     } catch (error: any) {
       toast({
-        title: "上传失败",
+        title: t('profile.uploadFailed'),
         description: error.message,
         variant: "destructive",
       });
@@ -149,14 +151,14 @@ const Profile = () => {
 
     if (error) {
       toast({
-        title: "保存失败",
+        title: t('profile.saveFailed'),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "保存成功",
-        description: "您的资料已更新",
+        title: t('profile.saveSuccess'),
+        description: t('profile.profileUpdated'),
       });
       navigate("/my-dinners");
     }
@@ -168,7 +170,7 @@ const Profile = () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
-        title: "登出失败",
+        title: t('profile.logoutFailed'),
         description: error.message,
         variant: "destructive",
       });
@@ -187,7 +189,7 @@ const Profile = () => {
           <CardHeader className="bg-primary text-black rounded-t-xl p-4">
             <CardTitle className="text-lg flex items-center gap-2 font-bold">
               <UserIcon className="w-5 h-5" />
-              个人资料
+              {t('profile.profile')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
@@ -221,7 +223,7 @@ const Profile = () => {
                     ) : (
                       <>
                         <Camera className="w-4 h-4" />
-                        更换头像
+                        {t('profile.changeAvatar')}
                       </>
                     )}
                   </Label>
@@ -231,34 +233,34 @@ const Profile = () => {
               {/* 基本信息 */}
               <div className="grid grid-cols-1 gap-3">
                 <div>
-                  <Label htmlFor="nickname" className="text-sm font-medium text-foreground mb-1 block">昵称 *</Label>
+                  <Label htmlFor="nickname" className="text-sm font-medium text-foreground mb-1 block">{t('profile.nickname')} *</Label>
                   <Input
                     id="nickname"
                     value={formData.nickname}
                     onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
                     required
                     className="h-10 border border-border/50 focus:border-primary rounded-lg"
-                    placeholder="请输入昵称"
+                    placeholder={t('profile.enterNickname')}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-sm font-medium text-foreground mb-1 block">性别</Label>
+                    <Label className="text-sm font-medium text-foreground mb-1 block">{t('profile.gender')}</Label>
                     <Select value={formData.gender} onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}>
                       <SelectTrigger className="h-10 border border-border/50 focus:border-primary rounded-lg">
-                        <SelectValue placeholder="选择性别" />
+                        <SelectValue placeholder={t('profile.selectGender')} />
                       </SelectTrigger>
                       <SelectContent className="bg-card border border-border/50 rounded-lg">
-                        <SelectItem value="男">男</SelectItem>
-                        <SelectItem value="女">女</SelectItem>
-                        <SelectItem value="其他">其他</SelectItem>
+                        <SelectItem value="男">{t('profile.male')}</SelectItem>
+                        <SelectItem value="女">{t('profile.female')}</SelectItem>
+                        <SelectItem value="其他">{t('profile.other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="birth_year" className="text-sm font-medium text-foreground mb-1 block">出生年份</Label>
+                    <Label htmlFor="birth_year" className="text-sm font-medium text-foreground mb-1 block">{t('profile.birthYear')}</Label>
                     <Input
                       id="birth_year"
                       type="number"
@@ -275,7 +277,7 @@ const Profile = () => {
 
               {/* 饮食偏好 */}
               <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">饮食偏好</Label>
+                <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.foodPreferences')}</Label>
                 <div className="grid grid-cols-3 gap-2">
                   {FOOD_PREFERENCES.map((preference) => (
                     <div 
@@ -300,7 +302,7 @@ const Profile = () => {
 
               {/* 喜欢的用餐时间 */}
               <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">喜欢的用餐时间</Label>
+                <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.mealTimes')}</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {MEAL_TIMES.map((mealTime) => (
                     <div 
@@ -330,8 +332,8 @@ const Profile = () => {
                   : 'bg-background border-border/30 hover:border-accent/50'
               }`}>
                 <div>
-                  <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">接受陌生人拼饭</Label>
-                  <p className="text-xs opacity-80">让更多人发现你</p>
+                  <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">{t('profile.acceptStrangers')}</Label>
+                  <p className="text-xs opacity-80">{t('profile.acceptStrangersDesc')}</p>
                 </div>
                 <Switch
                   id="accept_strangers"
@@ -349,7 +351,7 @@ const Profile = () => {
                   className="w-full h-11 border-primary/30 text-primary hover:bg-primary/10 font-semibold rounded-lg"
                 >
                   <Shield className="w-4 h-4 mr-2" />
-                  管理后台
+                  {t('profile.adminPanel')}
                 </Button>
               )}
 
@@ -362,10 +364,10 @@ const Profile = () => {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                    保存中...
+                    {t('profile.saving')}
                   </>
                 ) : (
-                  "保存资料"
+                  t('profile.saveProfile')
                 )}
               </Button>
 
@@ -377,7 +379,7 @@ const Profile = () => {
                 className="w-full h-11 border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold rounded-lg"
               >
                 <LogOut className="w-4 h-4 mr-2" />
-                退出登录
+                {t('profile.logout')}
               </Button>
 
             </form>

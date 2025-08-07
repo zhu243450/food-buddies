@@ -8,6 +8,7 @@ import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
+import { useTranslation } from "react-i18next";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -23,6 +24,7 @@ interface Participant {
 
 const DinnerDetail = () => {
   const { id } = useParams();
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [dinner, setDinner] = useState<Dinner | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -102,7 +104,7 @@ const DinnerDetail = () => {
           id: `creator-${dinnerData.created_by}`,
           user_id: dinnerData.created_by,
           joined_at: dinnerData.created_at,
-          profiles: creatorProfile || { nickname: "发起人", avatar_url: null }
+          profiles: creatorProfile || { nickname: t('dinnerDetail.creator'), avatar_url: null }
         };
         participantsWithProfiles.push(creatorParticipant);
 
@@ -112,7 +114,7 @@ const DinnerDetail = () => {
             const profile = profilesMap.get(participant.user_id);
             participantsWithProfiles.push({
               ...participant,
-              profiles: profile || { nickname: "匿名用户", avatar_url: null }
+              profiles: profile || { nickname: t('dinnerDetail.anonymous'), avatar_url: null }
             });
           }
         });
@@ -142,21 +144,21 @@ const DinnerDetail = () => {
     if (error) {
       if (error.code === "23505") { // Unique constraint violation
         toast({
-          title: "已经报名",
-          description: "您已经报名了这个饭局",
+          title: t('dinnerDetail.alreadyJoined'),
+          description: t('dinnerDetail.alreadyJoinedDesc'),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "报名失败",
+          title: t('dinnerDetail.joinFailed'),
           description: error.message,
           variant: "destructive",
         });
       }
     } else {
       toast({
-        title: "报名成功",
-        description: "您已成功加入这个饭局",
+        title: t('dinnerDetail.joinSuccess'),
+        description: t('dinnerDetail.joinSuccessDesc'),
       });
       setIsParticipant(true);
       // 重新获取参与者列表
@@ -190,7 +192,7 @@ const DinnerDetail = () => {
         id: `creator-${dinner.created_by}`,
         user_id: dinner.created_by,
         joined_at: dinner.created_at,
-        profiles: creatorProfile || { nickname: "发起人", avatar_url: null }
+        profiles: creatorProfile || { nickname: t('dinnerDetail.creator'), avatar_url: null }
       };
       participantsWithProfiles.push(creatorParticipant);
 
@@ -200,7 +202,7 @@ const DinnerDetail = () => {
           const profile = profilesMap.get(participant.user_id);
           participantsWithProfiles.push({
             ...participant,
-            profiles: profile || { nickname: "匿名用户", avatar_url: null }
+            profiles: profile || { nickname: t('dinnerDetail.anonymous'), avatar_url: null }
           });
         }
       });
@@ -228,7 +230,7 @@ const DinnerDetail = () => {
       const result = data[0];
       if (result.success) {
         toast({
-          title: dinner.created_by === user.id ? "饭局已取消" : "已退出饭局",
+          title: dinner.created_by === user.id ? t('dinnerDetail.cancelled') : t('dinnerDetail.left'),
           description: result.message,
           variant: result.is_late_cancellation ? "destructive" : "default",
         });
@@ -237,15 +239,15 @@ const DinnerDetail = () => {
         navigate("/my-dinners");
       } else {
         toast({
-          title: "操作失败",
+          title: t('dinnerDetail.operationFailed'),
           description: result.message,
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "操作失败",
-        description: error.message || "取消操作时发生错误",
+        title: t('dinnerDetail.operationFailed'),
+        description: error.message || t('dinnerDetail.cancelError'),
         variant: "destructive",
       });
     } finally {
@@ -272,9 +274,9 @@ const DinnerDetail = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto text-center">
-          <p>饭局不存在</p>
+          <p>{t('dinnerDetail.notFound')}</p>
           <Button onClick={() => navigate("/discover")} className="mt-4">
-            返回发现页
+            {t('dinnerDetail.backToDiscover')}
           </Button>
         </div>
       </div>
@@ -293,7 +295,7 @@ const DinnerDetail = () => {
           className="mb-4 hover:bg-accent/20 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          返回
+          {t('common.back')}
         </Button>
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
@@ -319,14 +321,14 @@ const DinnerDetail = () => {
               
               <div className="flex items-center gap-3 text-lg p-3 rounded-lg bg-primary/10">
                 <Users className="w-5 h-5 text-primary" />
-                <span className="font-bold text-primary">{participants.length} / {dinner.max_participants} 人</span>
-                {isFull && <Badge variant="secondary" className="bg-destructive/20 text-destructive border-destructive">已满员</Badge>}
+                <span className="font-bold text-primary">{participants.length} / {dinner.max_participants} {t('dinnerDetail.people')}</span>
+                {isFull && <Badge variant="secondary" className="bg-destructive/20 text-destructive border-destructive">{t('dinnerDetail.full')}</Badge>}
               </div>
             </div>
 
             {dinner.food_preferences && dinner.food_preferences.length > 0 && (
               <div className="p-4 rounded-lg bg-accent/10">
-                <h3 className="font-semibold mb-3 text-foreground">🍽️ 饮食偏好</h3>
+                <h3 className="font-semibold mb-3 text-foreground">🍽️ {t('dinnerDetail.foodPreferences')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {dinner.food_preferences.map((preference) => (
                     <Badge 
@@ -344,7 +346,7 @@ const DinnerDetail = () => {
             {dinner.friends_only && (
               <div className="p-3 rounded-lg bg-accent/10 border border-accent/30">
                 <Badge variant="outline" className="border-accent text-accent">
-                  🔒 仅限熟人参与
+                  🔒 {t('dinnerDetail.friendsOnly')}
                 </Badge>
               </div>
             )}
@@ -353,7 +355,7 @@ const DinnerDetail = () => {
             <div className="p-4 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5">
               <h3 className="font-semibold mb-3 text-foreground flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-primary" />
-                参与者
+                {t('dinnerDetail.participants')}
               </h3>
               <div className="space-y-3">
                 {participants.map((participant) => (
@@ -374,11 +376,11 @@ const DinnerDetail = () => {
                       </div>
                     )}
                     <span className="font-medium hover:text-primary transition-colors">
-                      {participant.profiles?.nickname || "匿名用户"}
+                      {participant.profiles?.nickname || t('dinnerDetail.anonymous')}
                     </span>
                     {participant.user_id === dinner.created_by && (
                       <Badge variant="default" className="text-xs bg-gradient-to-r from-primary to-accent">
-                        👑 发起人
+                        👑 {t('dinnerDetail.creator')}
                       </Badge>
                     )}
                   </div>
@@ -393,7 +395,7 @@ const DinnerDetail = () => {
                 className="w-full h-12 text-lg font-semibold bg-accent text-black hover:bg-accent/90 hover:text-black transition-all duration-300 shadow-lg hover:shadow-xl"
                 size="lg"
               >
-                {joining ? "加入中..." : "🎉 加入饭局"}
+                {joining ? t('dinnerDetail.joining') : `🎉 ${t('dinnerDetail.joinDinner')}`}
               </Button>
             )}
 
@@ -402,7 +404,7 @@ const DinnerDetail = () => {
                 <div className="text-center p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
                   <div className="flex items-center justify-center gap-2 text-green-700 font-semibold text-lg">
                     <Heart className="w-5 h-5" />
-                    您已参与此饭局
+                    {t('dinnerDetail.alreadyParticipating')}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -411,7 +413,7 @@ const DinnerDetail = () => {
                     className="bg-secondary text-black hover:bg-secondary/90 font-semibold"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
-                    进入聊天
+                    {t('dinnerDetail.enterChat')}
                   </Button>
                   <Button 
                     variant="outline"
@@ -419,7 +421,7 @@ const DinnerDetail = () => {
                     className="border-destructive text-destructive hover:bg-destructive hover:text-white"
                   >
                     <X className="w-4 h-4 mr-2" />
-                    退出饭局
+                    {t('dinnerDetail.leaveDinner')}
                   </Button>
                 </div>
               </div>
@@ -430,7 +432,7 @@ const DinnerDetail = () => {
                 <div className="text-center p-4 rounded-lg bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200">
                   <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold text-lg">
                     <UserCheck className="w-5 h-5" />
-                    这是您发起的饭局
+                    {t('dinnerDetail.yourDinner')}
                   </div>
                 </div>
                 <Button 
@@ -439,7 +441,7 @@ const DinnerDetail = () => {
                   className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  取消饭局
+                  {t('dinnerDetail.cancelDinner')}
                 </Button>
               </div>
             )}
