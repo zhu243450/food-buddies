@@ -1,11 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { MapPin, Search } from 'lucide-react';
+
+// 修复 Leaflet 默认图标问题
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 interface MapLocationPickerProps {
   onLocationSelect: (location: string, coordinates?: { lat: number; lng: number }) => void;
@@ -17,8 +25,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   initialLocation = "" 
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const marker = useRef<mapboxgl.Marker | null>(null);
+  const map = useRef<L.Map | null>(null);
+  const marker = useRef<L.Marker | null>(null);
   const [searchQuery, setSearchQuery] = useState(initialLocation);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -26,35 +34,30 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // 使用Mapbox的公开token (这里需要配置真实的token)
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGV4YW1wbGUifQ.example_token_here';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [116.4074, 39.9042], // 北京坐标
-      zoom: 12,
-    });
+    // 初始化 Leaflet 地图 (完全免费)
+    map.current = L.map(mapContainer.current).setView([39.9042, 116.4074], 12);
 
-    // 添加地图控件
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    // 添加 OpenStreetMap 瓦片层 (免费)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map.current);
 
     // 地图点击事件
     map.current.on('click', (e) => {
-      const { lng, lat } = e.lngLat;
-      addMarker(lng, lat);
+      const { lat, lng } = e.latlng;
+      addMarker(lat, lng);
       
       // 反向地理编码
-      reverseGeocode(lng, lat);
+      reverseGeocode(lat, lng);
     });
 
     // 获取用户当前位置
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { longitude, latitude } = position.coords;
-          map.current?.setCenter([longitude, latitude]);
-          addMarker(longitude, latitude);
+          const { latitude, longitude } = position.coords;
+          map.current?.setView([latitude, longitude], 15);
+          addMarker(latitude, longitude);
         },
         (error) => {
           console.log('位置获取失败:', error);
@@ -63,43 +66,41 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     }
 
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+      }
     };
   }, []);
 
-  const addMarker = (lng: number, lat: number) => {
+  const addMarker = (lat: number, lng: number) => {
     if (marker.current) {
-      marker.current.remove();
+      map.current?.removeLayer(marker.current);
     }
 
-    marker.current = new mapboxgl.Marker({
-      color: '#ff6b6b',
+    marker.current = L.marker([lat, lng], {
       draggable: true
-    })
-      .setLngLat([lng, lat])
-      .addTo(map.current!);
+    }).addTo(map.current!);
 
     // 标记拖拽事件
-    marker.current.on('dragend', () => {
-      const lngLat = marker.current!.getLngLat();
-      reverseGeocode(lngLat.lng, lngLat.lat);
+    marker.current.on('dragend', (e) => {
+      const { lat, lng } = e.target.getLatLng();
+      reverseGeocode(lat, lng);
     });
 
     setCoordinates({ lat, lng });
   };
 
-  const reverseGeocode = async (lng: number, lat: number) => {
+  const reverseGeocode = async (lat: number, lng: number) => {
     try {
-      // 使用Mapbox地理编码API
+      // 使用 Nominatim API (OpenStreetMap 免费地理编码服务)
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&language=zh`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=zh-CN,zh`
       );
       const data = await response.json();
       
-      if (data.features && data.features.length > 0) {
-        const placeName = data.features[0].place_name;
-        setSelectedLocation(placeName);
-        setSearchQuery(placeName);
+      if (data.display_name) {
+        setSelectedLocation(data.display_name);
+        setSearchQuery(data.display_name);
       }
     } catch (error) {
       console.error('反向地理编码失败:', error);
@@ -111,19 +112,19 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     if (!searchQuery.trim()) return;
 
     try {
-      // 使用Mapbox地理编码API搜索
+      // 使用 Nominatim API 搜索 (免费)
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxgl.accessToken}&country=CN&language=zh&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=cn&accept-language=zh-CN,zh&limit=1`
       );
       const data = await response.json();
       
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        const placeName = data.features[0].place_name;
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        const placeName = data[0].display_name;
         
-        map.current?.setCenter([lng, lat]);
-        map.current?.setZoom(15);
-        addMarker(lng, lat);
+        map.current?.setView([lat, lng], 15);
+        addMarker(lat, lng);
         
         setSelectedLocation(placeName);
         setSearchQuery(placeName);
