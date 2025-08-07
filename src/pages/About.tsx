@@ -115,24 +115,6 @@ export const About = () => {
             </CardContent>
           </Card>
 
-          {/* 备案信息 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('about.registration.title')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6 text-sm text-muted-foreground">
-                <div>
-                  <p>{t('about.registration.website')}</p>
-                  <p>{t('about.registration.culture')}</p>
-                </div>
-                <div>
-                  <p>{t('about.registration.telecom')}</p>
-                  <p>{t('about.registration.food')}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
