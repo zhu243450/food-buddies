@@ -48,18 +48,23 @@ const Discover = () => {
     const fetchDinners = async () => {
       if (!user) return;
 
-      // Fetch all dinners
+      // Fetch all active dinners (exclude cancelled ones)
       const { data, error } = await supabase
         .from("dinners")
         .select("*")
         .gt("dinner_time", new Date().toISOString())
+        .in("status", ["active", ""])  // Only show active dinners or those without status (legacy data)
         .order("dinner_time", { ascending: true });
 
       if (error) {
         console.error("Error fetching dinners:", error);
       } else {
-        setAllDinners(data || []);
-        setFilteredDinners(data || []);
+        // Additional filter to ensure we only show active dinners
+        const activeDinners = data?.filter(dinner => 
+          (dinner as any).status === 'active' || !(dinner as any).status
+        ) || [];
+        setAllDinners(activeDinners);
+        setFilteredDinners(activeDinners);
       }
 
       // Fetch joined dinner IDs
@@ -76,7 +81,11 @@ const Discover = () => {
 
       // Fetch participant counts for all dinners (including creators)
       if (data && data.length > 0) {
-        const dinnerIds = data.map(dinner => dinner.id);
+        // Filter active dinners for participant count calculation
+        const activeDinners = data?.filter(dinner => 
+          (dinner as any).status === 'active' || !(dinner as any).status
+        ) || [];
+        const dinnerIds = activeDinners.map(dinner => dinner.id);
         const { data: participantData, error: participantError } = await supabase
           .from("dinner_participants")
           .select("dinner_id")
@@ -87,8 +96,11 @@ const Discover = () => {
         } else {
           const counts: Record<string, number> = {};
           
-          // First, add creator count for each dinner (creator always counts as 1 participant)
-          data.forEach(dinner => {
+          // First, add creator count for each active dinner (creator always counts as 1 participant)
+          const activeDinners = data?.filter(dinner => 
+            (dinner as any).status === 'active' || !(dinner as any).status
+          ) || [];
+          activeDinners.forEach(dinner => {
             counts[dinner.id] = 1; // Creator counts as 1
           });
           
@@ -106,6 +118,27 @@ const Discover = () => {
 
     if (user) {
       fetchDinners();
+      
+      // 设置实时监听饭局状态变化
+      const channel = supabase
+        .channel('dinners-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'dinners'
+          },
+          () => {
+            // 当饭局状态发生变化时重新获取数据
+            fetchDinners();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 
