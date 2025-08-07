@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Filter, MapPin, Clock, Users2, Utensils, X, RotateCcw } from "lucide-react";
+import { Filter, MapPin, Clock, Users2, Utensils, X, RotateCcw, Navigation } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export interface DinnerFilters {
   genderPreference: string;
@@ -44,6 +45,8 @@ const URGENCY_LEVELS = [
 
 export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterCount }: DinnerFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const { toast } = useToast();
 
   const handleFilterChange = (key: keyof DinnerFilters, value: any) => {
     onFiltersChange({
@@ -62,6 +65,86 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
       ...filters,
       [key]: newArray
     });
+  };
+
+  // 获取用户当前位置
+  const getCurrentLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "不支持定位",
+        description: "您的浏览器不支持地理位置服务",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          // 使用 Nominatim API 进行反向地理编码
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh`
+          );
+          const data = await response.json();
+          
+          if (data.display_name) {
+            // 提取更简洁的地址信息
+            const addressParts = data.display_name.split(',');
+            const location = addressParts.slice(0, 3).join(',').trim();
+            
+            handleFilterChange("location", location);
+            toast({
+              title: "定位成功",
+              description: `当前位置：${location}`,
+            });
+          } else {
+            throw new Error("无法获取位置信息");
+          }
+        } catch (error) {
+          console.error('反向地理编码失败:', error);
+          handleFilterChange("location", `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          toast({
+            title: "定位成功",
+            description: "已获取坐标位置",
+          });
+        }
+        
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('定位失败:', error);
+        let errorMessage = "定位失败";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "用户拒绝了位置访问请求";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "位置信息不可用";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "定位请求超时";
+            break;
+        }
+        
+        toast({
+          title: "定位失败",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5分钟缓存
+      }
+    );
   };
 
   const resetFilters = () => {
@@ -206,13 +289,25 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="location" className="text-sm font-medium">位置关键词</Label>
-                <Input
-                  id="location"
-                  value={filters.location}
-                  onChange={(e) => handleFilterChange("location", e.target.value)}
-                  placeholder="输入地区、商圈或地标"
-                  className="mt-1"
-                />
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="location"
+                    value={filters.location}
+                    onChange={(e) => handleFilterChange("location", e.target.value)}
+                    placeholder="输入地区、商圈或地标"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={getCurrentLocation}
+                    disabled={isLocating}
+                    className="shrink-0"
+                    title="获取当前位置"
+                  >
+                    <Navigation className={`w-4 h-4 ${isLocating ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </div>
               
               <div>
