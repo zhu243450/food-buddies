@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Users, LogOut, Heart, Sparkles, Users2, X } from "lucide-react";
+import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import type { User } from '@supabase/supabase-js';
@@ -139,10 +139,6 @@ const MyDinners = () => {
     };
   }, [user]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -369,9 +365,6 @@ const MyDinners = () => {
             </Button>
             <Button onClick={() => navigate("/profile")} className="bg-accent text-black hover:bg-accent/90 hover:text-black font-bold text-base px-6 py-3 shadow-lg border-2 border-accent">
               完善资料
-            </Button>
-            <Button onClick={handleSignOut} variant="ghost" size="icon" className="text-destructive bg-destructive/10 hover:text-black hover:bg-destructive border-2 border-accent">
-              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
