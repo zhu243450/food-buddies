@@ -57,7 +57,7 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "justify-between text-left font-normal h-auto min-h-[40px] px-3 py-2",
+            "w-full justify-between text-left font-normal min-h-[44px] px-3 py-2",
             !value.length && "text-muted-foreground",
             className
           )}

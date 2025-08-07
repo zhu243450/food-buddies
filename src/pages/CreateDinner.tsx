@@ -352,7 +352,7 @@ const CreateDinner = () => {
                   value={formData.food_preferences}
                   onChange={(value) => setFormData(prev => ({ ...prev, food_preferences: value }))}
                   placeholder="选择饮食偏好..."
-                  className="border-2 focus:border-primary"
+                  className="w-full border-2 focus:border-primary"
                 />
               </div>
 
@@ -364,7 +364,7 @@ const CreateDinner = () => {
                   value={formData.personality_tags}
                   onChange={(value) => setFormData(prev => ({ ...prev, personality_tags: value }))}
                   placeholder="选择个性标签..."
-                  className="border-2 focus:border-primary"
+                  className="w-full border-2 focus:border-primary"
                 />
               </div>
 
@@ -376,7 +376,7 @@ const CreateDinner = () => {
                   value={formData.dietary_restrictions}
                   onChange={(value) => setFormData(prev => ({ ...prev, dietary_restrictions: value }))}
                   placeholder="选择饮食禁忌..."
-                  className="border-2 focus:border-primary"
+                  className="w-full border-2 focus:border-primary"
                 />
               </div>
 
