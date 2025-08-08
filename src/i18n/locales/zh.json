@@ -82,6 +82,7 @@
     "noFilterResults": "没有符合筛选条件的饭局，试试调整筛选条件",
     "publishNow": "立即发布",
     "filtersApplied": "已应用 {{count}} 个筛选条件，找到 {{found}} 个饭局",
+    "expired": "该饭局已经完成或过了参加时间",
     "urgent": "紧急",
     "flexible": "灵活",
     "joined": "已参与",

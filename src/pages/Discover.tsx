@@ -284,6 +284,10 @@ const Discover = () => {
     });
   };
 
+  const isExpired = (dateString: string) => {
+    return new Date(dateString) < new Date();
+  };
+
   const truncateDescription = (description: string, maxLength: number = 50) => {
     if (!description) return "";
     return description.length > maxLength 
@@ -409,15 +413,26 @@ const Discover = () => {
               {filteredDinners.map((dinner) => {
               const isJoined = joinedDinnerIds.includes(dinner.id);
               const participantCount = participantCounts[dinner.id] || 0;
+              const expired = isExpired(dinner.dinner_time);
               return (
               <Card 
                 key={dinner.id} 
                 className={`cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg relative ${
-                  isJoined 
-                    ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/30' 
-                    : 'bg-gradient-to-br from-card to-accent/5'
+                  expired 
+                    ? 'opacity-50 bg-muted/50 border-2 border-muted'
+                    : isJoined 
+                      ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-primary/30' 
+                      : 'bg-gradient-to-br from-card to-accent/5'
                 }`}
-                onClick={() => navigate(`/dinner/${dinner.id}`)}
+                onClick={() => {
+                  if (expired) {
+                    // 显示提示
+                    const message = t('dinner.expired');
+                    alert(message);
+                    return;
+                  }
+                  navigate(`/dinner/${dinner.id}`);
+                }}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
