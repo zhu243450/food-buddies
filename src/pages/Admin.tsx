@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Dinner } from "@/types/database";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog } from "lucide-react";
+import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
@@ -59,6 +60,14 @@ const Admin = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // 饭局管理相关状态
+  const [dinners, setDinners] = useState<Dinner[]>([]);
+  const [dinnersLoading, setDinnersLoading] = useState(false);
+  const [dinnerSearch, setDinnerSearch] = useState("");
+  const [dinnerStatus, setDinnerStatus] = useState<string>("all");
+  const [creatorMap, setCreatorMap] = useState<Record<string, Profile>>({});
+  const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
+
   useEffect(() => {
     checkAdminAccess();
   }, []);
@@ -89,8 +98,8 @@ const Admin = () => {
       setIsAdmin(true);
       setCurrentUser(user);
       setUserRoles(roles || []);
-      await loadStats();
-      await loadUsers();
+      await Promise.all([loadStats(), loadUsers()]);
+      await loadDinners();
     } catch (error) {
       console.error('Admin access check failed:', error);
       toast.error('权限检查失败');
@@ -146,6 +155,49 @@ const Admin = () => {
     }
   };
 
+  const loadDinners = async () => {
+    setDinnersLoading(true);
+    try {
+      const { data: dinnersData, error } = await supabase
+        .from('dinners')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setDinners(dinnersData || []);
+
+      const creatorIds = Array.from(new Set((dinnersData || []).map((d: any) => d.created_by)));
+      const dinnerIds = (dinnersData || []).map((d: any) => d.id);
+
+      const [profilesRes, partsRes] = await Promise.all([
+        creatorIds.length
+          ? supabase.from('profiles').select('user_id,nickname,avatar_url').in('user_id', creatorIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        dinnerIds.length
+          ? supabase.from('dinner_participants').select('dinner_id,user_id').in('dinner_id', dinnerIds)
+          : Promise.resolve({ data: [], error: null } as any),
+      ]);
+
+      if ((profilesRes as any).error) throw (profilesRes as any).error;
+      if ((partsRes as any).error) throw (partsRes as any).error;
+
+      const cMap: Record<string, Profile> = {};
+      ((profilesRes as any).data || []).forEach((p: any) => {
+        cMap[p.user_id] = p as Profile;
+      });
+      setCreatorMap(cMap);
+
+      const counts: Record<string, number> = {};
+      ((partsRes as any).data || []).forEach((row: any) => {
+        counts[row.dinner_id] = (counts[row.dinner_id] || 0) + 1;
+      });
+      setParticipantCounts(counts);
+    } catch (error) {
+      console.error('Failed to load dinners:', error);
+      toast.error('加载饭局列表失败');
+    } finally {
+      setDinnersLoading(false);
+    }
+  };
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       // 获取当前用户的角色
@@ -192,15 +244,26 @@ const Admin = () => {
       return 'user';
     }
   };
-
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.nickname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.user_id.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = user.nickname.toLowerCase().includes(term) ||
+                          user.user_id.toLowerCase().includes(term);
     if (roleFilter === 'all') return matchesSearch;
-    
-    // 这里需要异步检查角色，但为了简化，我们暂时显示所有用户
+    // 简化：角色过滤在界面展示时处理
     return matchesSearch;
+  });
+
+  const filteredDinners = dinners.filter((d) => {
+    const keyword = dinnerSearch.trim().toLowerCase();
+    const creatorName = creatorMap[d.created_by]?.nickname?.toLowerCase() || '';
+    const matchesSearch =
+      !keyword ||
+      d.title.toLowerCase().includes(keyword) ||
+      (d.location || '').toLowerCase().includes(keyword) ||
+      creatorName.includes(keyword);
+    const statusValue = (d as any).status || 'active';
+    const statusOk = dinnerStatus === 'all' || statusValue === dinnerStatus;
+    return matchesSearch && statusOk;
   });
 
   if (loading) {
@@ -244,8 +307,9 @@ const Admin = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 pb-20">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">数据概览</TabsTrigger>
+            <TabsTrigger value="dinners">饭局管理</TabsTrigger>
             <TabsTrigger value="users">用户管理</TabsTrigger>
             <TabsTrigger value="management">系统管理</TabsTrigger>
           </TabsList>
@@ -374,6 +438,148 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="dinners" className="space-y-6">
+            <Card className="border-border/40 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  饭局管理
+                </CardTitle>
+                <CardDescription>查看并管理平台上的饭局</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="搜索标题/地点/创建者..."
+                      value={dinnerSearch}
+                      onChange={(e) => setDinnerSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={dinnerStatus} onValueChange={setDinnerStatus}>
+                    <SelectTrigger className="w-full sm:w-40">
+                      <SelectValue placeholder="按状态筛选" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部状态</SelectItem>
+                      <SelectItem value="active">进行中</SelectItem>
+                      <SelectItem value="completed">已完成</SelectItem>
+                      <SelectItem value="cancelled">已取消</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    onClick={loadDinners}
+                    variant="outline"
+                    disabled={dinnersLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    {dinnersLoading ? "加载中..." : "刷新"}
+                  </Button>
+                </div>
+
+                {/* 状态统计 */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {(() => {
+                    const counts = dinners.reduce((acc: Record<string, number>, d) => {
+                      const s = (d as any).status || 'active';
+                      acc[s] = (acc[s] || 0) + 1;
+                      return acc;
+                    }, {});
+                    const total = dinners.length;
+                    return (
+                      <>
+                        <div className="text-center space-y-1">
+                          <p className="text-2xl font-bold text-primary">{total}</p>
+                          <p className="text-sm text-muted-foreground">总饭局</p>
+                        </div>
+                        <div className="text-center space-y-1">
+                          <p className="text-2xl font-bold text-accent">{counts['active'] || 0}</p>
+                          <p className="text-sm text-muted-foreground">进行中</p>
+                        </div>
+                        <div className="text-center space-y-1">
+                          <p className="text-2xl font-bold text-secondary">{counts['completed'] || 0}</p>
+                          <p className="text-sm text-muted-foreground">已完成</p>
+                        </div>
+                        <div className="text-center space-y-1">
+                          <p className="text-2xl font-bold text-destructive">{counts['cancelled'] || 0}</p>
+                          <p className="text-sm text-muted-foreground">已取消</p>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* 饭局表格 */}
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead>标题</TableHead>
+                        <TableHead className="hidden md:table-cell">创建者</TableHead>
+                        <TableHead>时间</TableHead>
+                        <TableHead className="hidden md:table-cell">地点</TableHead>
+                        <TableHead className="hidden sm:table-cell">人数</TableHead>
+                        <TableHead className="hidden sm:table-cell">状态</TableHead>
+                        <TableHead className="w-24">操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dinnersLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                            <p className="text-muted-foreground mt-2">加载中...</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredDinners.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">暂无饭局数据</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredDinners.map((d) => {
+                          const count = participantCounts[d.id] || 0;
+                          const statusValue = (d as any).status || 'active';
+                          const creatorName = creatorMap[d.created_by]?.nickname || '—';
+                          return (
+                            <TableRow key={d.id} className="hover:bg-muted/50">
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{d.title}</span>
+                                  <span className="text-xs text-muted-foreground truncate md:hidden">{(d.location || '').slice(0, 18)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">{creatorName}</TableCell>
+                              <TableCell>
+                                {new Date(d.dinner_time).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">{d.location}</TableCell>
+                              <TableCell className="hidden sm:table-cell">{count} / {d.max_participants}</TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <Badge variant="secondary">
+                                  {statusValue === 'active' ? '进行中' : statusValue === 'completed' ? '已完成' : statusValue === 'cancelled' ? '已取消' : statusValue}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Button size="sm" variant="outline" onClick={() => navigate(`/dinner/${d.id}`)}>
+                                  <Eye className="w-4 h-4 mr-1" /> 查看详情
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
 
           <TabsContent value="users" className="space-y-6">
             {/* 搜索和筛选 */}
