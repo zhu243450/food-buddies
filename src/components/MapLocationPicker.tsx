@@ -45,11 +45,19 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
     
-    if (value.trim().length > 0) {
-      const filtered = PRESET_LOCATIONS.filter(location =>
+    if (value.trim().length > 1) {
+      // 先显示预设城市的匹配结果
+      const presetMatches = PRESET_LOCATIONS.filter(location =>
         location.name.toLowerCase().includes(value.toLowerCase())
       );
-      setSuggestions(filtered.slice(0, 5));
+      setSuggestions(presetMatches.slice(0, 3));
+
+      // 延迟搜索在线地址
+      const timeoutId = setTimeout(() => {
+        searchLocation(value);
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     } else {
       setSuggestions([]);
     }
@@ -66,6 +74,48 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       title: "位置已选择",
       description: `已选择：${location.name}`,
     });
+  };
+
+  // 搜索地址
+  const searchLocation = async (query: string) => {
+    if (!query.trim() || query.length < 2) return;
+
+    try {
+      // 使用高德地图API进行地理编码搜索
+      const response = await fetch(
+        `https://restapi.amap.com/v3/geocode/geo?address=${encodeURIComponent(query)}&output=json&key=your_gaode_key`
+      );
+      
+      if (!response.ok) {
+        // 回退到 Nominatim API
+        const nominatimResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=zh-CN,zh&limit=5&countrycodes=cn`
+        );
+        const nominatimData = await nominatimResponse.json();
+        
+        const searchResults = nominatimData.map((item: any) => ({
+          name: item.display_name,
+          coords: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) }
+        }));
+        
+        setSuggestions(searchResults.slice(0, 5));
+        return;
+      }
+
+      const data = await response.json();
+      if (data.geocodes && data.geocodes.length > 0) {
+        const searchResults = data.geocodes.map((item: any) => {
+          const [lng, lat] = item.location.split(',');
+          return {
+            name: item.formatted_address || item.district + item.township,
+            coords: { lat: parseFloat(lat), lng: parseFloat(lng) }
+          };
+        });
+        setSuggestions(searchResults.slice(0, 5));
+      }
+    } catch (error) {
+      console.error('搜索地址失败:', error);
+    }
   };
 
   // 获取用户当前位置
@@ -86,17 +136,55 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         const { latitude, longitude } = position.coords;
         
         try {
-          // 使用 OpenStreetMap Nominatim 进行反向地理编码，获取更精确的地址
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh`
-          );
-          const data = await response.json();
-
+          // 首先尝试使用高德地图逆地理编码
           let locationText = '';
-          if (data.display_name) {
-            const parts = String(data.display_name).split(',');
-            locationText = parts.slice(0, 3).join(',').trim();
-          } else {
+          try {
+            const gaodeResponse = await fetch(
+              `https://restapi.amap.com/v3/geocode/regeo?location=${longitude},${latitude}&output=json&key=your_gaode_key&radius=1000&extensions=all`
+            );
+            
+            if (gaodeResponse.ok) {
+              const gaodeData = await gaodeResponse.json();
+              if (gaodeData.status === "1" && gaodeData.regeocode) {
+                const addr = gaodeData.regeocode.formatted_address;
+                locationText = addr;
+              }
+            }
+          } catch (e) {
+            console.log('高德API不可用，使用备选方案');
+          }
+
+          // 如果高德失败，使用 Nominatim
+          if (!locationText) {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh&zoom=16&addressdetails=1`
+            );
+            const data = await response.json();
+
+            if (data.display_name) {
+              // 提取更有用的地址信息
+              const address = data.address || {};
+              const parts = [];
+              
+              if (address.city || address.county) {
+                parts.push(address.city || address.county);
+              }
+              if (address.suburb || address.neighbourhood) {
+                parts.push(address.suburb || address.neighbourhood);
+              }
+              if (address.road) {
+                parts.push(address.road);
+              }
+              if (address.house_number) {
+                parts.push(address.house_number);
+              }
+
+              locationText = parts.length > 0 ? parts.join(' ') : data.display_name.split(',').slice(0, 3).join(',');
+            }
+          }
+
+          // 如果仍然没有获取到地址，使用坐标
+          if (!locationText) {
             locationText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
           }
 
@@ -109,13 +197,14 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
             description: `当前位置：${locationText}`,
           });
         } catch (e) {
+          console.error('地址解析失败:', e);
           const locationText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
           setSearchQuery(locationText);
           setSelectedLocation(locationText);
           setCoordinates({ lat: latitude, lng: longitude });
           toast({
             title: "定位成功",
-            description: "已获取经纬度坐标",
+            description: "已获取GPS坐标",
           });
         }
 
@@ -127,13 +216,13 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = "用户拒绝了位置访问请求";
+            errorMessage = "请允许位置访问权限";
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = "位置信息不可用";
+            errorMessage = "位置服务不可用，请检查GPS设置";
             break;
           case error.TIMEOUT:
-            errorMessage = "定位请求超时";
+            errorMessage = "定位超时，请重试";
             break;
         }
         
@@ -147,8 +236,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
+        timeout: 15000,
+        maximumAge: 60000
       }
     );
   };
@@ -191,14 +280,19 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         {/* 搜索框 */}
         <div className="space-y-2">
           <Label htmlFor="search">位置搜索</Label>
-          <div className="flex gap-2">
+            <div className="flex gap-2">
             <div className="flex-1 relative">
               <Input
                 id="search"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="输入城市名称或地址"
+                placeholder="点击定位按钮获取当前位置，或输入地址搜索"
                 className="pr-8"
+                onClick={() => {
+                  if (!searchQuery) {
+                    getCurrentLocation();
+                  }
+                }}
               />
               {searchQuery && (
                 <Button
@@ -217,6 +311,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
               onClick={getCurrentLocation}
               disabled={isLocating}
               title="获取当前位置"
+              className="shrink-0"
             >
               <Navigation className={`w-4 h-4 ${isLocating ? 'animate-spin' : ''}`} />
             </Button>
