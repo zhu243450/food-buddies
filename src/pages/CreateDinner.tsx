@@ -164,6 +164,72 @@ const CreateDinner = () => {
     setShowMapPicker(false);
   };
 
+  // 点击位置输入框时，自动定位并回填当前位置（仅在为空时触发）
+  const autoFillCurrentLocation = async () => {
+    if (formData.location) return;
+
+    if (!navigator.geolocation) {
+      toast({
+        title: t('location.notSupported'),
+        description: t('location.notSupportedDesc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh`
+          );
+          const data = await response.json();
+
+          let location = '';
+          if (data.display_name) {
+            const parts = String(data.display_name).split(',');
+            location = parts.slice(0, 3).join(',').trim();
+          } else {
+            location = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          }
+
+          setFormData(prev => ({ ...prev, location }));
+          toast({
+            title: t('location.success'),
+            description: t('location.currentLocation', { location }),
+          });
+        } catch (e) {
+          const location = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          setFormData(prev => ({ ...prev, location }));
+          toast({
+            title: t('location.success'),
+            description: t('location.coordinatesObtained'),
+          });
+        }
+      },
+      (error) => {
+        let errorMessage = t('location.failed');
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = t('location.permissionDenied');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = t('location.unavailable');
+            break;
+          case error.TIMEOUT:
+            errorMessage = t('location.timeout');
+            break;
+        }
+        toast({
+          title: t('location.failed'),
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  };
   if (!user) return null;
 
   return (
@@ -305,6 +371,7 @@ const CreateDinner = () => {
                     id="location"
                     value={formData.location}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    onClick={autoFillCurrentLocation}
                     required
                     placeholder={t('dinner.locationPlaceholder')}
                     className="border-2 focus:border-primary transition-colors flex-1"

@@ -85,31 +85,40 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       async (position) => {
         const { latitude, longitude } = position.coords;
         
-        // 简单的反向地理编码（基于距离匹配最近的城市）
-        let nearestCity = PRESET_LOCATIONS[0];
-        let minDistance = Number.MAX_VALUE;
-        
-        PRESET_LOCATIONS.forEach(city => {
-          const distance = Math.sqrt(
-            Math.pow(city.coords.lat - latitude, 2) + 
-            Math.pow(city.coords.lng - longitude, 2)
+        try {
+          // 使用 OpenStreetMap Nominatim 进行反向地理编码，获取更精确的地址
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh`
           );
-          if (distance < minDistance) {
-            minDistance = distance;
-            nearestCity = city;
+          const data = await response.json();
+
+          let locationText = '';
+          if (data.display_name) {
+            const parts = String(data.display_name).split(',');
+            locationText = parts.slice(0, 3).join(',').trim();
+          } else {
+            locationText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
           }
-        });
-        
-        const locationText = `${nearestCity.name}附近`;
-        setSearchQuery(locationText);
-        setSelectedLocation(locationText);
-        setCoordinates({ lat: latitude, lng: longitude });
-        
-        toast({
-          title: "定位成功",
-          description: `当前位置：${locationText}`,
-        });
-        
+
+          setSearchQuery(locationText);
+          setSelectedLocation(locationText);
+          setCoordinates({ lat: latitude, lng: longitude });
+
+          toast({
+            title: "定位成功",
+            description: `当前位置：${locationText}`,
+          });
+        } catch (e) {
+          const locationText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          setSearchQuery(locationText);
+          setSelectedLocation(locationText);
+          setCoordinates({ lat: latitude, lng: longitude });
+          toast({
+            title: "定位成功",
+            description: "已获取经纬度坐标",
+          });
+        }
+
         setIsLocating(false);
       },
       (error) => {
