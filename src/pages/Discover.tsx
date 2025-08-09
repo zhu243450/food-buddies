@@ -50,12 +50,10 @@ const Discover = () => {
     const fetchDinners = async () => {
       if (!user) return;
 
-      // Fetch all active dinners (exclude cancelled ones)
       const { data, error } = await supabase
         .from("dinners")
         .select("*")
-        .gt("dinner_time", new Date().toISOString())
-        .in("status", ["active", ""])  // Only show active dinners or those without status (legacy data)
+        .in("status", ["active", ""])  // 仅展示进行中的饭局或无状态（兼容旧数据）
         .order("dinner_time", { ascending: true });
 
       if (error) {
@@ -434,6 +432,13 @@ const Discover = () => {
                   navigate(`/dinner/${dinner.id}`);
                 }}
               >
+                {expired && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <Badge variant="destructive" className="text-xs">
+                      {t('dinner.expiredBadge')}
+                    </Badge>
+                  </div>
+                )}
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">

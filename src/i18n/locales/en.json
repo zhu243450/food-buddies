@@ -83,6 +83,7 @@
     "publishNow": "Publish Now",
     "filtersApplied": "{{count}} filters applied, found {{found}} dinners",
     "expired": "This dinner has already ended or the participation time has passed",
+    "expiredBadge": "Time passed",
     "urgent": "Urgent",
     "flexible": "Flexible",
     "joined": "Joined",
