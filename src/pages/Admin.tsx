@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface UserStats {
   total_users: number;
@@ -67,6 +68,12 @@ const Admin = () => {
   const [dinnerStatus, setDinnerStatus] = useState<string>("all");
   const [creatorMap, setCreatorMap] = useState<Record<string, Profile>>({});
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
+  // 详情弹窗相关
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedDinner, setSelectedDinner] = useState<Dinner | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailParticipants, setDetailParticipants] = useState<Array<{ user_id: string; joined_at: string; profile?: Profile }>>([]);
+  const [detailCreator, setDetailCreator] = useState<Profile | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -198,6 +205,44 @@ const Admin = () => {
       setDinnersLoading(false);
     }
   };
+
+  const openDinner = async (d: Dinner) => {
+    try {
+      setSelectedDinner(d);
+      setDetailsLoading(true);
+      setDetailsOpen(true);
+
+      const { data: parts, error: partsErr } = await supabase
+        .from('dinner_participants')
+        .select('user_id, joined_at')
+        .eq('dinner_id', d.id);
+      if (partsErr) throw partsErr;
+
+      const ids = Array.from(new Set([d.created_by, ...((parts || []).map((p: any) => p.user_id))]));
+      const { data: profs, error: profErr } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('user_id', ids);
+      if (profErr) throw profErr;
+
+      const pmap: Record<string, Profile> = {};
+      (profs || []).forEach((p: any) => { pmap[p.user_id] = p as Profile; });
+      setDetailCreator(pmap[d.created_by] || null);
+
+      const enriched = (parts || []).map((p: any) => ({
+        user_id: p.user_id,
+        joined_at: p.joined_at,
+        profile: pmap[p.user_id],
+      }));
+      setDetailParticipants(enriched);
+    } catch (e) {
+      console.error('加载详情失败', e);
+      toast.error('加载详情失败');
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       // 获取当前用户的角色
@@ -565,7 +610,7 @@ const Admin = () => {
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                <Button size="sm" variant="outline" onClick={() => navigate(`/dinner/${d.id}`)}>
+                                <Button size="sm" variant="outline" onClick={() => openDinner(d)}>
                                   <Eye className="w-4 h-4 mr-1" /> 查看详情
                                 </Button>
                               </TableCell>
@@ -682,6 +727,69 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          {/* 详情弹窗 */}
+          <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>{selectedDinner?.title || '饭局详情'}</DialogTitle>
+                <DialogDescription>饭局详细信息</DialogDescription>
+              </DialogHeader>
+              {selectedDinner ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">创建者</div>
+                      <div className="font-medium">{detailCreator?.nickname || selectedDinner.created_by.slice(0,8)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">状态</div>
+                      <div className="font-medium">{((selectedDinner as any).status || 'active') === 'active' ? '进行中' : ((selectedDinner as any).status === 'completed' ? '已完成' : ((selectedDinner as any).status === 'cancelled' ? '已取消' : (selectedDinner as any).status))}</div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-muted-foreground">时间</div>
+                      <div className="font-medium">{new Date(selectedDinner.dinner_time).toLocaleString('zh-CN')}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground">地点</div>
+                      <div className="font-medium">{selectedDinner.location}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">备注</div>
+                    <div className="font-medium whitespace-pre-wrap">{selectedDinner.description || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">参与人员（{detailParticipants.length}/{selectedDinner.max_participants}）</div>
+                    <div className="mt-2 space-y-2">
+                      {detailsLoading ? (
+                        <div className="text-sm text-muted-foreground">加载中...</div>
+                      ) : detailParticipants.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">暂无参与者</div>
+                      ) : (
+                        detailParticipants.map((p) => (
+                          <div key={p.user_id} className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-primary/10 overflow-hidden flex items-center justify-center">
+                              {p.profile?.avatar_url ? (
+                                <img src={p.profile.avatar_url} alt={p.profile.nickname} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-xs text-primary">{p.profile?.nickname?.[0] || '?'}</span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium">{p.profile?.nickname || p.user_id.slice(0,8)}</div>
+                              <div className="text-xs text-muted-foreground">加入时间：{new Date(p.joined_at).toLocaleString('zh-CN')}</div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </DialogContent>
+          </Dialog>
         </Tabs>
       </div>
     </div>
