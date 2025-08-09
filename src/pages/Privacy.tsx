@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,14 @@ export const Privacy = () => {
   const usageItems = t('privacy.sections.usage.items', { returnObjects: true }) as string[];
   const sharingItems = t('privacy.sections.sharing.items', { returnObjects: true }) as string[];
   const rightsItems = t('privacy.sections.rights.items', { returnObjects: true }) as string[];
+  const thirdPartyItems = t('privacy.sections.thirdParties.items', { returnObjects: true }) as string[];
+  const legalItems = t('privacy.sections.legal.items', { returnObjects: true }) as string[];
+  const cookiesItems = t('privacy.sections.cookies.items', { returnObjects: true }) as string[];
+  const retentionItems = t('privacy.sections.retention.items', { returnObjects: true }) as string[];
+
+  useEffect(() => {
+    document.title = `${t('privacy.title')} - 饭约社`;
+  }, [t]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
@@ -29,7 +38,7 @@ export const Privacy = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl text-center">{t('privacy.title')}</CardTitle>
+            <h1 className="text-2xl font-bold text-center">{t('privacy.title')}</h1>
             <p className="text-sm text-muted-foreground text-center">
               {t('privacy.lastUpdated')}
             </p>
@@ -54,6 +63,30 @@ export const Privacy = () => {
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                 {usageItems.map((item: string, index: number) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.thirdParties.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.thirdParties.description')}
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                {thirdPartyItems.map((item: string, index: number) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.legal.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.legal.description')}
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                {legalItems.map((item: string, index: number) => (
                   <li key={index}>{item}</li>
                 ))}
               </ul>
@@ -88,6 +121,63 @@ export const Privacy = () => {
                   <li key={index}>{item}</li>
                 ))}
               </ul>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.exercise.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.exercise.description')}
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                {(t('privacy.sections.exercise.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.cookies.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.cookies.description')}
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                {cookiesItems.map((item: string, index: number) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.crossBorder.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.crossBorder.description')}
+              </p>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.retention.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.retention.description')}
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                {retentionItems.map((item: string, index: number) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.children.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.children.description')}
+              </p>
+            </section>
+
+            <section>
+              <h3 className="text-lg font-semibold mb-3">{t('privacy.sections.updates.title')}</h3>
+              <p className="text-muted-foreground">
+                {t('privacy.sections.updates.description')}
+              </p>
             </section>
 
             <section>
