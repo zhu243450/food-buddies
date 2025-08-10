@@ -12,7 +12,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 公司信息 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">DineMate</h3>
+            <h3 className="text-lg font-semibold text-primary">饭约社</h3>
             <p className="text-sm text-muted-foreground">
               连接美食，分享快乐。让每一次聚餐都成为美好回忆。
             </p>

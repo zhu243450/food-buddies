@@ -205,7 +205,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">DineMate</CardTitle>
+          <CardTitle className="text-2xl">饭约社</CardTitle>
           <CardDescription>{t('about.subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
