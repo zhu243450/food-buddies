@@ -16,6 +16,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
+import { useTranslation } from 'react-i18next'
 
 interface MultiSelectProps {
   options: { label: string; value: string }[]
@@ -30,10 +31,11 @@ export function MultiSelect({
   options,
   value,
   onChange,
-  placeholder = "选择选项...",
+  placeholder,
   className,
   maxDisplay = 3
 }: MultiSelectProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false)
 
   const handleSelect = (optionValue: string) => {
@@ -64,7 +66,7 @@ export function MultiSelect({
         >
           <div className="flex flex-wrap gap-1 flex-1">
             {value.length === 0 ? (
-              <span>{placeholder}</span>
+              <span>{placeholder || t('common.selectOptions')}</span>
             ) : (
               <>
                 {selectedOptions.slice(0, maxDisplay).map((option) => (
@@ -83,7 +85,7 @@ export function MultiSelect({
                 ))}
                 {selectedOptions.length > maxDisplay && (
                   <Badge variant="secondary" className="text-xs">
-                    +{selectedOptions.length - maxDisplay} 更多
+                    +{selectedOptions.length - maxDisplay} {t('common.more')}
                   </Badge>
                 )}
               </>
@@ -94,8 +96,8 @@ export function MultiSelect({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput placeholder="搜索选项..." />
-          <CommandEmpty>未找到选项</CommandEmpty>
+          <CommandInput placeholder={t('common.searchOptions')} />
+          <CommandEmpty>{t('common.noOptionsFound')}</CommandEmpty>
           <CommandGroup>
             <CommandList>
               {options.map((option) => (

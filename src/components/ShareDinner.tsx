@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { Share2, Copy, MessageCircle, Heart, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from 'react-i18next';
 
 interface ShareDinnerProps {
   dinner: {
@@ -21,10 +22,11 @@ interface ShareDinnerProps {
 const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString("zh-CN", {
+    return date.toLocaleString(i18n.language === 'zh' ? "zh-CN" : "en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -33,20 +35,20 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
   };
 
   const shareUrl = `${window.location.origin}/dinner/${dinner.id}`;
-  const shareText = `🍽️ ${dinner.title}\n📅 ${formatDateTime(dinner.dinner_time)}\n📍 ${dinner.location}\n👥 ${participantCount}/${dinner.max_participants}人\n\n${dinner.description || '快来一起享受美食时光吧！'}\n\n点击链接加入我们：`;
+  const shareText = `🍽️ ${dinner.title}\n📅 ${formatDateTime(dinner.dinner_time)}\n📍 ${dinner.location}\n👥 ${participantCount}/${dinner.max_participants}${t('share.people')}\n\n${dinner.description || t('share.defaultMessage')}\n\n${t('share.clickToJoin')}:`;
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       toast({
-        title: "链接已复制",
-        description: "可以粘贴分享给朋友了！",
+        title: t('share.linkCopied'),
+        description: t('share.linkCopiedDesc'),
       });
       setIsOpen(false);
     } catch (error) {
       toast({
-        title: "复制失败",
-        description: "请手动复制链接",
+        title: t('share.copyFailed'),
+        description: t('share.copyFailedDesc'),
         variant: "destructive",
       });
     }
@@ -55,8 +57,8 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
   const handleWeChatShare = () => {
     handleCopyLink();
     toast({
-      title: "微信分享",
-      description: "链接已复制，请在微信中粘贴分享",
+      title: t('share.wechatShare'),
+      description: t('share.wechatShareDesc'),
     });
   };
 
@@ -74,7 +76,7 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
 
   const shareOptions = [
     {
-      name: "微信朋友圈",
+      name: t('share.wechat'),
       icon: "💬",
       color: "bg-green-500 hover:bg-green-600",
       action: handleWeChatShare,
@@ -86,8 +88,8 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
       action: () => {
         handleCopyLink();
         toast({
-          title: "Instagram 分享",
-          description: "链接已复制，可在 Instagram Story 中添加链接",
+          title: t('share.instagramShare'),
+          description: t('share.instagramShareDesc'),
         });
       },
     },
@@ -112,19 +114,19 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
       },
     },
     {
-      name: "新浪微博",
+      name: t('share.weibo'),
       icon: "🔥",
       color: "bg-red-500 hover:bg-red-600",
       action: handleWeiboShare,
     },
     {
-      name: "QQ空间",
+      name: t('share.qzone'),
       icon: "🌟",
       color: "bg-blue-500 hover:bg-blue-600",
       action: handleQQShare,
     },
     {
-      name: "复制链接",
+      name: t('share.copyLink'),
       icon: "📋",
       color: "bg-gray-500 hover:bg-gray-600",
       action: handleCopyLink,
@@ -141,14 +143,14 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
           onClick={(e) => e.stopPropagation()}
         >
           <Share2 className="w-4 h-4 mr-2" />
-          分享
+          {t('share.share')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="w-5 h-5 text-primary" />
-            分享饭局
+            {t('share.shareDinner')}
           </DialogTitle>
         </DialogHeader>
         
@@ -166,10 +168,10 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
             </div>
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              <span>{participantCount}/{dinner.max_participants}人</span>
+              <span>{participantCount}/{dinner.max_participants}{t('share.people')}</span>
               {participantCount >= dinner.max_participants && (
                 <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive">
-                  已满员
+                  {t('share.full')}
                 </Badge>
               )}
             </div>
@@ -210,7 +212,7 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
 
         {/* 分享预览文本 */}
         <div className="mt-4 p-3 bg-muted rounded-lg">
-          <p className="text-xs text-muted-foreground mb-2">分享预览：</p>
+          <p className="text-xs text-muted-foreground mb-2">{t('share.sharePreview')}:</p>
           <p className="text-sm leading-relaxed whitespace-pre-line">
             {shareText}
           </p>

@@ -12,12 +12,12 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 公司信息 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-primary">饭约社</h3>
+            <h3 className="text-lg font-semibold text-primary">{t('footer.appName')}</h3>
             <p className="text-sm text-muted-foreground">
-              连接美食，分享快乐。让每一次聚餐都成为美好回忆。
+              {t('footer.tagline')}
             </p>
             <p className="text-xs text-muted-foreground">
-              智享云上科技发展（广东东莞市）有限责任公司
+              {t('footer.companyName')}
             </p>
           </div>
 
@@ -59,8 +59,8 @@ export const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-sm font-medium">{t('footer.contact')}</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>邮箱：weishang99@gmail.com</p>
-              <p>电话：+86 19068522408</p>
+              <p>{t('footer.email')}: weishang99@gmail.com</p>
+              <p>{t('footer.phone')}: +86 19068522408</p>
               <div className="pt-2">
                 <LanguageSwitcher />
               </div>
@@ -72,7 +72,7 @@ export const Footer = () => {
         
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
           <p>{t('footer.copyright')}</p>
-          <p>智享云上科技发展（广东东莞市）有限责任公司</p>
+          <p>{t('footer.companyName')}</p>
         </div>
       </div>
     </footer>

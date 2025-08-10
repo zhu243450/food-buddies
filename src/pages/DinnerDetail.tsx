@@ -259,7 +259,7 @@ const DinnerDetail = () => {
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString("zh-CN", {
+    return date.toLocaleString(t('common.locale'), {
       year: "numeric",
       month: "long",
       day: "numeric",

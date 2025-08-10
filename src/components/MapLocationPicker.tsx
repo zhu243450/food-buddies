@@ -135,7 +135,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
 
       setSuggestions(sortedResults.slice(0, 8));
     } catch (error) {
-      console.error('搜索地址失败:', error);
+      console.error(t('mapPicker.searchError'), error);
     }
   };
 
@@ -202,7 +202,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
             description: t('location.currentLocation', { location: locationText }),
           });
         } catch (e) {
-          console.error('地址解析失败:', e);
+          console.error(t('mapPicker.geocodeError'), e);
           const locationText = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
           setSearchQuery(locationText);
           setSelectedLocation(locationText);
@@ -216,7 +216,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         setIsLocating(false);
       },
       (error) => {
-        console.error('定位失败:', error);
+        console.error(t('mapPicker.locationError'), error);
         let errorMessage = t('location.failed');
         
         switch (error.code) {
