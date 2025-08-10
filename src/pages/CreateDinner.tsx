@@ -18,54 +18,57 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { MultiSelect } from "@/components/ui/multi-select";
 import type { User } from '@supabase/supabase-js';
 
-const FOOD_PREFERENCES = [
-  { label: "川菜", value: "川菜" },
-  { label: "火锅", value: "火锅" },
-  { label: "粤菜", value: "粤菜" },
-  { label: "日料", value: "日料" },
-  { label: "韩餐", value: "韩餐" },
-  { label: "西餐", value: "西餐" },
-  { label: "素食", value: "素食" }
-];
-
-const DIETARY_RESTRICTIONS = [
-  { label: "不吃辣", value: "不吃辣" },
-  { label: "不吃肉", value: "不吃肉" },
-  { label: "不吃海鲜", value: "不吃海鲜" },
-  { label: "不吃牛肉", value: "不吃牛肉" },
-  { label: "不吃猪肉", value: "不吃猪肉" },
-  { label: "素食主义", value: "素食主义" }
-];
-
-const PERSONALITY_TAGS = [
-  { label: "健谈", value: "健谈" },
-  { label: "内向", value: "内向" },
-  { label: "活跃", value: "活跃" },
-  { label: "安静", value: "安静" },
-  { label: "幽默", value: "幽默" },
-  { label: "认真", value: "认真" },
-  { label: "随和", value: "随和" },
-  { label: "爱聊天", value: "爱聊天" }
-];
-
-const DINNER_MODES = [
-  { value: "instant", label: "🔥 闪约模式", desc: "今天就想吃，有空的来" },
-  { value: "scheduled", label: "📅 预约模式", desc: "我这个周末有空，一起吃个饭？" },
-  { value: "group", label: "👥 团饭模式", desc: "3~5人拼饭，缓解一对一尴尬" }
-];
-const URGENCY_LEVELS = [
-  { value: "urgent", label: "🚨 紧急", desc: "马上就要吃" },
-  { value: "normal", label: "⏰ 正常", desc: "按时间进行" },
-  { value: "flexible", label: "🌊 灵活", desc: "时间可调整" }
-];
-const GENDER_PREFERENCES = [
-  { value: "no_preference", label: "不限", desc: "无性别偏好" },
-  { value: "same_gender", label: "同性优先", desc: "偏好同性饭友" },
-  { value: "opposite_gender", label: "异性优先", desc: "偏好异性饭友" }
-];
-
 const CreateDinner = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  
+  const FOOD_PREFERENCES = [
+    { label: t('foodPrefs.sichuan'), value: t('foodPrefs.sichuan') },
+    { label: t('foodPrefs.hotpot'), value: t('foodPrefs.hotpot') },
+    { label: t('foodPrefs.cantonese'), value: t('foodPrefs.cantonese') },
+    { label: t('foodPrefs.japanese'), value: t('foodPrefs.japanese') },
+    { label: t('foodPrefs.korean'), value: t('foodPrefs.korean') },
+    { label: t('foodPrefs.western'), value: t('foodPrefs.western') },
+    { label: t('foodPrefs.vegetarian'), value: t('foodPrefs.vegetarian') }
+  ];
+
+  const DIETARY_RESTRICTIONS = [
+    { label: t('dietary.noSpicy'), value: t('dietary.noSpicy') },
+    { label: t('dietary.noMeat'), value: t('dietary.noMeat') },
+    { label: t('dietary.noSeafood'), value: t('dietary.noSeafood') },
+    { label: t('dietary.noBeef'), value: t('dietary.noBeef') },
+    { label: t('dietary.noPork'), value: t('dietary.noPork') },
+    { label: t('dietary.vegetarian'), value: t('dietary.vegetarian') }
+  ];
+
+  const PERSONALITY_TAGS = [
+    { label: "健谈", value: "健谈" },
+    { label: "内向", value: "内向" },
+    { label: "活跃", value: "活跃" },
+    { label: "安静", value: "安静" },
+    { label: "幽默", value: "幽默" },
+    { label: "认真", value: "认真" },
+    { label: "随和", value: "随和" },
+    { label: "爱聊天", value: "爱聊天" }
+  ];
+
+  const DINNER_MODES = [
+    { value: "instant", label: t('createDinner.modes.instant.label'), desc: t('createDinner.modes.instant.desc') },
+    { value: "scheduled", label: t('createDinner.modes.scheduled.label'), desc: t('createDinner.modes.scheduled.desc') },
+    { value: "group", label: t('createDinner.modes.group.label'), desc: t('createDinner.modes.group.desc') }
+  ];
+  
+  const URGENCY_LEVELS = [
+    { value: "urgent", label: t('createDinner.urgencyLevels.urgent.label'), desc: t('createDinner.urgencyLevels.urgent.desc') },
+    { value: "normal", label: t('createDinner.urgencyLevels.normal.label'), desc: t('createDinner.urgencyLevels.normal.desc') },
+    { value: "flexible", label: t('createDinner.urgencyLevels.flexible.label'), desc: t('createDinner.urgencyLevels.flexible.desc') }
+  ];
+  
+  const GENDER_PREFERENCES = [
+    { value: "no_preference", label: t('createDinner.genderPrefs.no_preference.label'), desc: t('createDinner.genderPrefs.no_preference.desc') },
+    { value: "same_gender", label: t('createDinner.genderPrefs.same_gender.label'), desc: t('createDinner.genderPrefs.same_gender.desc') },
+    { value: "opposite_gender", label: t('createDinner.genderPrefs.opposite_gender.label'), desc: t('createDinner.genderPrefs.opposite_gender.desc') }
+  ];
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -182,7 +185,7 @@ const CreateDinner = () => {
         const { latitude, longitude } = position.coords;
         try {
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=${i18n.language === 'zh' ? 'zh-CN,zh' : 'en'}`
           );
           const data = await response.json();
 
@@ -252,7 +255,7 @@ const CreateDinner = () => {
                 <p className="text-destructive text-sm">{restriction.restriction_reason}</p>
                 {restriction.restriction_end_date && (
                   <p className="text-destructive text-sm mt-1">
-                    {t('dinner.restrictionEndTime', { time: new Date(restriction.restriction_end_date).toLocaleString("zh-CN") })}
+                    {t('dinner.restrictionEndTime', { time: new Date(restriction.restriction_end_date).toLocaleString(i18n.language === 'zh' ? 'zh-CN' : 'en-US') })}
                   </p>
                 )}
               </div>

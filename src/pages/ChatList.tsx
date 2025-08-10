@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ interface ChatSessionWithProfile extends ChatSession {
 }
 
 const ChatList = () => {
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [chatSessions, setChatSessions] = useState<ChatSessionWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +97,7 @@ const ChatList = () => {
 
         setChatSessions(sessionsWithData);
       } catch (error) {
-        console.error("获取聊天会话失败:", error);
+        console.error("Failed to fetch chat sessions:", error);
       } finally {
         setLoading(false);
       }
@@ -133,14 +135,15 @@ const ChatList = () => {
     const now = new Date();
     const messageTime = new Date(timestamp);
     const diffInHours = (now.getTime() - messageTime.getTime()) / (1000 * 60 * 60);
+    const locale = i18n.language === 'zh' ? 'zh-CN' : 'en-US';
 
     if (diffInHours < 24) {
-      return messageTime.toLocaleTimeString('zh-CN', {
+      return messageTime.toLocaleTimeString(locale, {
         hour: '2-digit',
         minute: '2-digit'
       });
     } else {
-      return messageTime.toLocaleDateString('zh-CN', {
+      return messageTime.toLocaleDateString(locale, {
         month: 'short',
         day: 'numeric'
       });
@@ -157,7 +160,7 @@ const ChatList = () => {
         <div className="max-w-md mx-auto pt-8">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-            <p className="text-muted-foreground">加载聊天中...</p>
+            <p className="text-muted-foreground">{t('chat.loading')}</p>
           </div>
         </div>
         <Navigation />
@@ -170,19 +173,19 @@ const ChatList = () => {
       <div className="max-w-md mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <MessageCircle className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold">聊天</h1>
+          <h1 className="text-xl font-bold">{t('nav.chat')}</h1>
         </div>
 
         {chatSessions.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
               <MessageCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="font-semibold mb-2">还没有聊天</h3>
+              <h3 className="font-semibold mb-2">{t('chat.noChats')}</h3>
               <p className="text-muted-foreground text-sm mb-4">
-                参与饭局后就可以和其他成员聊天了
+                {t('chat.noChatsDesc')}
               </p>
               <Button onClick={() => navigate("/discover")}>
-                发现饭局
+                {t('nav.discover')}
               </Button>
             </CardContent>
           </Card>
@@ -218,7 +221,7 @@ const ChatList = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h3 className="font-semibold text-sm truncate">
-                          {session.otherUser?.nickname || "未知用户"}
+                          {session.otherUser?.nickname || t('myDinners.unknownUser')}
                         </h3>
                         <div className="flex items-center gap-1">
                           {isSessionExpired(session) && (
@@ -235,17 +238,17 @@ const ChatList = () => {
                       <p className="text-sm text-muted-foreground truncate">
                         {session.lastMessage ? (
                           <>
-                            {session.lastMessage.sender_id === user?.id && "我: "}
+                            {session.lastMessage.sender_id === user?.id && t('myDinners.me')}
                             {session.lastMessage.content}
                           </>
                         ) : (
-                          "还没有消息"
+                          t('myDinners.noMessages')
                         )}
                       </p>
                       
                       {isSessionExpired(session) && (
                         <Badge variant="secondary" className="text-xs mt-1">
-                          聊天已过期
+                          {t('myDinners.chatExpired')}
                         </Badge>
                       )}
                     </div>

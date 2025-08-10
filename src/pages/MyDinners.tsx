@@ -34,7 +34,7 @@ interface Dinner {
 }
 
 const MyDinners = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [joinedDinners, setJoinedDinners] = useState<Dinner[]>([]);
   const [createdDinners, setCreatedDinners] = useState<Dinner[]>([]);
@@ -186,7 +186,7 @@ const MyDinners = () => {
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString("zh-CN", {
+    return date.toLocaleString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -322,7 +322,7 @@ const MyDinners = () => {
             </div>
             {isCreatedByMe && participantCount > 0 && (
               <Badge className="bg-primary text-black border-primary/30 text-xs font-bold animate-pulse">
-                🔥 {participantCount}人已参与
+                {t('myDinners.participantsJoined', { count: participantCount })}
               </Badge>
             )}
           </div>
@@ -353,11 +353,11 @@ const MyDinners = () => {
           }`}>
             <Users className="w-4 h-4 text-primary" />
             <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
-              {participantCount} / {dinner.max_participants} 人
+              {participantCount} / {dinner.max_participants} {t('myDinners.people')}
             </span>
             {participantCount >= dinner.max_participants && (
               <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
-                已满员
+                {t('myDinners.fullBadge')}
               </Badge>
             )}
           </div>
@@ -398,13 +398,13 @@ const MyDinners = () => {
           {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
             <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
               <Users2 className="w-3 h-3 mr-1" />
-              {dinner.gender_preference === 'same_gender' ? '同性优先' : '异性优先'}
+              {dinner.gender_preference === 'same_gender' ? t('myDinners.sameGenderPref') : t('myDinners.oppositeGenderPref')}
             </Badge>
           )}
 
           {dinner.friends_only && (
             <Badge variant="outline" className="text-xs border-accent text-accent">
-              🔒 仅限熟人
+              {t('myDinners.friendsOnlyBadge')}
             </Badge>
           )}
         </CardContent>
@@ -437,8 +437,8 @@ const MyDinners = () => {
           </h1>
           <p className="text-muted-foreground text-sm">
             {joinedDinners.length + createdDinners.length > 0 
-              ? `你参与了 ${joinedDinners.length} 个饭局，发布了 ${createdDinners.length} 个饭局`
-              : "开始你的美食社交之旅吧！"
+              ? t('myDinners.summary', { joined: joinedDinners.length, created: createdDinners.length })
+              : t('myDinners.welcomeMsg')
             }
           </p>
         </div>
@@ -446,10 +446,10 @@ const MyDinners = () => {
         <Tabs defaultValue="joined" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-transparent p-2 rounded-xl gap-2">
             <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
-              我参与的饭局
+              {t('myDinners.joinedTab')}
             </TabsTrigger>
             <TabsTrigger value="created" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
-              我发布的饭局
+              {t('myDinners.createdTab')}
             </TabsTrigger>
           </TabsList>
           
@@ -459,14 +459,14 @@ const MyDinners = () => {
                 <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
                   <Heart className="w-12 h-12 text-primary" />
                 </div>
-                <p className="text-muted-foreground text-lg mb-2">您还没有参与任何饭局</p>
-                <p className="text-sm text-muted-foreground mb-4">快去发现志趣相投的饭友吧！</p>
+                <p className="text-muted-foreground text-lg mb-2">{t('myDinners.noJoinedDinners')}</p>
+                <p className="text-sm text-muted-foreground mb-4">{t('myDinners.noJoinedDesc')}</p>
                 <Button 
                   onClick={() => navigate("/discover")}
                   className="bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold px-8 py-3 text-base shadow-lg rounded-full"
                   size="default"
                 >
-                  🔍 发现饭局
+                  {t('myDinners.discoverDinners')}
                 </Button>
               </div>
             ) : (
@@ -484,14 +484,14 @@ const MyDinners = () => {
                 <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
                   <Sparkles className="w-12 h-12 text-primary" />
                 </div>
-                <p className="text-muted-foreground text-lg mb-2">您还没有发布任何饭局</p>
-                <p className="text-sm text-muted-foreground mb-4">创建饭局，邀请大家一起享受美食时光！</p>
+                <p className="text-muted-foreground text-lg mb-2">{t('myDinners.noCreatedDinners')}</p>
+                <p className="text-sm text-muted-foreground mb-4">{t('myDinners.noCreatedDesc')}</p>
                 <Button 
                   onClick={() => navigate("/create-dinner")}
                   className="bg-accent text-black hover:bg-accent/90 hover:text-black font-semibold px-8 py-3 text-base shadow-lg rounded-full"
                   size="default"
                 >
-                  🍽️ 发布饭局
+                  {t('myDinners.createFirstDinner')}
                 </Button>
               </div>
             ) : (

@@ -433,7 +433,76 @@
     "noMessages": "还没有消息，开始聊天吧！",
     "expiredCannotSend": "聊天时间已过期，无法发送消息",
     "inputPlaceholder": "输入消息...",
-    "sendFailed": "发送失败"
+    "sendFailed": "发送失败",
+    "noChats": "还没有聊天",
+    "noChatsDesc": "参与饭局后就可以和其他成员聊天了"
+  },
+  "myDinners": {
+    "participantsJoined": "🔥 {{count}}人已参与",
+    "people": "人",
+    "fullBadge": "已满员",
+    "sameGenderPref": "同性优先",
+    "oppositeGenderPref": "异性优先",
+    "friendsOnlyBadge": "🔒 仅限熟人",
+    "summary": "你参与了 {{joined}} 个饭局，发布了 {{created}} 个饭局",
+    "welcomeMsg": "开始你的美食社交之旅吧！",
+    "joinedTab": "我参与的饭局",
+    "createdTab": "我发布的饭局",
+    "noJoinedDinners": "您还没有参与任何饭局",
+    "noJoinedDesc": "快去发现志趣相投的饭友吧！",
+    "discoverDinners": "🔍 发现饭局",
+    "noCreatedDinners": "您还没有发布任何饭局",
+    "noCreatedDesc": "快来分享您的美食探险吧！",
+    "createFirstDinner": "✨ 发布第一个饭局",
+    "chatExpired": "聊天已过期",
+    "noMessages": "还没有消息",
+    "unknownUser": "未知用户",
+    "me": "我: "
+  },
+  "createDinner": {
+    "uploading": "上传中...",
+    "modes": {
+      "instant": {
+        "label": "🔥 闪约模式",
+        "desc": "今天就想吃，有空的来"
+      },
+      "scheduled": {
+        "label": "📅 预约模式",
+        "desc": "我这个周末有空，一起吃个饭？"
+      },
+      "group": {
+        "label": "👥 团饭模式",
+        "desc": "3~5人拼饭，缓解一对一尴尬"
+      }
+    },
+    "urgencyLevels": {
+      "urgent": {
+        "label": "🚨 紧急",
+        "desc": "马上就要吃"
+      },
+      "normal": {
+        "label": "⏰ 正常",
+        "desc": "按时间进行"
+      },
+      "flexible": {
+        "label": "🌊 灵活",
+        "desc": "时间可调整"
+      }
+    },
+    "genderPrefs": {
+      "no_preference": {
+        "label": "不限",
+        "desc": "无性别偏好"
+      },
+      "same_gender": {
+        "label": "同性优先",
+        "desc": "偏好同性饭友"
+      },
+      "opposite_gender": {
+        "label": "异性优先",
+        "desc": "偏好异性饭友"
+      }
+    }
   },
   "help": {
     "title": "帮助中心",

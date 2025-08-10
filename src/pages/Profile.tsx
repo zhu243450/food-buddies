@@ -16,11 +16,15 @@ import Navigation from "@/components/Navigation";
 import { User as UserIcon, Upload, Camera, Shield, LogOut } from "lucide-react";
 import type { User } from '@supabase/supabase-js';
 
-const FOOD_PREFERENCES = ["川菜", "火锅", "粤菜", "日料", "韩餐", "西餐", "素食"];
-const MEAL_TIMES = ["早餐", "午饭", "晚饭", "夜宵"];
 
 const Profile = () => {
   const { t } = useTranslation();
+  
+  const FOOD_PREFERENCES = [
+    t('foodPrefs.sichuan'), t('foodPrefs.hotpot'), t('foodPrefs.cantonese'), 
+    t('foodPrefs.japanese'), t('foodPrefs.korean'), t('foodPrefs.western'), t('foodPrefs.vegetarian')
+  ];
+  const MEAL_TIMES = ["早餐", "午饭", "晚饭", "夜宵"];
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -218,7 +222,7 @@ const Profile = () => {
                     {uploading ? (
                       <>
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        上传中...
+                        {t('createDinner.uploading')}
                       </>
                     ) : (
                       <>
