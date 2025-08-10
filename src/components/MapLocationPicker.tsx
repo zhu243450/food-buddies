@@ -81,36 +81,20 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     if (!query.trim() || query.length < 2) return;
 
     try {
-      // 使用高德地图API进行地理编码搜索
+      // 直接使用 Nominatim API，因为高德地图需要API key
+      // 使用 Nominatim API 进行地址搜索
       const response = await fetch(
-        `https://restapi.amap.com/v3/geocode/geo?address=${encodeURIComponent(query)}&output=json&key=your_gaode_key`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=zh-CN,zh&limit=5&countrycodes=cn`
       );
       
-      if (!response.ok) {
-        // 回退到 Nominatim API
-        const nominatimResponse = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=zh-CN,zh&limit=5&countrycodes=cn`
-        );
-        const nominatimData = await nominatimResponse.json();
+      if (response.ok) {
+        const data = await response.json();
         
-        const searchResults = nominatimData.map((item: any) => ({
+        const searchResults = data.map((item: any) => ({
           name: item.display_name,
           coords: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) }
         }));
         
-        setSuggestions(searchResults.slice(0, 5));
-        return;
-      }
-
-      const data = await response.json();
-      if (data.geocodes && data.geocodes.length > 0) {
-        const searchResults = data.geocodes.map((item: any) => {
-          const [lng, lat] = item.location.split(',');
-          return {
-            name: item.formatted_address || item.district + item.township,
-            coords: { lat: parseFloat(lat), lng: parseFloat(lng) }
-          };
-        });
         setSuggestions(searchResults.slice(0, 5));
       }
     } catch (error) {
@@ -136,51 +120,32 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         const { latitude, longitude } = position.coords;
         
         try {
-          // 首先尝试使用高德地图逆地理编码
+          // 使用 Nominatim API 进行反向地理编码
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh&zoom=16&addressdetails=1`
+          );
+          const data = await response.json();
+
           let locationText = '';
-          try {
-            const gaodeResponse = await fetch(
-              `https://restapi.amap.com/v3/geocode/regeo?location=${longitude},${latitude}&output=json&key=your_gaode_key&radius=1000&extensions=all`
-            );
+          if (data.display_name) {
+            // 提取更有用的地址信息
+            const address = data.address || {};
+            const parts = [];
             
-            if (gaodeResponse.ok) {
-              const gaodeData = await gaodeResponse.json();
-              if (gaodeData.status === "1" && gaodeData.regeocode) {
-                const addr = gaodeData.regeocode.formatted_address;
-                locationText = addr;
-              }
+            if (address.city || address.county) {
+              parts.push(address.city || address.county);
             }
-          } catch (e) {
-            console.log('高德API不可用，使用备选方案');
-          }
-
-          // 如果高德失败，使用 Nominatim
-          if (!locationText) {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh&zoom=16&addressdetails=1`
-            );
-            const data = await response.json();
-
-            if (data.display_name) {
-              // 提取更有用的地址信息
-              const address = data.address || {};
-              const parts = [];
-              
-              if (address.city || address.county) {
-                parts.push(address.city || address.county);
-              }
-              if (address.suburb || address.neighbourhood) {
-                parts.push(address.suburb || address.neighbourhood);
-              }
-              if (address.road) {
-                parts.push(address.road);
-              }
-              if (address.house_number) {
-                parts.push(address.house_number);
-              }
-
-              locationText = parts.length > 0 ? parts.join(' ') : data.display_name.split(',').slice(0, 3).join(',');
+            if (address.suburb || address.neighbourhood) {
+              parts.push(address.suburb || address.neighbourhood);
             }
+            if (address.road) {
+              parts.push(address.road);
+            }
+            if (address.house_number) {
+              parts.push(address.house_number);
+            }
+
+            locationText = parts.length > 0 ? parts.join(' ') : data.display_name.split(',').slice(0, 3).join(',');
           }
 
           // 如果仍然没有获取到地址，使用坐标

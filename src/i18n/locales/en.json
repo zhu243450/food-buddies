@@ -262,7 +262,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "help": "Help Center",
-    "copyright": "© 2024 DineMate. All rights reserved.",
+    "copyright": "© 2024 饭约社. All rights reserved.",
     "language": "Language"
   },
   "privacy": {
@@ -271,7 +271,7 @@
     "sections": {
       "collection": {
         "title": "1. Information Collection",
-        "description": "When you use DineMate services, we may collect the following information:",
+        "description": "When you use 饭约社 services, we may collect the following information:",
         "items": [
           "Personal identification information: name, email address, phone number",
           "Profile information: avatar, bio, food preferences",
@@ -324,7 +324,7 @@
     "sections": {
       "description": {
         "title": "1. Service Description",
-        "content": "DineMate (\"we\", \"platform\") is a social dining platform that provides services for users to publish and participate in dining activities. By using our services, you agree to comply with these terms of service."
+        "content": "饭约社 (\"we\", \"platform\") is a social dining platform that provides services for users to publish and participate in dining activities. By using our services, you agree to comply with these terms of service."
       },
       "responsibilities": {
         "title": "2. User Responsibilities",
@@ -359,7 +359,7 @@
       },
       "disclaimer": {
         "title": "5. Disclaimer",
-        "description": "DineMate as a platform provider:",
+        "description": "饭约社 as a platform provider:",
         "items": [
           "Is not responsible for offline dining activities between users",
           "Does not guarantee the accuracy of all information",
@@ -382,9 +382,9 @@
     }
   },
   "about": {
-    "title": "About DineMate",
-    "subtitle": "Connecting food, sharing happiness. Making every meal a beautiful memory.",
-    "description": "DineMate is a platform focused on social dining, dedicated to helping people discover like-minded partners and enjoy food together. Whether you want to meet new friends, explore local cuisine, or organize an interesting gathering, DineMate can provide you with the perfect solution.",
+    "title": "About 饭约社",
+    "subtitle": "Find your perfect dining companion. Connecting food, sharing happiness.",
+    "description": "饭约社 is a platform focused on social dining, dedicated to helping people discover like-minded partners and enjoy food together. Whether you want to meet new friends, explore local cuisine, or organize an interesting gathering, 饭约社 can provide you with the perfect solution.",
     "mission": "We believe that sharing food is not just about satisfying taste buds, but also an important way to build relationships and spread warmth. Through our platform, you can easily find nearby dining activities or initiate your own food gatherings.",
     "company": {
       "title": "Company Information",
