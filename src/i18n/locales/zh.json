@@ -211,7 +211,17 @@
     "failed": "定位失败",
     "permissionDenied": "用户拒绝了位置访问请求",
     "unavailable": "位置信息不可用",
-    "timeout": "定位请求超时"
+    "timeout": "定位请求超时",
+    "locationSelected": "位置已选择：{{location}}",
+    "confirmed": "位置已确认",
+    "locationSet": "已设置位置：{{location}}",
+    "selectLocation": "选择地点",
+    "locationSearch": "位置搜索",
+    "searchPlaceholder": "搜索餐厅、店面名称或地址，支持GPS定位",
+    "selectedLocation": "选中的位置：",
+    "coordinates": "坐标：{{lat}}, {{lng}}",
+    "confirmSelection": "确认选择此位置",
+    "helpText": "搜索餐厅店名或输入详细地址，支持GPS定位"
   },
   "foodPrefs": {
     "sichuan": "川菜",

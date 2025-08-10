@@ -104,8 +104,9 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
         
         try {
           // 使用 Nominatim API 进行反向地理编码
+          const locale = localStorage.getItem('i18nextLng') === 'en' ? 'en-US,en' : 'zh-CN,zh';
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=${locale}`
           );
           const data = await response.json();
           

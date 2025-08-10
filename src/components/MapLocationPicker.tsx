@@ -5,6 +5,7 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { MapPin, Search, Navigation, Check } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface MapLocationPickerProps {
   onLocationSelect: (location: string, coordinates?: { lat: number; lng: number }) => void;
@@ -22,6 +23,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   onLocationSelect, 
   initialLocation = "" 
 }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState(initialLocation);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -53,8 +55,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     setSuggestions([]);
     
     toast({
-      title: "位置已选择",
-      description: `已选择：${location.name}`,
+      title: t('location.success'),
+      description: t('location.locationSelected', { location: location.name }),
     });
   };
 
@@ -63,6 +65,9 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     if (!query.trim() || query.length < 2) return;
 
     try {
+      // 根据当前语言设置选择合适的语言参数
+      const locale = localStorage.getItem('i18nextLng') === 'en' ? 'en-US,en' : 'zh-CN,zh';
+      
       // 使用 Nominatim API 搜索餐厅、店面等POI
       // 添加餐厅、商店等关键词来提高搜索准确性
       const searchQueries = [
@@ -76,7 +81,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
 
       for (const searchQuery of searchQueries) {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&accept-language=zh-CN,zh&limit=10&countrycodes=cn&addressdetails=1`
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&accept-language=${locale}&limit=10&countrycodes=cn&addressdetails=1`
         );
         
         if (response.ok) {
@@ -138,8 +143,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
       toast({
-        title: "不支持定位",
-        description: "您的浏览器不支持地理位置服务",
+        title: t('location.notSupported'),
+        description: t('location.notSupportedDesc'),
         variant: "destructive",
       });
       return;
@@ -152,9 +157,12 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         const { latitude, longitude } = position.coords;
         
         try {
+          // 根据当前语言设置选择合适的语言参数
+          const locale = localStorage.getItem('i18nextLng') === 'en' ? 'en-US,en' : 'zh-CN,zh';
+          
           // 使用 Nominatim API 进行反向地理编码
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=zh-CN,zh&zoom=16&addressdetails=1`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=${locale}&zoom=16&addressdetails=1`
           );
           const data = await response.json();
 
@@ -190,8 +198,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           setCoordinates({ lat: latitude, lng: longitude });
 
           toast({
-            title: "定位成功",
-            description: `当前位置：${locationText}`,
+            title: t('location.success'),
+            description: t('location.currentLocation', { location: locationText }),
           });
         } catch (e) {
           console.error('地址解析失败:', e);
@@ -200,8 +208,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           setSelectedLocation(locationText);
           setCoordinates({ lat: latitude, lng: longitude });
           toast({
-            title: "定位成功",
-            description: "已获取GPS坐标",
+            title: t('location.success'),
+            description: t('location.coordinatesObtained'),
           });
         }
 
@@ -209,22 +217,22 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       },
       (error) => {
         console.error('定位失败:', error);
-        let errorMessage = "定位失败";
+        let errorMessage = t('location.failed');
         
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = "请允许位置访问权限";
+            errorMessage = t('location.permissionDenied');
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = "位置服务不可用，请检查GPS设置";
+            errorMessage = t('location.unavailable');
             break;
           case error.TIMEOUT:
-            errorMessage = "定位超时，请重试";
+            errorMessage = t('location.timeout');
             break;
         }
         
         toast({
-          title: "定位失败",
+          title: t('location.failed'),
           description: errorMessage,
           variant: "destructive",
         });
@@ -245,8 +253,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       setSelectedLocation(searchQuery);
       
       toast({
-        title: "位置已确认",
-        description: `已设置位置：${searchQuery}`,
+        title: t('location.confirmed'),
+        description: t('location.locationSet', { location: searchQuery }),
       });
     }
   };
@@ -262,20 +270,20 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="w-5 h-5" />
-          选择地点
+          {t('location.selectLocation')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* 搜索框 */}
         <div className="space-y-2">
-          <Label htmlFor="search">位置搜索</Label>
+          <Label htmlFor="search">{t('location.locationSearch')}</Label>
             <div className="flex gap-2">
             <div className="flex-1 relative">
               <Input
                 id="search"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="搜索餐厅、店面名称或地址，支持GPS定位"
+                placeholder={t('location.searchPlaceholder')}
                 className="pr-8"
                 onClick={() => {
                   if (!searchQuery) {
@@ -299,7 +307,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
               size="icon"
               onClick={getCurrentLocation}
               disabled={isLocating}
-              title="获取当前位置"
+              title={t('location.getCurrentLocation')}
               className="shrink-0"
             >
               <Navigation className={`w-4 h-4 ${isLocating ? 'animate-spin' : ''}`} />
@@ -328,11 +336,11 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         {/* 选中的位置 */}
         {selectedLocation && (
           <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
-            <p className="text-sm font-medium text-primary">选中的位置：</p>
+            <p className="text-sm font-medium text-primary">{t('location.selectedLocation')}</p>
             <p className="text-sm text-muted-foreground">{selectedLocation}</p>
             {coordinates && (
               <p className="text-xs text-muted-foreground mt-1">
-                坐标：{coordinates.lat.toFixed(4)}, {coordinates.lng.toFixed(4)}
+                {t('location.coordinates', { lat: coordinates.lat.toFixed(4), lng: coordinates.lng.toFixed(4) })}
               </p>
             )}
           </div>
@@ -344,11 +352,11 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           className="w-full" 
           disabled={!selectedLocation}
         >
-          确认选择此位置
+          {t('location.confirmSelection')}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          搜索餐厅店名或输入详细地址，支持GPS定位
+          {t('location.helpText')}
         </p>
       </CardContent>
     </Card>

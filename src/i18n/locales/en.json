@@ -211,7 +211,17 @@
     "failed": "Location failed",
     "permissionDenied": "User denied location access request",
     "unavailable": "Location information unavailable",
-    "timeout": "Location request timeout"
+    "timeout": "Location request timeout",
+    "locationSelected": "Location selected: {{location}}",
+    "confirmed": "Location confirmed",
+    "locationSet": "Location set: {{location}}",
+    "selectLocation": "Select Location",
+    "locationSearch": "Location Search",
+    "searchPlaceholder": "Search restaurants, stores or addresses, GPS supported",
+    "selectedLocation": "Selected location:",
+    "coordinates": "Coordinates: {{lat}}, {{lng}}",
+    "confirmSelection": "Confirm this location",
+    "helpText": "Search restaurant names or enter detailed address, GPS supported"
   },
   "foodPrefs": {
     "sichuan": "Sichuan",

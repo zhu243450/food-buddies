@@ -273,7 +273,8 @@ const Discover = () => {
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString("zh-CN", {
+    const locale = localStorage.getItem('i18nextLng') === 'en' ? 'en-US' : 'zh-CN';
+    return date.toLocaleString(locale, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -479,7 +480,7 @@ const Discover = () => {
                     participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
                   }`}>
                     <Users className="w-4 h-4 text-primary" />
-                    <span className="font-bold text-primary">{participantCount} / {dinner.max_participants} 人</span>
+                    <span className="font-bold text-primary">{participantCount} / {dinner.max_participants} {t('dinnerDetail.people')}</span>
                     {participantCount >= dinner.max_participants && (
                       <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
                         {t('dinner.full')}
@@ -524,13 +525,13 @@ const Discover = () => {
                   {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
                     <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
                       <Users2 className="w-3 h-3 mr-1" />
-                      {dinner.gender_preference === 'same_gender' ? '同性优先' : '异性优先'}
+                      {dinner.gender_preference === 'same_gender' ? t('filter.sameGender') : t('filter.oppositeGender')}
                     </Badge>
                   )}
 
                   {dinner.friends_only && (
                     <Badge variant="outline" className="text-xs border-accent text-accent">
-                      🔒 仅限熟人
+                      🔒 {t('dinnerDetail.friendsOnly')}
                     </Badge>
                   )}
                 </CardContent>
