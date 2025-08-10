@@ -139,10 +139,10 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
         <Button
           variant="ghost"
           size="sm"
-          className="p-2 h-8 w-8 text-black/80 hover:text-black hover:bg-black/10 transition-all shrink-0"
+          className="h-6 px-2 text-xs text-black/80 hover:text-black hover:bg-black/10 transition-all shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <Share2 className="w-4 h-4" />
+          <Share2 className="w-3 h-3" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

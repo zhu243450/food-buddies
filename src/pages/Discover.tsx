@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, MapPin, Users, Search, Sparkles, Zap, Clock, Users2, Filter } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import DinnerFiltersComponent, { DinnerFilters } from "@/components/DinnerFilters";
+import ShareDinner from "@/components/ShareDinner";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -441,7 +442,7 @@ const Discover = () => {
                   </div>
                 )}
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between mb-2">
+                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
                         {getModeIcon(dinner.dinner_mode)} {getModeLabel(dinner.dinner_mode)}
@@ -451,6 +452,10 @@ const Discover = () => {
                           {dinner.urgency_level === 'urgent' ? `🚨 ${t('dinner.urgent')}` : `🌊 ${t('dinner.flexible')}`}
                         </Badge>
                       )}
+                      <ShareDinner 
+                        dinner={dinner} 
+                        participantCount={participantCount}
+                      />
                     </div>
                     {isJoined && (
                       <Badge className="bg-primary text-black border-primary/30 text-xs font-bold">
