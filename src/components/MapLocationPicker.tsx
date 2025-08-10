@@ -11,24 +11,12 @@ interface MapLocationPickerProps {
   initialLocation?: string;
 }
 
-// 中国常见城市和地标的预设坐标
-const PRESET_LOCATIONS = [
-  { name: "北京市", coords: { lat: 39.9042, lng: 116.4074 } },
-  { name: "上海市", coords: { lat: 31.2304, lng: 121.4737 } },
-  { name: "广州市", coords: { lat: 23.1291, lng: 113.2644 } },
-  { name: "深圳市", coords: { lat: 22.5431, lng: 114.0579 } },
-  { name: "杭州市", coords: { lat: 30.2741, lng: 120.1551 } },
-  { name: "南京市", coords: { lat: 32.0603, lng: 118.7969 } },
-  { name: "武汉市", coords: { lat: 30.5928, lng: 114.3055 } },
-  { name: "成都市", coords: { lat: 30.6598, lng: 104.0633 } },
-  { name: "西安市", coords: { lat: 34.3416, lng: 108.9398 } },
-  { name: "重庆市", coords: { lat: 29.5647, lng: 106.5507 } },
-  { name: "天津市", coords: { lat: 39.3434, lng: 117.3616 } },
-  { name: "苏州市", coords: { lat: 31.2989, lng: 120.5853 } },
-  { name: "东莞市", coords: { lat: 23.0489, lng: 113.7447 } },
-  { name: "佛山市", coords: { lat: 23.0219, lng: 113.1068 } },
-  { name: "厦门市", coords: { lat: 24.4798, lng: 118.0819 } }
-];
+// 搜索结果类型定义
+interface SearchResult {
+  name: string;
+  coords: { lat: number; lng: number };
+  type?: string;
+}
 
 const MapLocationPicker: React.FC<MapLocationPickerProps> = ({ 
   onLocationSelect, 
@@ -38,7 +26,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const [selectedLocation, setSelectedLocation] = useState("");
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
-  const [suggestions, setSuggestions] = useState<typeof PRESET_LOCATIONS>([]);
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const { toast } = useToast();
 
   // 搜索建议
@@ -46,13 +34,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     setSearchQuery(value);
     
     if (value.trim().length > 1) {
-      // 先显示预设城市的匹配结果
-      const presetMatches = PRESET_LOCATIONS.filter(location =>
-        location.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setSuggestions(presetMatches.slice(0, 3));
-
-      // 延迟搜索在线地址
+      // 延迟搜索店面和地址
       const timeoutId = setTimeout(() => {
         searchLocation(value);
       }, 500);
@@ -63,8 +45,8 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     }
   };
 
-  // 选择预设位置
-  const selectPresetLocation = (location: typeof PRESET_LOCATIONS[0]) => {
+  // 选择搜索结果
+  const selectSearchResult = (location: SearchResult) => {
     setSearchQuery(location.name);
     setSelectedLocation(location.name);
     setCoordinates(location.coords);
@@ -76,27 +58,77 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     });
   };
 
-  // 搜索地址
+  // 搜索店面和地址
   const searchLocation = async (query: string) => {
     if (!query.trim() || query.length < 2) return;
 
     try {
-      // 直接使用 Nominatim API，因为高德地图需要API key
-      // 使用 Nominatim API 进行地址搜索
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=zh-CN,zh&limit=5&countrycodes=cn`
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
+      // 使用 Nominatim API 搜索餐厅、店面等POI
+      // 添加餐厅、商店等关键词来提高搜索准确性
+      const searchQueries = [
+        query,
+        `${query} 餐厅`,
+        `${query} 饭店`,
+        `${query} 商店`
+      ];
+
+      const allResults: SearchResult[] = [];
+
+      for (const searchQuery of searchQueries) {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&accept-language=zh-CN,zh&limit=10&countrycodes=cn&addressdetails=1`
+        );
         
-        const searchResults = data.map((item: any) => ({
-          name: item.display_name,
-          coords: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) }
-        }));
-        
-        setSuggestions(searchResults.slice(0, 5));
+        if (response.ok) {
+          const data = await response.json();
+          
+          const results = data.map((item: any) => {
+            // 优先显示商店、餐厅等POI
+            let displayName = item.display_name;
+            const address = item.address || {};
+            
+            // 如果有具体的店名或餐厅名，优先显示
+            if (address.shop || address.restaurant || address.amenity) {
+              const parts = [];
+              if (address.shop) parts.push(address.shop);
+              if (address.restaurant) parts.push(address.restaurant);
+              if (address.amenity) parts.push(address.amenity);
+              if (address.road) parts.push(address.road);
+              if (address.suburb || address.neighbourhood) {
+                parts.push(address.suburb || address.neighbourhood);
+              }
+              if (address.city || address.county) {
+                parts.push(address.city || address.county);
+              }
+              displayName = parts.join(', ');
+            }
+
+            return {
+              name: displayName,
+              coords: { lat: parseFloat(item.lat), lng: parseFloat(item.lon) },
+              type: item.type || 'place'
+            };
+          });
+          
+          allResults.push(...results);
+        }
       }
+
+      // 去重并按相关性排序
+      const uniquResults = allResults.filter((result, index, self) => 
+        index === self.findIndex(r => r.coords.lat === result.coords.lat && r.coords.lng === result.coords.lng)
+      );
+
+      // 优先显示包含查询关键词的结果
+      const sortedResults = uniquResults.sort((a, b) => {
+        const aIncludes = a.name.toLowerCase().includes(query.toLowerCase());
+        const bIncludes = b.name.toLowerCase().includes(query.toLowerCase());
+        if (aIncludes && !bIncludes) return -1;
+        if (!aIncludes && bIncludes) return 1;
+        return 0;
+      });
+
+      setSuggestions(sortedResults.slice(0, 8));
     } catch (error) {
       console.error('搜索地址失败:', error);
     }
@@ -211,14 +243,6 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const confirmManualLocation = () => {
     if (searchQuery.trim()) {
       setSelectedLocation(searchQuery);
-      // 尝试匹配预设坐标
-      const matchedLocation = PRESET_LOCATIONS.find(loc => 
-        loc.name.includes(searchQuery) || searchQuery.includes(loc.name.replace('市', ''))
-      );
-      
-      if (matchedLocation) {
-        setCoordinates(matchedLocation.coords);
-      }
       
       toast({
         title: "位置已确认",
@@ -251,7 +275,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
                 id="search"
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="点击定位按钮获取当前位置，或输入地址搜索"
+                placeholder="搜索餐厅、店面名称或地址，支持GPS定位"
                 className="pr-8"
                 onClick={() => {
                   if (!searchQuery) {
@@ -290,7 +314,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
                   key={index}
                   variant="ghost"
                   className="w-full justify-start h-auto p-3 border-0 rounded-none"
-                  onClick={() => selectPresetLocation(location)}
+                  onClick={() => selectSearchResult(location)}
                 >
                   <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
                   {location.name}
@@ -300,23 +324,6 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           )}
         </div>
 
-        {/* 快速选择常用城市 */}
-        <div>
-          <Label className="text-sm font-medium mb-2 block">快速选择</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {PRESET_LOCATIONS.slice(0, 9).map((location) => (
-              <Button
-                key={location.name}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                onClick={() => selectPresetLocation(location)}
-              >
-                {location.name.replace('市', '')}
-              </Button>
-            ))}
-          </div>
-        </div>
 
         {/* 选中的位置 */}
         {selectedLocation && (
@@ -341,7 +348,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          选择城市或输入详细地址，支持GPS定位
+          搜索餐厅店名或输入详细地址，支持GPS定位
         </p>
       </CardContent>
     </Card>
