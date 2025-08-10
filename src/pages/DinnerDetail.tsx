@@ -301,8 +301,8 @@ const DinnerDetail = () => {
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10 relative">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-black rounded-t-lg">
-            <div className="flex items-start justify-between">
-              <CardTitle className="text-2xl text-black font-bold">{dinner.title}</CardTitle>
+            <div className="flex items-start justify-between gap-3">
+              <CardTitle className="text-2xl text-black font-bold flex-1 pr-2">{dinner.title}</CardTitle>
               <ShareDinner 
                 dinner={dinner} 
                 participantCount={participants.length}
