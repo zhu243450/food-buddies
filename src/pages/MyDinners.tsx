@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X } from "lucide-react";
+import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
+import ShareDinner from "@/components/ShareDinner";
 import type { User } from '@supabase/supabase-js';
 
 interface Dinner {
@@ -295,14 +296,22 @@ const MyDinners = () => {
       <Card className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group">
         <div onClick={() => navigate(`/dinner/${dinner.id}`)}>
           {canCancel && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive"
-              onClick={(e) => handleCancelClick(dinner, e)}
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="absolute top-2 right-2 z-10 flex gap-1">
+              {isCreatedByMe && (
+                <ShareDinner 
+                  dinner={dinner} 
+                  participantCount={participantCount}
+                />
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive"
+                onClick={(e) => handleCancelClick(dinner, e)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           )}
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between mb-2">
