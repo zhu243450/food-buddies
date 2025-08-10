@@ -4,10 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X } from "lucide-react";
+import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
+import ShareDinner from "@/components/ShareDinner";
 import { useTranslation } from "react-i18next";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
@@ -298,9 +299,15 @@ const DinnerDetail = () => {
           {t('common.back')}
         </Button>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10 relative">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-black rounded-t-lg">
-            <CardTitle className="text-2xl text-black font-bold">{dinner.title}</CardTitle>
+            <div className="flex items-start justify-between">
+              <CardTitle className="text-2xl text-black font-bold">{dinner.title}</CardTitle>
+              <ShareDinner 
+                dinner={dinner} 
+                participantCount={participants.length}
+              />
+            </div>
             {dinner.description && (
               <CardDescription className="text-black/90 text-base">
                 {dinner.description}
