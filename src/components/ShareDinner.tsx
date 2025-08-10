@@ -74,10 +74,42 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
 
   const shareOptions = [
     {
-      name: "微信好友",
+      name: "微信朋友圈",
       icon: "💬",
       color: "bg-green-500 hover:bg-green-600",
       action: handleWeChatShare,
+    },
+    {
+      name: "Instagram",
+      icon: "📸",
+      color: "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600",
+      action: () => {
+        handleCopyLink();
+        toast({
+          title: "Instagram 分享",
+          description: "链接已复制，可在 Instagram Story 中添加链接",
+        });
+      },
+    },
+    {
+      name: "X (Twitter)",
+      icon: "🐦",
+      color: "bg-black hover:bg-gray-800",
+      action: () => {
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+        window.open(twitterUrl, '_blank');
+        setIsOpen(false);
+      },
+    },
+    {
+      name: "Facebook",
+      icon: "📘",
+      color: "bg-blue-600 hover:bg-blue-700",
+      action: () => {
+        const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+        window.open(fbUrl, '_blank');
+        setIsOpen(false);
+      },
     },
     {
       name: "新浪微博",
@@ -163,15 +195,15 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
         </div>
 
         {/* 分享选项 */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {shareOptions.map((option) => (
             <Button
               key={option.name}
               onClick={option.action}
-              className={`${option.color} text-white h-12 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform`}
+              className={`${option.color} text-white h-14 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform text-xs`}
             >
               <span className="text-lg">{option.icon}</span>
-              <span className="text-xs">{option.name}</span>
+              <span className="leading-tight text-center">{option.name}</span>
             </Button>
           ))}
         </div>
