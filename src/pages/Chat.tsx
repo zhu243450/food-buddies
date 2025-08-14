@@ -44,7 +44,10 @@ const Chat = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (!user || !sessionId) return;
+    if (!user || !sessionId) {
+      setLoading(false);
+      return;
+    }
 
     const fetchChatData = async () => {
       try {
@@ -119,7 +122,7 @@ const Chat = () => {
     };
 
     fetchChatData();
-  }, [user, sessionId, navigate, toast]);
+  }, [user, sessionId, navigate, toast, t]);
 
   // 实时监听新消息
   useEffect(() => {
