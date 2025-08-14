@@ -207,8 +207,9 @@ const Chat = () => {
     }
   };
 
+  const { i18n } = useTranslation();
+  
   const formatTime = (timestamp: string) => {
-    const { i18n } = useTranslation();
     return new Date(timestamp).toLocaleTimeString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
       hour: '2-digit',
       minute: '2-digit'
