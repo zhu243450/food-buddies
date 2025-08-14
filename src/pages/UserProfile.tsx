@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, User, Calendar, Heart, Utensils, Clock } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { useTranslation } from "react-i18next";
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface UserProfileData {
@@ -24,6 +25,7 @@ interface UserProfileData {
 
 const UserProfile = () => {
   const { userId } = useParams();
+  const { t } = useTranslation();
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,9 +77,9 @@ const UserProfile = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto text-center">
-          <p>用户资料不存在</p>
+          <p>{t('profile.profileNotFound', '用户资料不存在')}</p>
           <Button onClick={() => navigate(-1)} className="mt-4">
-            返回
+            {t('common.back')}
           </Button>
         </div>
       </div>
@@ -93,7 +95,7 @@ const UserProfile = () => {
           className="mb-4 hover:bg-accent/20 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          返回
+          {t('common.back')}
         </Button>
 
         <Card className="border-0 shadow-xl bg-card">
@@ -120,8 +122,8 @@ const UserProfile = () => {
               {userProfile.birth_year && (
                 <div className="flex items-center gap-3 p-3 bg-accent/10 rounded-lg">
                   <Calendar className="w-5 h-5 text-primary" />
-                  <span className="font-medium">
-                    {calculateAge(userProfile.birth_year)} 岁 ({userProfile.birth_year}年生)
+                   <span className="font-medium">
+                    {calculateAge(userProfile.birth_year)} {t('profile.yearsOld', '岁')} ({userProfile.birth_year}{t('profile.bornIn', '年生')})
                   </span>
                 </div>
               )}
@@ -129,7 +131,7 @@ const UserProfile = () => {
               <div className="flex items-center gap-3 p-3 bg-accent/10 rounded-lg">
                 <Heart className="w-5 h-5 text-primary" />
                 <span className="font-medium">
-                  {userProfile.accept_strangers ? "接受陌生人拼饭" : "仅与熟人拼饭"}
+                  {userProfile.accept_strangers ? t('profile.acceptStrangers') : t('profile.friendsOnly', '仅与熟人拼饭')}
                 </span>
               </div>
             </div>
@@ -139,7 +141,7 @@ const UserProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Utensils className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-black">饮食偏好</h3>
+                  <h3 className="font-semibold text-black">{t('profile.foodPreferences')}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.food_preferences.map((preference) => (
@@ -160,7 +162,7 @@ const UserProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-black">喜欢的用餐时间</h3>
+                  <h3 className="font-semibold text-black">{t('profile.mealTimes')}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.meal_times.map((mealTime) => (
@@ -179,7 +181,7 @@ const UserProfile = () => {
             {/* 加入时间 */}
             <div className="text-center p-3 bg-muted/50 rounded-lg">
               <p className="text-sm text-black">
-                加入时间: {new Date(userProfile.created_at).toLocaleDateString("zh-CN")}
+                {t('profile.joinedOn', '加入时间')}: {new Date(userProfile.created_at).toLocaleDateString(t('common.locale'))}
               </p>
             </div>
           </CardContent>

@@ -264,7 +264,11 @@
     "location": "Location",
     "foodPreferences": "Food Preferences",
     "dietaryRestrictions": "Dietary Restrictions",
-    "personalityTags": "Personality Tags"
+    "joinedOn": "Joined on",
+    "profileNotFound": "User profile not found",
+    "friendsOnly": "Friends only", 
+    "yearsOld": "years old",
+    "bornIn": " born"
   },
   "chat": {
     "loadFailed": "Failed to load chat",
@@ -476,6 +480,17 @@
       }
     }
   },
+  "mealTimes": {
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "dinner": "Dinner", 
+    "lateNight": "Late Night"
+  },
+  "genderValues": {
+    "male": "Male",
+    "female": "Female",
+    "other": "Other"
+  },
   "seo": {
     "home": {
       "title": "Find Your Perfect Dining Companion",
@@ -507,6 +522,48 @@
       "description": "Learn about FanYueShe's mission and vision. We are committed to creating the highest quality social dining platform.",
       "keywords": "about FanYueShe,company introduction,social dining platform"
     }
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "admin": "Admin", 
+    "cancellationStats": "Cancellation Stats",
+    "cancellationAnalysis": "User cancellation behavior analysis",
+    "totalCancellations": "Total cancellations",
+    "lateCancellations": "Late cancellations", 
+    "cancellationRate": "Cancellation rate",
+    "searchDinners": "Search title/location/creator...",
+    "filterByStatus": "Filter by status",
+    "allStatuses": "All statuses", 
+    "active": "Active",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "searchUsers": "Search user nickname or ID...",
+    "filterByRole": "Filter by role",
+    "dinnerCancelled": "Dinner cancelled",
+    "leftDinner": "Left dinner",
+    "cancelOperationError": "Error occurred during cancellation",
+    "dataOverview": "Data Overview",
+    "dinnerManagement": "Dinner Management", 
+    "userManagement": "User Management",
+    "systemManagement": "System Management",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "newUsersThisMonth": "New Users This Month",
+    "monthlyGrowth": "Monthly Growth",
+    "activityRate": "Activity Rate",
+    "thirtyDayActivity": "30-day Activity Rate",
+    "dinnerStats": "Dinner Statistics",
+    "platformOverview": "Platform dinner data overview",
+    "totalDinners": "Total Dinners",
+    "activeDinners": "Active",
+    "completedDinners": "Completed", 
+    "cancelledDinners": "Cancelled",
+    "loading": "Loading...",
+    "refresh": "Refresh",
+    "viewDetails": "View Details",
+    "noData": "No data",
+    "noDinners": "No dinner data",
+    "noUsers": "No user data"
   },
   "help": {
     "title": "Help Center",

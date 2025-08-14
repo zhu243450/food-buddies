@@ -264,7 +264,11 @@
     "location": "位置",
     "foodPreferences": "饮食偏好",
     "dietaryRestrictions": "饮食禁忌",
-    "personalityTags": "个性标签"
+    "joinedOn": "加入时间",
+    "profileNotFound": "用户资料不存在", 
+    "friendsOnly": "仅与熟人拼饭",
+    "yearsOld": "岁",
+    "bornIn": "年生"
   },
   "footer": {
     "about": "关于我们",
@@ -546,6 +550,17 @@
       }
     }
   },
+  "mealTimes": {
+    "breakfast": "早餐",
+    "lunch": "午饭", 
+    "dinner": "晚饭",
+    "lateNight": "夜宵"
+  },
+  "genderValues": {
+    "male": "男",
+    "female": "女", 
+    "other": "其他"
+  },
   "seo": {
     "home": {
       "title": "找到你完美的饭搭子",
@@ -577,6 +592,48 @@
       "description": "了解饭约社的使命愿景，我们致力于打造最优质的美食社交平台。",
       "keywords": "关于饭约社,公司介绍,美食社交平台"
     }
+  },
+  "admin": {
+    "dashboard": "管理后台",
+    "admin": "管理员",
+    "cancellationStats": "取消统计",
+    "cancellationAnalysis": "用户取消行为分析", 
+    "totalCancellations": "总取消次数",
+    "lateCancellations": "迟到取消",
+    "cancellationRate": "取消率",
+    "searchDinners": "搜索标题/地点/创建者...",
+    "filterByStatus": "按状态筛选",
+    "allStatuses": "全部状态",
+    "active": "进行中",
+    "completed": "已完成",
+    "cancelled": "已取消",
+    "searchUsers": "搜索用户昵称或ID...",
+    "filterByRole": "筛选角色",
+    "dinnerCancelled": "饭局已取消",
+    "leftDinner": "已退出饭局",
+    "cancelOperationError": "取消操作时发生错误",
+    "dataOverview": "数据概览",
+    "dinnerManagement": "饭局管理",
+    "userManagement": "用户管理",
+    "systemManagement": "系统管理",
+    "totalUsers": "总用户数",
+    "activeUsers": "活跃用户",
+    "newUsersThisMonth": "本月新用户",
+    "monthlyGrowth": "较上月增长",
+    "activityRate": "活跃度",
+    "thirtyDayActivity": "30天活跃率",
+    "dinnerStats": "饭局统计",
+    "platformOverview": "平台饭局数据概览",
+    "totalDinners": "总饭局",
+    "activeDinners": "进行中",
+    "completedDinners": "已完成",
+    "cancelledDinners": "已取消",
+    "loading": "加载中...",
+    "refresh": "刷新",
+    "viewDetails": "查看详情",
+    "noData": "暂无数据",
+    "noDinners": "暂无饭局数据",
+    "noUsers": "暂无用户数据"
   },
   "help": {
     "title": "帮助中心",

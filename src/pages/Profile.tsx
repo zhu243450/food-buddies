@@ -33,7 +33,18 @@ const Profile = () => {
     t('foodPrefs.sichuan'), t('foodPrefs.hotpot'), t('foodPrefs.cantonese'), 
     t('foodPrefs.japanese'), t('foodPrefs.korean'), t('foodPrefs.western'), t('foodPrefs.vegetarian')
   ];
-  const MEAL_TIMES = ["早餐", "午饭", "晚饭", "夜宵"];
+  const MEAL_TIMES = [
+    { key: 'breakfast', label: t('mealTimes.breakfast') },
+    { key: 'lunch', label: t('mealTimes.lunch') },
+    { key: 'dinner', label: t('mealTimes.dinner') },
+    { key: 'lateNight', label: t('mealTimes.lateNight') }
+  ];
+  
+  const GENDER_OPTIONS = [
+    { value: t('genderValues.male'), label: t('common.male') },
+    { value: t('genderValues.female'), label: t('common.female') },
+    { value: t('genderValues.other'), label: t('common.other') }
+  ];
   
   const [formData, setFormData] = useState({
     nickname: "",
@@ -96,12 +107,13 @@ const Profile = () => {
     }));
   };
 
-  const handleMealTimeChange = (mealTime: string, checked: boolean) => {
+  const handleMealTimeChange = (mealTimeKey: string, checked: boolean) => {
+    const mealTimeLabel = MEAL_TIMES.find(mt => mt.key === mealTimeKey)?.label || mealTimeKey;
     setFormData(prev => ({
       ...prev,
       meal_times: checked 
-        ? [...prev.meal_times, mealTime]
-        : prev.meal_times.filter(m => m !== mealTime)
+        ? [...prev.meal_times, mealTimeLabel]
+        : prev.meal_times.filter(m => m !== mealTimeLabel)
     }));
   };
 
@@ -260,22 +272,22 @@ const Profile = () => {
                           <SelectValue placeholder={t('profile.selectGender')} />
                         </SelectTrigger>
                         <SelectContent className="bg-card border border-border/50 rounded-lg">
-                          <SelectItem value="男">{t('profile.male')}</SelectItem>
-                          <SelectItem value="女">{t('profile.female')}</SelectItem>
-                          <SelectItem value="其他">{t('profile.other')}</SelectItem>
+                          {GENDER_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div>
+                     <div>
                       <Label htmlFor="birth_year" className="text-sm font-medium text-foreground mb-1 block">{t('profile.birthYear')}</Label>
                       <Input
                         id="birth_year"
                         type="number"
                         min="1900"
                         max={new Date().getFullYear()}
-                        value={formData.birth_year}
-                        onChange={(e) => setFormData(prev => ({ ...prev, birth_year: parseInt(e.target.value) }))}
+                        value={formData.birth_year || ""}
+                        onChange={(e) => setFormData(prev => ({ ...prev, birth_year: parseInt(e.target.value) || new Date().getFullYear() }))}
                         className="h-10 border border-border/50 focus:border-primary rounded-lg"
                         placeholder="1990"
                       />
@@ -312,24 +324,27 @@ const Profile = () => {
                 <div>
                   <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.mealTimes')}</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {MEAL_TIMES.map((mealTime) => (
-                      <div 
-                        key={mealTime} 
-                        className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
-                          formData.meal_times.includes(mealTime)
-                            ? 'bg-accent text-black border-accent shadow-md'
-                            : 'bg-background border-border/30 hover:border-accent/50'
-                        }`}
-                      >
-                        <Checkbox
-                          id={mealTime}
-                          checked={formData.meal_times.includes(mealTime)}
-                          onCheckedChange={(checked) => handleMealTimeChange(mealTime, !!checked)}
-                          className="scale-110"
-                        />
-                        <Label htmlFor={mealTime} className="text-sm font-medium cursor-pointer flex-1">{mealTime}</Label>
-                      </div>
-                    ))}
+                    {MEAL_TIMES.map((mealTime) => {
+                      const isSelected = formData.meal_times.includes(mealTime.label);
+                      return (
+                        <div 
+                          key={mealTime.key} 
+                          className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
+                            isSelected
+                              ? 'bg-accent text-black border-accent shadow-md'
+                              : 'bg-background border-border/30 hover:border-accent/50'
+                          }`}
+                        >
+                          <Checkbox
+                            id={mealTime.key}
+                            checked={isSelected}
+                            onCheckedChange={(checked) => handleMealTimeChange(mealTime.key, !!checked)}
+                            className="scale-110"
+                          />
+                          <Label htmlFor={mealTime.key} className="text-sm font-medium cursor-pointer flex-1">{mealTime.label}</Label>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

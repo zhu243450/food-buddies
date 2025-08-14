@@ -12,6 +12,7 @@ import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useTranslation } from "react-i18next";
 
 interface UserStats {
   total_users: number;
@@ -49,6 +50,7 @@ interface Profile {
 
 const Admin = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [dinnerStats, setDinnerStats] = useState<DinnerStats | null>(null);
   const [cancellationStats, setCancellationStats] = useState<CancellationStats | null>(null);
@@ -335,16 +337,16 @@ const Admin = () => {
             className="flex items-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            返回
+            {t('common.back')}
           </Button>
           <div className="flex items-center gap-2 flex-1">
             <Shield className="w-6 h-6 text-primary" />
             <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              管理后台
+              {t('admin.dashboard')}
             </h1>
           </div>
           <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-            管理员
+            {t('admin.admin', '管理员')}
           </Badge>
         </div>
       </header>
@@ -454,9 +456,9 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertCircle className="w-5 h-5 text-destructive" />
-                  取消统计
+                  {t('admin.cancellationStats')}
                 </CardTitle>
-                <CardDescription>用户取消行为分析</CardDescription>
+                <CardDescription>{t('admin.cancellationAnalysis')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -464,20 +466,20 @@ const Admin = () => {
                     <p className="text-2xl font-bold text-destructive">
                       {cancellationStats?.total_cancellations || 0}
                     </p>
-                    <p className="text-sm text-muted-foreground">总取消次数</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.totalCancellations')}</p>
                   </div>
                   <div className="text-center space-y-1">
                     <p className="text-2xl font-bold text-orange-500">
                       {cancellationStats?.late_cancellations || 0}
                     </p>
-                    <p className="text-sm text-muted-foreground">迟到取消</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.lateCancellations')}</p>
                   </div>
                   <div className="text-center space-y-1">
                     <p className="text-2xl font-bold text-red-500">
                       {cancellationStats?.cancellation_rate ? 
                         Math.round(cancellationStats.cancellation_rate * 100) / 100 : 0}%
                     </p>
-                    <p className="text-sm text-muted-foreground">取消率</p>
+                    <p className="text-sm text-muted-foreground">{t('admin.cancellationRate')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -498,7 +500,7 @@ const Admin = () => {
                   <div className="relative flex-1">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="搜索标题/地点/创建者..."
+                      placeholder={t('admin.searchDinners')}
                       value={dinnerSearch}
                       onChange={(e) => setDinnerSearch(e.target.value)}
                       className="pl-10"
@@ -506,13 +508,13 @@ const Admin = () => {
                   </div>
                   <Select value={dinnerStatus} onValueChange={setDinnerStatus}>
                     <SelectTrigger className="w-full sm:w-40">
-                      <SelectValue placeholder="按状态筛选" />
+                      <SelectValue placeholder={t('admin.filterByStatus')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">全部状态</SelectItem>
-                      <SelectItem value="active">进行中</SelectItem>
-                      <SelectItem value="completed">已完成</SelectItem>
-                      <SelectItem value="cancelled">已取消</SelectItem>
+                      <SelectItem value="all">{t('admin.allStatuses')}</SelectItem>
+                      <SelectItem value="active">{t('admin.active')}</SelectItem>
+                      <SelectItem value="completed">{t('admin.completed')}</SelectItem>
+                      <SelectItem value="cancelled">{t('admin.cancelled')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button 
@@ -641,7 +643,7 @@ const Admin = () => {
                   <div className="relative flex-1">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                     <Input
-                      placeholder="搜索用户昵称或ID..."
+                      placeholder={t('admin.searchUsers')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -649,7 +651,7 @@ const Admin = () => {
                   </div>
                   <Select value={roleFilter} onValueChange={setRoleFilter}>
                     <SelectTrigger className="w-full sm:w-40">
-                      <SelectValue placeholder="筛选角色" />
+                      <SelectValue placeholder={t('admin.filterByRole')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">所有用户</SelectItem>

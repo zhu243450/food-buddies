@@ -247,11 +247,11 @@ const MyDinners = () => {
 
       if (result.success || result.f1) { // f1 可能是字段名
         const isCreator = selectedDinner.created_by === user.id;
-        const message = result.message || result.f2 || (isCreator ? "饭局已取消" : "已退出饭局");
+        const message = result.message || result.f2 || (isCreator ? t('admin.dinnerCancelled') : t('admin.leftDinner'));
         const isLate = result.is_late_cancellation || result.f4 || false;
 
         toast({
-          title: isCreator ? "饭局已取消" : "已退出饭局",
+          title: isCreator ? t('admin.dinnerCancelled') : t('admin.leftDinner'),
           description: message,
           variant: isLate ? "destructive" : "default",
         });
@@ -270,7 +270,7 @@ const MyDinners = () => {
       console.error('Cancel dinner error:', error);
       toast({
         title: "操作失败",
-        description: error.message || "取消操作时发生错误",
+        description: error.message || t('admin.cancelOperationError'),
         variant: "destructive",
       });
     } finally {
