@@ -28,7 +28,13 @@ export const Privacy = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/');
+              }
+            }}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
