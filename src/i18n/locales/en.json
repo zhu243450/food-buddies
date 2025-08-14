@@ -776,5 +776,13 @@
         "Maintain rational consumption to avoid disputes"
       ]
     }
+  },
+  "contact": {
+    "email": "weishang99@gmail.com",
+    "phone": "+86 19068522408",
+    "address": "Unit 1, No. 22 Tangpu East Road, Tangxia Town, Dongguan, Guangdong Province",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone", 
+    "addressLabel": "Address"
   }
 }

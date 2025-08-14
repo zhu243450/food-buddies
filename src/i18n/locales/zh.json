@@ -846,5 +846,13 @@
         "保持理性消费，避免纠纷"
       ]
     }
+  },
+  "contact": {
+    "email": "weishang99@gmail.com",
+    "phone": "+86 19068522408", 
+    "address": "广东省东莞市塘厦镇塘莆东路22号之一",
+    "emailLabel": "邮箱",
+    "phoneLabel": "电话",
+    "addressLabel": "地址"
   }
 }

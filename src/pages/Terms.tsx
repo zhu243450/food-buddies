@@ -111,9 +111,9 @@ export const Terms = () => {
               </p>
               <div className="bg-muted p-4 rounded-lg mt-2">
                 <p className="text-sm">
-                  邮箱：weishang99@gmail.com<br />
-                  电话：+86 19068522408<br />
-                  地址：广东省东莞市塘厦镇塘莆东路22号之一
+                  {t('contact.emailLabel')}：{t('contact.email')}<br />
+                  {t('contact.phoneLabel')}：{t('contact.phone')}<br />
+                  {t('contact.addressLabel')}：{t('contact.address')}
                 </p>
               </div>
             </section>
