@@ -27,6 +27,9 @@
     "searchOptions": "Search options...",
     "noOptionsFound": "No options found",
     "uploading": "Uploading...",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other", 
     "getStarted": "Get Started",
     "locale": "en-US"
   },
@@ -266,6 +269,11 @@
   "error": {
     "title": "Application Error",
     "reload": "Reload"
+  },
+  "genderValues": {
+    "male": "Male",
+    "female": "Female", 
+    "other": "Other"
   },
   "chat": {
     "loadFailed": "Failed to load chat",
