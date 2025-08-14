@@ -26,6 +26,7 @@
     "more": "更多",
     "searchOptions": "搜索选项...",
     "noOptionsFound": "未找到选项",
+    "uploading": "上传中...",
     "getStarted": "开始使用",
     "locale": "zh-CN"
   },
@@ -158,7 +159,18 @@
     "saveSuccess": "保存成功",
     "profileUpdated": "您的资料已更新",
     "logoutFailed": "登出失败",
-    "changeAvatar": "更换头像"
+    "changeAvatar": "更换头像",
+    "avatar": "头像",
+    "bio": "个人简介",
+    "age": "年龄",
+    "location": "位置",
+    "dietaryRestrictions": "饮食禁忌",
+    "personalityTags": "个性标签",
+    "joinedOn": "加入时间",
+    "profileNotFound": "用户资料不存在", 
+    "friendsOnly": "仅与熟人拼饭",
+    "yearsOld": "岁",
+    "bornIn": "年生"
   },
   "dinnerDetail": {
     "creator": "发起人",
@@ -254,21 +266,6 @@
   "error": {
     "title": "应用出现错误",
     "reload": "重新加载"
-  },
-  "profile": {
-    "nickname": "昵称",
-    "avatar": "头像",
-    "bio": "个人简介",
-    "gender": "性别",
-    "age": "年龄",
-    "location": "位置",
-    "foodPreferences": "饮食偏好",
-    "dietaryRestrictions": "饮食禁忌",
-    "joinedOn": "加入时间",
-    "profileNotFound": "用户资料不存在", 
-    "friendsOnly": "仅与熟人拼饭",
-    "yearsOld": "岁",
-    "bornIn": "年生"
   },
   "footer": {
     "about": "关于我们",
