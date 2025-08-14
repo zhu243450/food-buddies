@@ -3,13 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from 'react-i18next';
+import { SEO } from "@/components/SEO";
+import { useSEO } from "@/hooks/useSEO";
 import type { User } from '@supabase/supabase-js';
 
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { getPageSEO } = useSEO();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const seoData = getPageSEO('home');
 
   useEffect(() => {
     // 监听认证状态变化
@@ -58,21 +63,24 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-5">
-      <div className="text-center space-y-6 max-w-md">
-        <h1 className="text-5xl font-bold text-foreground mb-4">{t('about.title')}</h1>
-        <p className="text-xl text-muted-foreground mb-8">
-          {t('about.subtitle')}
-        </p>
-        <Button 
-          onClick={() => navigate("/auth")} 
-          size="lg" 
-          className="w-48 h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
-        >
-          {t('common.getStarted')}
-        </Button>
+    <>
+      <SEO {...seoData} />
+      <div className="min-h-screen flex items-center justify-center bg-background p-5">
+        <div className="text-center space-y-6 max-w-md">
+          <h1 className="text-5xl font-bold text-foreground mb-4">{t('about.title')}</h1>
+          <p className="text-xl text-muted-foreground mb-8">
+            {t('about.subtitle')}
+          </p>
+          <Button 
+            onClick={() => navigate("/auth")} 
+            size="lg" 
+            className="w-48 h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
+          >
+            {t('common.getStarted')}
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

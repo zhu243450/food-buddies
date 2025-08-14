@@ -9,11 +9,14 @@ import { CalendarDays, MapPin, Users, Search, Sparkles, Zap, Clock, Users2, Filt
 import Navigation from "@/components/Navigation";
 import DinnerFiltersComponent, { DinnerFilters } from "@/components/DinnerFilters";
 import ShareDinner from "@/components/ShareDinner";
+import { SEO } from "@/components/SEO";
+import { useSEO } from "@/hooks/useSEO";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
 const Discover = () => {
   const { t } = useTranslation();
+  const { getPageSEO } = useSEO();
   const [user, setUser] = useState<User | null>(null);
   const [allDinners, setAllDinners] = useState<Dinner[]>([]);
   const [filteredDinners, setFilteredDinners] = useState<Dinner[]>([]);
@@ -33,6 +36,8 @@ const Discover = () => {
     maxParticipants: [2, 20]
   });
   const navigate = useNavigate();
+
+  const seoData = getPageSEO('discover');
 
   useEffect(() => {
     const getUser = async () => {
@@ -336,7 +341,9 @@ const Discover = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
+    <>
+      <SEO {...seoData} />
+      <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
         {/* 标题区域 */}
         <div className="text-center mb-6">
@@ -549,6 +556,7 @@ const Discover = () => {
       </div>
       <Navigation />
     </div>
+    </>
   );
 };
 

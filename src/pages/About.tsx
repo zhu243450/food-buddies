@@ -3,13 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SEO } from "@/components/SEO";
+import { useSEO } from "@/hooks/useSEO";
 
 export const About = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getPageSEO } = useSEO();
+  
+  const seoData = getPageSEO('about');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
+    <>
+      <SEO {...seoData} />
+      <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <Button 
@@ -118,5 +125,6 @@ export const About = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };

@@ -1,5 +1,8 @@
 {
   "common": {
+    "appName": "FanYueShe",
+    "appDescription": "FanYueShe is a social dining app that helps you find like-minded dining companions to enjoy delicious food together. Supports instant dining, scheduled meals, and group dining.",
+    "keywords": "dining,social,food,companion,meetup,restaurant,friends",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -471,6 +474,38 @@
         "line1": "Dongguan City, Guangdong Province",
         "line2": "No. 22-1, Tangpu East Road, Tangxia Town"
       }
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "Find Your Perfect Dining Companion",
+      "description": "FanYueShe is a social dining app that helps you find like-minded dining companions to enjoy delicious food together. Supports instant dining, scheduled meals, and group dining.",
+      "keywords": "dining companion,social dining,food meetup,restaurant friends"
+    },
+    "discover": {
+      "title": "Discover Nearby Dining Events",
+      "description": "Discover exciting dining events near you, find like-minded dining companions, and enjoy the perfect combination of food and socializing.",
+      "keywords": "discover dining,nearby food,social dining,dining friends"
+    },
+    "createDinner": {
+      "title": "Create Dining Event",
+      "description": "Easily create your dining event and invite like-minded friends to enjoy delicious food together.",
+      "keywords": "create dining event,organize meal,invite friends,social dining"
+    },
+    "dinnerDetail": {
+      "title": "Dining Event Details",
+      "description": "View detailed dining event information, understand activity arrangements, and interact with dining companions.",
+      "keywords": "dining details,meal information,food activity"
+    },
+    "profile": {
+      "title": "User Profile",
+      "description": "View user profiles, learn about dining companions, and establish social dining connections.",
+      "keywords": "user profile,dining companion info,social profile"
+    },
+    "about": {
+      "title": "About Us",
+      "description": "Learn about FanYueShe's mission and vision. We are committed to creating the highest quality social dining platform.",
+      "keywords": "about FanYueShe,company introduction,social dining platform"
     }
   },
   "help": {
