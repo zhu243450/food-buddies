@@ -289,6 +289,8 @@ const MyDinners = () => {
   const DinnerCard = ({ dinner }: { dinner: Dinner }) => {
     const participantCount = participantCounts[dinner.id] || 0;
     const isCreatedByMe = dinner.created_by === user?.id;
+    // 总人数 = 参与者数量 + 创建者(1人)
+    const totalParticipants = participantCount + 1;
     
     const canCancel = (dinner as any).status === 'active' || !(dinner as any).status;
     
@@ -297,12 +299,6 @@ const MyDinners = () => {
         <div onClick={() => navigate(`/dinner/${dinner.id}`)}>
           {canCancel && (
             <div className="absolute top-2 right-2 z-10 flex gap-1">
-              {isCreatedByMe && (
-                <ShareDinner 
-                  dinner={dinner} 
-                  participantCount={participantCount}
-                />
-              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -319,6 +315,12 @@ const MyDinners = () => {
               <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
                 {getModeIcon(dinner.dinner_mode)} {getModeLabel(dinner.dinner_mode)}
               </Badge>
+              {isCreatedByMe && canCancel && (
+                <ShareDinner 
+                  dinner={dinner} 
+                  participantCount={totalParticipants}
+                />
+              )}
             </div>
             {isCreatedByMe && participantCount > 0 && (
               <Badge className="bg-primary text-black border-primary/30 text-xs font-bold animate-pulse">
@@ -353,9 +355,9 @@ const MyDinners = () => {
           }`}>
             <Users className="w-4 h-4 text-primary" />
             <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
-              {participantCount} / {dinner.max_participants} {t('myDinners.people')}
+              {totalParticipants} / {dinner.max_participants} {t('myDinners.people')}
             </span>
-            {participantCount >= dinner.max_participants && (
+            {totalParticipants >= dinner.max_participants && (
               <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
                 {t('myDinners.fullBadge')}
               </Badge>
