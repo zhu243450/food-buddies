@@ -7,23 +7,432 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cancellation_records: {
+        Row: {
+          cancellation_reason: string | null
+          cancellation_type: string
+          cancelled_at: string
+          created_at: string
+          dinner_id: string
+          dinner_start_time: string
+          hours_before_start: number
+          id: string
+          is_late_cancellation: boolean
+          user_id: string
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancellation_type: string
+          cancelled_at?: string
+          created_at?: string
+          dinner_id: string
+          dinner_start_time: string
+          hours_before_start: number
+          id?: string
+          is_late_cancellation?: boolean
+          user_id: string
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancellation_type?: string
+          cancelled_at?: string
+          created_at?: string
+          dinner_id?: string
+          dinner_start_time?: string
+          hours_before_start?: number
+          id?: string
+          is_late_cancellation?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cancellation_records_dinner_id_fkey"
+            columns: ["dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          message_type: string | null
+          sender_id: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          sender_id: string
+          session_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          sender_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_chat_messages_session_id"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          can_chat_until: string | null
+          created_at: string
+          dinner_id: string
+          id: string
+          participant1_id: string
+          participant2_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          can_chat_until?: string | null
+          created_at?: string
+          dinner_id: string
+          id?: string
+          participant1_id: string
+          participant2_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          can_chat_until?: string | null
+          created_at?: string
+          dinner_id?: string
+          id?: string
+          participant1_id?: string
+          participant2_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_chat_sessions_dinner_id"
+            columns: ["dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dinner_participants: {
+        Row: {
+          dinner_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          dinner_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          dinner_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_dinner_participants_dinner_id"
+            columns: ["dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dinners: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          dietary_restrictions: string[] | null
+          dinner_mode: string | null
+          dinner_time: string
+          food_preferences: string[] | null
+          friends_only: boolean | null
+          gender_preference: string | null
+          id: string
+          location: string
+          max_participants: number
+          personality_tags: string[] | null
+          status: string | null
+          title: string
+          updated_at: string
+          urgency_level: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          dietary_restrictions?: string[] | null
+          dinner_mode?: string | null
+          dinner_time: string
+          food_preferences?: string[] | null
+          friends_only?: boolean | null
+          gender_preference?: string | null
+          id?: string
+          location: string
+          max_participants: number
+          personality_tags?: string[] | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          urgency_level?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          dietary_restrictions?: string[] | null
+          dinner_mode?: string | null
+          dinner_time?: string
+          food_preferences?: string[] | null
+          friends_only?: boolean | null
+          gender_preference?: string | null
+          id?: string
+          location?: string
+          max_participants?: number
+          personality_tags?: string[] | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          urgency_level?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          accept_strangers: boolean | null
+          avatar_url: string | null
+          ban_reason: string | null
+          banned_at: string | null
+          banned_by: string | null
+          banned_until: string | null
+          birth_year: number | null
+          created_at: string
+          dietary_restrictions: string[] | null
+          food_preferences: string[] | null
+          gender: string | null
+          gender_preference: string | null
+          id: string
+          is_banned: boolean | null
+          location_latitude: number | null
+          location_longitude: number | null
+          meal_times: string[] | null
+          nickname: string
+          personality_tags: string[] | null
+          preferred_radius: number | null
+          qq_openid: string | null
+          updated_at: string
+          user_id: string
+          wechat_openid: string | null
+        }
+        Insert: {
+          accept_strangers?: boolean | null
+          avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
+          banned_by?: string | null
+          banned_until?: string | null
+          birth_year?: number | null
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          food_preferences?: string[] | null
+          gender?: string | null
+          gender_preference?: string | null
+          id?: string
+          is_banned?: boolean | null
+          location_latitude?: number | null
+          location_longitude?: number | null
+          meal_times?: string[] | null
+          nickname: string
+          personality_tags?: string[] | null
+          preferred_radius?: number | null
+          qq_openid?: string | null
+          updated_at?: string
+          user_id: string
+          wechat_openid?: string | null
+        }
+        Update: {
+          accept_strangers?: boolean | null
+          avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
+          banned_by?: string | null
+          banned_until?: string | null
+          birth_year?: number | null
+          created_at?: string
+          dietary_restrictions?: string[] | null
+          food_preferences?: string[] | null
+          gender?: string | null
+          gender_preference?: string | null
+          id?: string
+          is_banned?: boolean | null
+          location_latitude?: number | null
+          location_longitude?: number | null
+          meal_times?: string[] | null
+          nickname?: string
+          personality_tags?: string[] | null
+          preferred_radius?: number | null
+          qq_openid?: string | null
+          updated_at?: string
+          user_id?: string
+          wechat_openid?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_match_score: {
+        Args: { dinner_id_param: string; user_id_param: string }
+        Returns: number
+      }
+      can_view_dinner_participants: {
+        Args: { target_dinner_id: string; target_user_id: string }
+        Returns: boolean
+      }
+      cancel_dinner: {
+        Args: {
+          cancellation_reason_param?: string
+          dinner_id_param: string
+          user_id_param: string
+        }
+        Returns: {
+          cancellation_type: string
+          is_late_cancellation: boolean
+          message: string
+          success: boolean
+        }[]
+      }
+      check_user_cancellation_restrictions: {
+        Args: { user_id_param: string }
+        Returns: {
+          can_create_dinner: boolean
+          late_cancellation_count: number
+          restriction_end_date: string
+          restriction_reason: string
+        }[]
+      }
+      get_admin_cancellation_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cancellation_rate: number
+          late_cancellations: number
+          total_cancellations: number
+        }[]
+      }
+      get_admin_dinner_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_dinners: number
+          cancelled_dinners: number
+          completed_dinners: number
+          total_dinners: number
+        }[]
+      }
+      get_admin_user_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_users: number
+          new_users_this_month: number
+          total_users: number
+        }[]
+      }
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: {
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_user_banned: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
+      make_user_admin: {
+        Args: { _user_email: string }
+        Returns: string
+      }
+      manage_user_permissions: {
+        Args: {
+          action: string
+          ban_duration_hours?: number
+          reason?: string
+          target_user_id: string
+        }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +559,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

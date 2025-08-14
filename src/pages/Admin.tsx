@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye } from "lucide-react";
+import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye, Ban, UserX, MessageSquareOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
 
 interface UserStats {
@@ -46,6 +47,11 @@ interface Profile {
   created_at: string;
   updated_at: string;
   avatar_url?: string;
+  is_banned?: boolean;
+  ban_reason?: string;
+  banned_at?: string;
+  banned_until?: string;
+  banned_by?: string;
 }
 
 const Admin = () => {
@@ -76,6 +82,13 @@ const Admin = () => {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailParticipants, setDetailParticipants] = useState<Array<{ user_id: string; joined_at: string; profile?: Profile }>>([]);
   const [detailCreator, setDetailCreator] = useState<Profile | null>(null);
+
+  // 权限管理相关状态
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [banDuration, setBanDuration] = useState<string>('');
+  const [banLoading, setBanLoading] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -289,6 +302,74 @@ const Admin = () => {
       return roles?.some((r: UserRole) => r.role === 'admin') ? 'admin' : 'user';
     } catch {
       return 'user';
+    }
+  };
+
+  // 权限管理方法
+  const handleBanUser = (user: Profile) => {
+    setSelectedUser(user);
+    setBanReason('');
+    setBanDuration('24');
+    setBanDialogOpen(true);
+  };
+
+  const handleUnbanUser = async (user: Profile) => {
+    try {
+      setBanLoading(true);
+      const { data, error } = await supabase.rpc('manage_user_permissions', {
+        target_user_id: user.user_id,
+        action: 'unban'
+      });
+
+      if (error) throw error;
+      
+      const result = data?.[0];
+      if (result?.success) {
+        toast.success(result.message);
+        await loadUsers();
+      } else {
+        toast.error(result?.message || '解禁操作失败');
+      }
+    } catch (error: any) {
+      console.error('Unban user failed:', error);
+      toast.error('解禁用户失败: ' + error.message);
+    } finally {
+      setBanLoading(false);
+    }
+  };
+
+  const confirmBanUser = async () => {
+    if (!selectedUser || !banReason.trim()) {
+      toast.error('请填写禁言原因');
+      return;
+    }
+
+    try {
+      setBanLoading(true);
+      const durationHours = banDuration === 'permanent' ? null : parseInt(banDuration);
+      
+      const { data, error } = await supabase.rpc('manage_user_permissions', {
+        target_user_id: selectedUser.user_id,
+        action: 'ban',
+        reason: banReason.trim(),
+        ban_duration_hours: durationHours
+      });
+
+      if (error) throw error;
+      
+      const result = data?.[0];
+      if (result?.success) {
+        toast.success(result.message);
+        setBanDialogOpen(false);
+        await loadUsers();
+      } else {
+        toast.error(result?.message || '禁言操作失败');
+      }
+    } catch (error: any) {
+      console.error('Ban user failed:', error);
+      toast.error('禁言用户失败: ' + error.message);
+    } finally {
+      setBanLoading(false);
     }
   };
   const filteredUsers = users.filter(user => {
@@ -679,21 +760,22 @@ const Admin = () => {
                         <TableHead className="hidden md:table-cell">性别</TableHead>
                         <TableHead className="hidden md:table-cell">年龄</TableHead>
                         <TableHead>角色</TableHead>
+                        <TableHead className="hidden sm:table-cell">状态</TableHead>
                         <TableHead className="hidden sm:table-cell">注册时间</TableHead>
-                        <TableHead className="w-24">操作</TableHead>
+                        <TableHead className="w-32">操作</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {usersLoading ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8">
+                          <TableCell colSpan={8} className="text-center py-8">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                             <p className="text-muted-foreground mt-2">加载中...</p>
                           </TableCell>
                         </TableRow>
                       ) : filteredUsers.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8">
+                          <TableCell colSpan={8} className="text-center py-8">
                             <p className="text-muted-foreground">暂无用户数据</p>
                           </TableCell>
                         </TableRow>
@@ -703,6 +785,8 @@ const Admin = () => {
                             key={profile.id} 
                             profile={profile} 
                             onRoleChange={handleRoleChange}
+                            onBanUser={handleBanUser}
+                            onUnbanUser={handleUnbanUser}
                           />
                         ))
                       )}
@@ -792,6 +876,67 @@ const Admin = () => {
               ) : null}
             </DialogContent>
           </Dialog>
+
+          {/* 禁言对话框 */}
+          <Dialog open={banDialogOpen} onOpenChange={setBanDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Ban className="w-5 h-5 text-destructive" />
+                  禁言用户
+                </DialogTitle>
+                <DialogDescription>
+                  对用户 "{selectedUser?.nickname}" 进行禁言处理
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">禁言时长</label>
+                  <Select value={banDuration} onValueChange={setBanDuration}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1小时</SelectItem>
+                      <SelectItem value="24">24小时</SelectItem>
+                      <SelectItem value="72">3天</SelectItem>
+                      <SelectItem value="168">7天</SelectItem>
+                      <SelectItem value="720">30天</SelectItem>
+                      <SelectItem value="permanent">永久禁言</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium">禁言原因</label>
+                  <Textarea
+                    value={banReason}
+                    onChange={(e) => setBanReason(e.target.value)}
+                    placeholder="请输入禁言原因..."
+                    className="resize-none"
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setBanDialogOpen(false)}
+                    disabled={banLoading}
+                  >
+                    取消
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={confirmBanUser}
+                    disabled={banLoading || !banReason.trim()}
+                  >
+                    {banLoading ? "处理中..." : "确认禁言"}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </Tabs>
       </div>
     </div>
@@ -802,9 +947,11 @@ const Admin = () => {
 interface UserRowProps {
   profile: Profile;
   onRoleChange: (userId: string, newRole: string) => void;
+  onBanUser: (user: Profile) => void;
+  onUnbanUser: (user: Profile) => void;
 }
 
-const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange }) => {
+const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onUnbanUser }) => {
   const [currentRole, setCurrentRole] = useState<string>('user');
   const [roleLoading, setRoleLoading] = useState(false);
 
@@ -841,6 +988,20 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange }) => {
     if (!birthYear) return '-';
     return new Date().getFullYear() - birthYear;
   };
+
+  const getBanStatus = () => {
+    if (!profile.is_banned) return null;
+    
+    if (profile.banned_until) {
+      const banUntil = new Date(profile.banned_until);
+      if (banUntil > new Date()) {
+        return `禁言至 ${banUntil.toLocaleDateString('zh-CN')}`;
+      }
+    }
+    return '永久禁言';
+  };
+
+  const banStatus = getBanStatus();
 
   return (
     <TableRow className="hover:bg-muted/50">
@@ -889,22 +1050,56 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange }) => {
         </Badge>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
+        {profile.is_banned ? (
+          <Badge variant="destructive" className="text-xs">
+            <MessageSquareOff className="w-3 h-3 mr-1" />
+            {banStatus}
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs text-muted-foreground">
+            正常
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">
         {formatDate(profile.created_at)}
       </TableCell>
       <TableCell>
-        <Select 
-          value={currentRole} 
-          onValueChange={handleRoleChange}
-          disabled={roleLoading}
-        >
-          <SelectTrigger className="w-20 h-8 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="user">用户</SelectItem>
-            <SelectItem value="admin">管理员</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-1">
+          <Select 
+            value={currentRole} 
+            onValueChange={handleRoleChange}
+            disabled={roleLoading}
+          >
+            <SelectTrigger className="w-16 h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">用户</SelectItem>
+              <SelectItem value="admin">管理员</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          {profile.is_banned ? (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onUnbanUser(profile)}
+              className="h-7 px-2 text-xs"
+            >
+              <UserX className="w-3 h-3" />
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onBanUser(profile)}
+              className="h-7 px-2 text-xs text-destructive hover:text-destructive-foreground"
+            >
+              <Ban className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
       </TableCell>
     </TableRow>
   );
