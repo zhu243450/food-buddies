@@ -327,117 +327,234 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "lastUpdated": "Last updated: August 7, 2024",
+    "lastUpdated": "Last updated: August 14, 2025",
     "sections": {
       "collection": {
-        "title": "1. Information Collection",
-        "description": "When you use 饭约社 services, we may collect the following information:",
+        "title": "Information We Collect",
+        "description": "We collect information you provide directly to us, such as when you create an account, update your profile, or use our services. Our legal basis for processing this information includes your consent, performance of our contract with you, and our legitimate interests in providing and improving our services.",
         "items": [
-          "Personal identification information: name, email address, phone number",
-          "Profile information: avatar, bio, food preferences",
-          "Location information: to match nearby dinners (with your authorization)",
-          "Usage information: app usage records, device information"
+          "Personal information (name, email address, phone number, age, gender)",
+          "Profile information (photos, dining preferences, dietary restrictions, location)",
+          "Usage data (app interactions, features used, dining history, chat messages)",
+          "Device information (device type, operating system, IP address, unique identifiers)",
+          "Location data (GPS coordinates, check-in locations, dining venues)",
+          "Communications data (messages, support inquiries, feedback)"
         ]
       },
       "usage": {
-        "title": "2. Information Usage",
-        "description": "We use the collected information to:",
+        "title": "How We Use Your Information",
+        "description": "We process your personal information for the following purposes based on legitimate interests, contractual necessity, or your consent:",
         "items": [
-          "Provide and improve our services",
-          "Match suitable dinners and users",
-          "Send important notifications and updates",
-          "Ensure platform security and prevent fraud"
+          "Provide and operate our social dining matching services",
+          "Create and maintain your user profile and account",
+          "Facilitate connections between users for dining experiences",
+          "Send notifications about dining matches, messages, and platform updates",
+          "Personalize your experience and improve our recommendation algorithms",
+          "Analyze usage patterns to enhance platform functionality and safety",
+          "Process payments and manage billing (through third-party processors)",
+          "Comply with legal obligations and resolve disputes",
+          "Prevent fraud, abuse, and ensure platform safety"
+        ]
+      },
+      "thirdParties": {
+        "title": "Third-Party Services",
+        "description": "We work with trusted third-party service providers to deliver our services. These providers are contractually bound to protect your information and use it only for specified purposes:",
+        "items": [
+          "Supabase (database and authentication services) - Data hosting and user authentication",
+          "Google Maps API - Location services and venue information",
+          "Payment processors - Secure payment processing (we do not store payment card information)",
+          "Cloud storage providers - Secure storage of profile photos and other media",
+          "Analytics services - Usage analytics and performance monitoring (anonymized data only)",
+          "Customer support tools - To provide better customer service"
+        ]
+      },
+      "legal": {
+        "title": "Legal Basis for Processing (GDPR)",
+        "description": "For users in the European Economic Area (EEA), UK, and Switzerland, we process your personal data based on the following legal grounds:",
+        "items": [
+          "Consent: For marketing communications, location tracking, and optional features",
+          "Contract Performance: To provide our core dining matching services",
+          "Legitimate Interests: For platform security, fraud prevention, and service improvement",
+          "Legal Obligation: To comply with applicable laws and regulations",
+          "Vital Interests: To protect user safety in emergency situations"
         ]
       },
       "sharing": {
-        "title": "3. Information Sharing",
-        "description": "We will not sell, trade, or transfer your personal information to third parties, except when:",
+        "title": "Information Sharing and Disclosure",
+        "description": "We do not sell your personal information. We may share your information in the following circumstances:",
         "items": [
-          "We have your explicit consent",
-          "Required by law or government agencies",
-          "To protect our rights, property, or safety"
+          "With other users as part of our social features (public profile information, dining preferences)",
+          "With service providers who assist us in operating our platform (under strict confidentiality agreements)",
+          "When required by law, legal process, or government request",
+          "To protect our rights, property, or safety, or that of our users",
+          "In connection with a business transfer, merger, or acquisition (with user notification)",
+          "With your explicit consent for specific purposes"
         ]
       },
       "security": {
-        "title": "4. Data Security",
-        "description": "We adopt industry-standard security measures to protect your personal information, including data encryption, access control, and regular security audits."
+        "title": "Data Security",
+        "description": "We implement industry-standard technical and organizational measures to protect your personal information, including encryption in transit and at rest, access controls, regular security audits, and employee training on data protection."
       },
       "rights": {
-        "title": "5. Your Rights",
-        "description": "You have the right to:",
+        "title": "Your Privacy Rights",
+        "description": "Depending on your location, you may have the following rights regarding your personal information:",
         "items": [
-          "Access and update your personal information",
-          "Delete your account and related data",
-          "Restrict or object to certain data processing",
-          "Data portability"
+          "Access: Request a copy of your personal data we hold",
+          "Rectification: Correct inaccurate or incomplete information",
+          "Erasure: Request deletion of your personal data ('right to be forgotten')",
+          "Portability: Receive your data in a structured, machine-readable format",
+          "Restriction: Limit how we process your personal data",
+          "Objection: Object to processing based on legitimate interests",
+          "Withdraw Consent: Withdraw consent for consent-based processing",
+          "Non-discrimination: Not be discriminated against for exercising your rights",
+          "Opt-out of Sale: California residents can opt-out of personal information sales (we do not sell personal information)"
         ]
       },
+      "exercise": {
+        "title": "How to Exercise Your Rights",
+        "description": "To exercise any of your privacy rights, you can:",
+        "items": [
+          "Contact us using the information provided in the 'Contact Us' section",
+          "Use the privacy settings and controls within the app",
+          "Send an email to our Data Protection Officer at privacy@fanyueshe.com",
+          "For California residents: Submit a request through our dedicated CCPA portal",
+          "We will respond to valid requests within 30 days (or as required by applicable law)"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies and Tracking Technologies",
+        "description": "We use cookies and similar technologies to enhance your experience and analyze usage patterns:",
+        "items": [
+          "Essential cookies: Required for basic platform functionality",
+          "Performance cookies: Help us understand how users interact with our platform",
+          "Functional cookies: Enable enhanced features and personalization",
+          "Analytics cookies: Provide insights into usage patterns (anonymized)",
+          "You can manage cookie preferences through your browser settings"
+        ]
+      },
+      "crossBorder": {
+        "title": "International Data Transfers",
+        "description": "Your personal information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place, including Standard Contractual Clauses (SCCs) and adequacy decisions, to protect your data during international transfers."
+      },
+      "retention": {
+        "title": "Data Retention",
+        "description": "We retain your personal information for as long as necessary to provide our services and comply with legal obligations:",
+        "items": [
+          "Account information: Until you delete your account, plus 30 days for backup purposes",
+          "Chat messages: Until deleted by you or 2 years after account deletion",
+          "Usage analytics: Anonymized data may be retained indefinitely for research purposes",
+          "Legal compliance: Some data may be retained longer as required by law",
+          "Safety investigations: Data related to safety incidents may be retained for up to 7 years"
+        ]
+      },
+      "children": {
+        "title": "Children's Privacy",
+        "description": "Our services are not intended for users under 18 years of age. We do not knowingly collect personal information from children under 18. If we become aware that we have collected such information, we will take steps to delete it promptly. Parents or guardians who believe their child has provided personal information should contact us immediately."
+      },
+      "updates": {
+        "title": "Policy Updates",
+        "description": "We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We will notify you of significant changes by email or through the app. Continued use of our services after such notification constitutes acceptance of the updated policy."
+      },
       "contact": {
-        "title": "6. Contact Us",
-        "description": "If you have any questions about this privacy policy, please contact us through the following methods:"
+        "title": "Contact Us",
+        "description": "If you have any questions about this Privacy Policy or our data practices, please contact us. For GDPR-related inquiries, you may also contact your local data protection authority."
       }
     }
   },
   "terms": {
     "title": "Terms of Service",
-    "lastUpdated": "Last updated: August 7, 2024",
+    "lastUpdated": "Last updated: August 14, 2025",
     "sections": {
       "description": {
-        "title": "1. Service Description",
-        "content": "饭约社 (\"we\", \"platform\") is a social dining platform that provides services for users to publish and participate in dining activities. By using our services, you agree to comply with these terms of service."
+        "title": "Service Description",
+        "content": "FanYueShe is a social dining platform that connects people for shared meal experiences. By accessing or using our services, you agree to be bound by these Terms of Service and our Privacy Policy. These terms constitute a legally binding agreement between you and FanYueShe. If you do not agree to these terms, please do not use our services."
       },
       "responsibilities": {
-        "title": "2. User Responsibilities",
-        "description": "As a platform user, you need to:",
+        "title": "User Responsibilities and Eligibility",
+        "description": "By using our platform, you represent that you are at least 18 years old and agree to:",
         "items": [
-          "Provide true and accurate personal information",
-          "Take responsibility for content you publish",
-          "Respect other users, no harassment or malicious behavior",
-          "Comply with local laws and regulations",
-          "Fulfill your commitment to participate in dining activities on time"
+          "Provide accurate, current, and complete information during registration and profile creation",
+          "Maintain the security of your account credentials and notify us of any unauthorized access",
+          "Respect other users and maintain appropriate, respectful behavior at all times",
+          "Follow all applicable local, national, and international laws and regulations",
+          "Not use the platform for illegal, harmful, or fraudulent activities",
+          "Respect others' privacy, personal information, and intellectual property rights",
+          "Take responsibility for your safety when meeting other users",
+          "Pay any fees associated with premium features or services in a timely manner"
         ]
       },
       "rules": {
-        "title": "3. Platform Rules",
-        "description": "To maintain a good community environment, we prohibit:",
+        "title": "Platform Rules and Prohibited Conduct",
+        "description": "To maintain a safe and enjoyable environment for all users, the following activities are strictly prohibited:",
         "items": [
-          "Publishing false information or conducting fraudulent activities",
-          "Publishing illegal, harmful or inappropriate content",
-          "Maliciously canceling committed dining activities",
-          "Harassing or threatening other users",
-          "Using automated tools or bots"
+          "Harassment, bullying, threats, stalking, or discriminatory behavior based on race, gender, religion, sexual orientation, or other protected characteristics",
+          "Sharing inappropriate, offensive, sexually explicit, or illegal content",
+          "Impersonating others, creating fake profiles, or misrepresenting your identity",
+          "Commercial solicitation, advertising, or promotional activities without explicit permission",
+          "Violating others' intellectual property rights or posting copyrighted material without authorization",
+          "Attempting to circumvent security measures or accessing accounts without permission",
+          "Spamming, sending unsolicited messages, or engaging in abusive communication",
+          "Using the platform to facilitate illegal activities, including but not limited to drug sales or prostitution",
+          "Creating multiple accounts to evade restrictions or manipulate the platform",
+          "Interfering with the proper functioning of the platform or attempting to access non-public areas"
         ]
       },
       "cancellation": {
-        "title": "4. Cancellation Policy",
-        "description": "To protect the interests of all users, we have established the following cancellation policy:",
+        "title": "Cancellation and Refund Policy",
+        "description": "For dining events, reservations, and premium services:",
         "items": [
-          "Cancel 24+ hours in advance: no restrictions",
-          "Cancel within 24 hours: will affect credit record",
-          "Multiple consecutive last-minute cancellations: may be restricted from publishing new activities"
+          "Free cancellation of dining events up to 2 hours before the scheduled time",
+          "Cancellations within 2 hours of the event may result in penalties or fees",
+          "No-shows without prior notice may negatively impact your platform reputation score",
+          "Event hosts have the right to cancel events with at least 1 hour notice to participants",
+          "Premium subscription fees are non-refundable except as required by applicable law",
+          "Refunds for premium features will be processed within 5-10 business days",
+          "In case of platform technical issues preventing service use, prorated refunds may be provided",
+          "Users who violate terms of service forfeit the right to refunds"
         ]
       },
       "disclaimer": {
-        "title": "5. Disclaimer",
-        "description": "饭约社 as a platform provider:",
+        "title": "Disclaimers and Limitation of Liability",
+        "description": "By using FanYueShe, you acknowledge and agree that:",
         "items": [
-          "Is not responsible for offline dining activities between users",
-          "Does not guarantee the accuracy of all information",
-          "Is not liable for any losses arising from using the service",
-          "Recommends users pay attention to personal and property safety during dining"
+          "We are not responsible for the quality, safety, or outcome of dining experiences or meetings arranged through our platform",
+          "Users meet and interact with other users at their own risk and discretion",
+          "We strongly recommend meeting in public places and taking appropriate safety precautions",
+          "Platform availability is subject to maintenance, updates, and technical limitations",
+          "We do not guarantee the accuracy of user-provided information or restaurant details",
+          "We reserve the right to suspend, terminate, or restrict accounts that violate our terms without prior notice",
+          "Our liability is limited to the maximum extent permitted by applicable law",
+          "We are not liable for any indirect, incidental, special, or consequential damages",
+          "Third-party services integrated with our platform are subject to their own terms and conditions"
         ]
       },
+      "intellectual": {
+        "title": "Intellectual Property Rights",
+        "content": "All content, features, and functionality on FanYueShe, including but not limited to text, graphics, logos, images, and software, are owned by FanYueShe and protected by copyright, trademark, and other intellectual property laws. Users retain ownership of content they create but grant us a license to use such content in connection with providing our services."
+      },
+      "termination": {
+        "title": "Account Termination",
+        "content": "Either party may terminate this agreement at any time. You may delete your account through the app settings. We may terminate or suspend your account immediately for violations of these terms, illegal activity, or harm to other users. Upon termination, your right to use the services ceases, and we may delete your account data in accordance with our Privacy Policy."
+      },
+      "governing": {
+        "title": "Governing Law and Jurisdiction",
+        "content": "These terms are governed by the laws of the People's Republic of China. For international users, disputes will be resolved according to the laws of your jurisdiction where not in conflict with Chinese law. Any legal proceedings will be conducted in English or the local language as appropriate."
+      },
       "changes": {
-        "title": "6. Service Changes",
-        "content": "We reserve the right to modify, suspend or terminate services at any time. Major changes will be notified to users in advance."
+        "title": "Changes to Terms",
+        "content": "We reserve the right to modify these terms at any time. We will notify users of material changes via email or in-app notification at least 30 days before they take effect. Continued use of the platform after the effective date constitutes acceptance of the modified terms. If you do not agree to the changes, you must stop using our services."
       },
       "disputes": {
-        "title": "7. Dispute Resolution",
-        "content": "Disputes arising from the use of this service should first be resolved through friendly consultation. If consultation fails, it shall be submitted to the People's Court of Dongguan City, Guangdong Province for jurisdiction."
+        "title": "Dispute Resolution",
+        "content": "Any disputes arising from the use of our services will first be addressed through good-faith negotiations. If unresolved, disputes will be resolved through binding arbitration administered by recognized arbitration institutions in accordance with applicable laws. For EU residents, you may also contact the European Commission's Online Dispute Resolution platform."
+      },
+      "accessibility": {
+        "title": "Accessibility",
+        "content": "We are committed to making our platform accessible to users with disabilities. If you encounter accessibility barriers or need assistance, please contact our support team. We continuously work to improve our platform's accessibility in accordance with WCAG 2.1 guidelines."
       },
       "contact": {
-        "title": "8. Contact Us",
-        "description": "If you have any questions about the terms of service, please contact us:"
+        "title": "Contact Information",
+        "description": "For questions about these terms, privacy concerns, or legal matters, please contact us. We will respond to inquiries within 48 hours during business days:"
       }
     }
   },
