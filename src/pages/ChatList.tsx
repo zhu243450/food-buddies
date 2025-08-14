@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Clock } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MessageCircle, Clock, MessageSquareOff } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
 import type { ChatSession, Profile } from '@/types/database';
@@ -26,6 +27,8 @@ const ChatList = () => {
   const [user, setUser] = useState<User | null>(null);
   const [chatSessions, setChatSessions] = useState<ChatSessionWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isBanned, setIsBanned] = useState(false);
+  const [banInfo, setBanInfo] = useState<{reason?: string; until?: string} | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +46,42 @@ const ChatList = () => {
 
   useEffect(() => {
     if (!user) return;
+
+    const checkBanStatus = async () => {
+      try {
+        // 检查用户是否被禁言
+        const { data: isBannedResult, error: banCheckError } = await supabase.rpc('is_user_banned', {
+          user_id_param: user.id
+        });
+
+        if (banCheckError) {
+          console.error('Ban check failed:', banCheckError);
+        } else if (isBannedResult === true) {
+          setIsBanned(true);
+          
+          // 获取禁言详细信息
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('ban_reason, banned_until')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile) {
+            setBanInfo({
+              reason: profile.ban_reason,
+              until: profile.banned_until
+            });
+          }
+        } else {
+          setIsBanned(false);
+          setBanInfo(null);
+        }
+      } catch (error) {
+        console.error('Failed to check ban status:', error);
+      }
+    };
+
+    checkBanStatus();
 
     const fetchChatSessions = async () => {
       try {
@@ -175,6 +214,29 @@ const ChatList = () => {
           <MessageCircle className="w-6 h-6 text-primary" />
           <h1 className="text-xl font-bold">{t('nav.chat')}</h1>
         </div>
+
+        {/* 禁言提示 */}
+        {isBanned && (
+          <Alert className="mb-6 border-destructive bg-destructive/10">
+            <MessageSquareOff className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive">
+              <div className="font-medium mb-1">您的账户已被禁言</div>
+              {banInfo?.reason && (
+                <div className="text-sm mb-1">原因: {banInfo.reason}</div>
+              )}
+              {banInfo?.until ? (
+                <div className="text-sm">
+                  禁言至: {new Date(banInfo.until).toLocaleString('zh-CN')}
+                </div>
+              ) : (
+                <div className="text-sm">永久禁言</div>
+              )}
+              <div className="text-sm mt-1 text-muted-foreground">
+                在禁言期间，您无法发送消息。如有疑问请联系管理员。
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {chatSessions.length === 0 ? (
           <Card>

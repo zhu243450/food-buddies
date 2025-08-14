@@ -181,6 +181,25 @@ const Chat = () => {
 
     setSending(true);
     try {
+      // 检查用户是否被禁言
+      const { data: banCheckResult, error: banCheckError } = await supabase.rpc('is_user_banned', {
+        user_id_param: user.id
+      });
+
+      if (banCheckError) {
+        console.error('Ban check failed:', banCheckError);
+        // 如果检查失败，仍然允许发送（避免因为检查错误影响正常用户）
+      } else if (banCheckResult === true) {
+        // 用户被禁言，阻止发送消息
+        toast({
+          title: "无法发送消息",
+          description: "您的账户已被禁言，暂时无法发送消息。如有疑问请联系管理员。",
+          variant: "destructive",
+        });
+        setSending(false);
+        return;
+      }
+
       const { error } = await supabase
         .from("chat_messages")
         .insert({
