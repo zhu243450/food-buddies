@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,22 +12,29 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import Navigation from "@/components/Navigation";
-import { User as UserIcon, Upload, Camera, Shield, LogOut } from "lucide-react";
+import { User as UserIcon, Camera, Shield, LogOut } from "lucide-react";
+import { SEO } from "@/components/SEO";
+import { useSEO } from "@/hooks/useSEO";
 import type { User } from '@supabase/supabase-js';
 
-
 const Profile = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const { getPageSEO } = useSEO();
+  const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  const seoData = getPageSEO('profile');
   
   const FOOD_PREFERENCES = [
     t('foodPrefs.sichuan'), t('foodPrefs.hotpot'), t('foodPrefs.cantonese'), 
     t('foodPrefs.japanese'), t('foodPrefs.korean'), t('foodPrefs.western'), t('foodPrefs.vegetarian')
   ];
   const MEAL_TIMES = ["早餐", "午饭", "晚饭", "夜宵"];
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  
   const [formData, setFormData] = useState({
     nickname: "",
     gender: "",
@@ -38,9 +44,6 @@ const Profile = () => {
     accept_strangers: false,
     avatar_url: "",
   });
-  
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     const getUser = async () => {
@@ -183,215 +186,217 @@ const Profile = () => {
     }
   };
 
-
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-4 pb-24">
-      <div className="max-w-md mx-auto">
-        <Card className="border-0 shadow-xl bg-card">
-          <CardHeader className="bg-primary text-black rounded-t-xl p-4">
-            <CardTitle className="text-lg flex items-center gap-2 font-bold">
-              <UserIcon className="w-5 h-5" />
-              {t('profile.profile')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              {/* 头像区域 */}
-              <div className="flex items-center gap-4 p-3 bg-accent/5 rounded-lg">
-                <Avatar className="w-16 h-16 ring-2 ring-primary/20">
-                  <AvatarImage src={formData.avatar_url} alt="头像" />
-                  <AvatarFallback className="text-lg font-bold bg-primary/10 text-primary">
-                    {formData.nickname ? formData.nickname[0] : <UserIcon className="w-6 h-6" />}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="hidden"
-                    id="avatar-upload"
-                  />
-                  <Label 
-                    htmlFor="avatar-upload" 
-                    className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm"
-                  >
-                    {uploading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        {t('createDinner.uploading')}
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="w-4 h-4" />
-                        {t('profile.changeAvatar')}
-                      </>
-                    )}
-                  </Label>
-                </div>
-              </div>
-
-              {/* 基本信息 */}
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <Label htmlFor="nickname" className="text-sm font-medium text-foreground mb-1 block">{t('profile.nickname')} *</Label>
-                  <Input
-                    id="nickname"
-                    value={formData.nickname}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
-                    required
-                    className="h-10 border border-border/50 focus:border-primary rounded-lg"
-                    placeholder={t('profile.enterNickname')}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm font-medium text-foreground mb-1 block">{t('profile.gender')}</Label>
-                    <Select value={formData.gender} onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}>
-                      <SelectTrigger className="h-10 border border-border/50 focus:border-primary rounded-lg">
-                        <SelectValue placeholder={t('profile.selectGender')} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-card border border-border/50 rounded-lg">
-                        <SelectItem value="男">{t('profile.male')}</SelectItem>
-                        <SelectItem value="女">{t('profile.female')}</SelectItem>
-                        <SelectItem value="其他">{t('profile.other')}</SelectItem>
-                      </SelectContent>
-                    </Select>
+    <>
+      <SEO {...seoData} />
+      <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-4 pb-24">
+        <div className="max-w-md mx-auto">
+          <Card className="border-0 shadow-xl bg-card">
+            <CardHeader className="bg-primary text-black rounded-t-xl p-4">
+              <CardTitle className="text-lg flex items-center gap-2 font-bold">
+                <UserIcon className="w-5 h-5" />
+                {t('profile.profile')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                
+                {/* 头像区域 */}
+                <div className="flex items-center gap-4 p-3 bg-accent/5 rounded-lg">
+                  <Avatar className="w-16 h-16 ring-2 ring-primary/20">
+                    <AvatarImage src={formData.avatar_url} alt="头像" />
+                    <AvatarFallback className="text-lg font-bold bg-primary/10 text-primary">
+                      {formData.nickname ? formData.nickname[0] : <UserIcon className="w-6 h-6" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                      id="avatar-upload"
+                    />
+                    <Label 
+                      htmlFor="avatar-upload" 
+                      className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-all font-medium text-sm"
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          {t('createDinner.uploading')}
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="w-4 h-4" />
+                          {t('profile.changeAvatar')}
+                        </>
+                      )}
+                    </Label>
                   </div>
+                </div>
 
+                {/* 基本信息 */}
+                <div className="grid grid-cols-1 gap-3">
                   <div>
-                    <Label htmlFor="birth_year" className="text-sm font-medium text-foreground mb-1 block">{t('profile.birthYear')}</Label>
+                    <Label htmlFor="nickname" className="text-sm font-medium text-foreground mb-1 block">{t('profile.nickname')} *</Label>
                     <Input
-                      id="birth_year"
-                      type="number"
-                      min="1900"
-                      max={new Date().getFullYear()}
-                      value={formData.birth_year}
-                      onChange={(e) => setFormData(prev => ({ ...prev, birth_year: parseInt(e.target.value) }))}
+                      id="nickname"
+                      value={formData.nickname}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
+                      required
                       className="h-10 border border-border/50 focus:border-primary rounded-lg"
-                      placeholder="1990"
+                      placeholder={t('profile.enterNickname')}
                     />
                   </div>
-                </div>
-              </div>
 
-              {/* 饮食偏好 */}
-              <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.foodPreferences')}</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {FOOD_PREFERENCES.map((preference) => (
-                    <div 
-                      key={preference} 
-                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
-                        formData.food_preferences.includes(preference)
-                          ? 'bg-primary text-black border-primary shadow-md'
-                          : 'bg-background border-border/30 hover:border-primary/50'
-                      }`}
-                    >
-                      <Checkbox
-                        id={preference}
-                        checked={formData.food_preferences.includes(preference)}
-                        onCheckedChange={(checked) => handleFoodPreferenceChange(preference, !!checked)}
-                        className="scale-110"
-                      />
-                      <Label htmlFor={preference} className="text-xs font-medium cursor-pointer flex-1">{preference}</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-sm font-medium text-foreground mb-1 block">{t('profile.gender')}</Label>
+                      <Select value={formData.gender} onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}>
+                        <SelectTrigger className="h-10 border border-border/50 focus:border-primary rounded-lg">
+                          <SelectValue placeholder={t('profile.selectGender')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-card border border-border/50 rounded-lg">
+                          <SelectItem value="男">{t('profile.male')}</SelectItem>
+                          <SelectItem value="女">{t('profile.female')}</SelectItem>
+                          <SelectItem value="其他">{t('profile.other')}</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* 喜欢的用餐时间 */}
-              <div>
-                <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.mealTimes')}</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {MEAL_TIMES.map((mealTime) => (
-                    <div 
-                      key={mealTime} 
-                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
-                        formData.meal_times.includes(mealTime)
-                          ? 'bg-accent text-black border-accent shadow-md'
-                          : 'bg-background border-border/30 hover:border-accent/50'
-                      }`}
-                    >
-                      <Checkbox
-                        id={mealTime}
-                        checked={formData.meal_times.includes(mealTime)}
-                        onCheckedChange={(checked) => handleMealTimeChange(mealTime, !!checked)}
-                        className="scale-110"
+                    <div>
+                      <Label htmlFor="birth_year" className="text-sm font-medium text-foreground mb-1 block">{t('profile.birthYear')}</Label>
+                      <Input
+                        id="birth_year"
+                        type="number"
+                        min="1900"
+                        max={new Date().getFullYear()}
+                        value={formData.birth_year}
+                        onChange={(e) => setFormData(prev => ({ ...prev, birth_year: parseInt(e.target.value) }))}
+                        className="h-10 border border-border/50 focus:border-primary rounded-lg"
+                        placeholder="1990"
                       />
-                      <Label htmlFor={mealTime} className="text-sm font-medium cursor-pointer flex-1">{mealTime}</Label>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* 接受陌生人拼饭 */}
-              <div className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
-                formData.accept_strangers
-                  ? 'bg-accent text-black border-accent shadow-md'
-                  : 'bg-background border-border/30 hover:border-accent/50'
-              }`}>
+                {/* 饮食偏好 */}
                 <div>
-                  <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">{t('profile.acceptStrangers')}</Label>
-                  <p className="text-xs opacity-80">{t('profile.acceptStrangersDesc')}</p>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.foodPreferences')}</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {FOOD_PREFERENCES.map((preference) => (
+                      <div 
+                        key={preference} 
+                        className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
+                          formData.food_preferences.includes(preference)
+                            ? 'bg-primary text-black border-primary shadow-md'
+                            : 'bg-background border-border/30 hover:border-primary/50'
+                        }`}
+                      >
+                        <Checkbox
+                          id={preference}
+                          checked={formData.food_preferences.includes(preference)}
+                          onCheckedChange={(checked) => handleFoodPreferenceChange(preference, !!checked)}
+                          className="scale-110"
+                        />
+                        <Label htmlFor={preference} className="text-xs font-medium cursor-pointer flex-1">{preference}</Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <Switch
-                  id="accept_strangers"
-                  checked={formData.accept_strangers}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, accept_strangers: checked }))}
-                />
-              </div>
 
-              {/* 管理员入口 */}
-              {isAdmin && (
+                {/* 喜欢的用餐时间 */}
+                <div>
+                  <Label className="text-sm font-medium text-foreground mb-2 block">{t('profile.mealTimes')}</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MEAL_TIMES.map((mealTime) => (
+                      <div 
+                        key={mealTime} 
+                        className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
+                          formData.meal_times.includes(mealTime)
+                            ? 'bg-accent text-black border-accent shadow-md'
+                            : 'bg-background border-border/30 hover:border-accent/50'
+                        }`}
+                      >
+                        <Checkbox
+                          id={mealTime}
+                          checked={formData.meal_times.includes(mealTime)}
+                          onCheckedChange={(checked) => handleMealTimeChange(mealTime, !!checked)}
+                          className="scale-110"
+                        />
+                        <Label htmlFor={mealTime} className="text-sm font-medium cursor-pointer flex-1">{mealTime}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 接受陌生人拼饭 */}
+                <div className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
+                  formData.accept_strangers
+                    ? 'bg-accent text-black border-accent shadow-md'
+                    : 'bg-background border-border/30 hover:border-accent/50'
+                }`}>
+                  <div>
+                    <Label htmlFor="accept_strangers" className="text-sm font-medium cursor-pointer">{t('profile.acceptStrangers')}</Label>
+                    <p className="text-xs opacity-80">{t('profile.acceptStrangersDesc')}</p>
+                  </div>
+                  <Switch
+                    id="accept_strangers"
+                    checked={formData.accept_strangers}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, accept_strangers: checked }))}
+                  />
+                </div>
+
+                {/* 管理员入口 */}
+                {isAdmin && (
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/admin')}
+                    className="w-full h-11 border-primary/30 text-primary hover:bg-primary/10 font-semibold rounded-lg"
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
+                    {t('profile.adminPanel')}
+                  </Button>
+                )}
+
+                {/* 提交按钮 */}
+                <Button 
+                  type="submit" 
+                  className="w-full h-11 bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold rounded-lg shadow-md"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                      {t('profile.saving')}
+                    </>
+                  ) : (
+                    t('profile.saveProfile')
+                  )}
+                </Button>
+
+                {/* 登出按钮 */}
                 <Button 
                   type="button"
                   variant="outline"
-                  onClick={() => navigate('/admin')}
-                  className="w-full h-11 border-primary/30 text-primary hover:bg-primary/10 font-semibold rounded-lg"
+                  onClick={handleLogout}
+                  className="w-full h-11 border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold rounded-lg"
                 >
-                  <Shield className="w-4 h-4 mr-2" />
-                  {t('profile.adminPanel')}
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {t('profile.logout')}
                 </Button>
-              )}
 
-              {/* 提交按钮 */}
-              <Button 
-                type="submit" 
-                className="w-full h-11 bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold rounded-lg shadow-md"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                    {t('profile.saving')}
-                  </>
-                ) : (
-                  t('profile.saveProfile')
-                )}
-              </Button>
-
-              {/* 登出按钮 */}
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={handleLogout}
-                className="w-full h-11 border-destructive/30 text-destructive hover:bg-destructive/10 font-semibold rounded-lg"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                {t('profile.logout')}
-              </Button>
-
-            </form>
-          </CardContent>
-        </Card>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+        <Navigation />
       </div>
-      <Navigation />
-    </div>
+    </>
   );
 };
 

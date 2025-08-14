@@ -16,10 +16,15 @@ import Navigation from "@/components/Navigation";
 import MapLocationPicker from "@/components/MapLocationPicker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { SEO } from "@/components/SEO";
+import { useSEO } from "@/hooks/useSEO";
 import type { User } from '@supabase/supabase-js';
 
 const CreateDinner = () => {
   const { t, i18n } = useTranslation();
+  const { getPageSEO } = useSEO();
+  
+  const seoData = getPageSEO('create-dinner');
   
   const FOOD_PREFERENCES = [
     { label: t('foodPrefs.sichuan'), value: t('foodPrefs.sichuan') },
@@ -236,7 +241,9 @@ const CreateDinner = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24">
+    <>
+      <SEO {...seoData} />
+      <div className="min-h-screen bg-background p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-black rounded-t-lg">
@@ -476,6 +483,7 @@ const CreateDinner = () => {
       </div>
       <Navigation />
     </div>
+    </>
   );
 };
 

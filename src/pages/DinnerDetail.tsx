@@ -10,6 +10,8 @@ import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
 import { useTranslation } from "react-i18next";
+import { SEO } from "@/components/SEO";
+import { useSEO } from "@/hooks/useSEO";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -26,6 +28,7 @@ interface Participant {
 const DinnerDetail = () => {
   const { id } = useParams();
   const { t } = useTranslation();
+  const { getPageSEO } = useSEO();
   const [user, setUser] = useState<User | null>(null);
   const [dinner, setDinner] = useState<Dinner | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -273,22 +276,28 @@ const DinnerDetail = () => {
 
   if (!dinner) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <p>{t('dinnerDetail.notFound')}</p>
-          <Button onClick={() => navigate("/discover")} className="mt-4">
-            {t('dinnerDetail.backToDiscover')}
-          </Button>
+      <>
+        <SEO {...getPageSEO('dinner-detail')} />
+        <div className="min-h-screen bg-background p-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <p>{t('dinnerDetail.notFound')}</p>
+            <Button onClick={() => navigate("/discover")} className="mt-4">
+              {t('dinnerDetail.backToDiscover')}
+            </Button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   const isFull = participants.length >= dinner.max_participants;
   const canJoin = !isParticipant && !isFull && dinner.created_by !== user.id;
+  const seoData = getPageSEO('dinner-detail', dinner);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
+    <>
+      <SEO {...seoData} />
+      <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         <Button 
           variant="ghost" 
@@ -468,6 +477,7 @@ const DinnerDetail = () => {
       
       <Navigation />
     </div>
+    </>
   );
 };
 
