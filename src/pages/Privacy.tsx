@@ -9,14 +9,14 @@ export const Privacy = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const collectionItems = t('privacy.sections.collection.items', { returnObjects: true }) as string[];
-  const usageItems = t('privacy.sections.usage.items', { returnObjects: true }) as string[];
-  const sharingItems = t('privacy.sections.sharing.items', { returnObjects: true }) as string[];
-  const rightsItems = t('privacy.sections.rights.items', { returnObjects: true }) as string[];
-  const thirdPartyItems = t('privacy.sections.thirdParties.items', { returnObjects: true }) as string[];
-  const legalItems = t('privacy.sections.legal.items', { returnObjects: true }) as string[];
-  const cookiesItems = t('privacy.sections.cookies.items', { returnObjects: true }) as string[];
-  const retentionItems = t('privacy.sections.retention.items', { returnObjects: true }) as string[];
+  const collectionItems = Array.isArray(t('privacy.sections.collection.items', { returnObjects: true })) ? t('privacy.sections.collection.items', { returnObjects: true }) as string[] : [];
+  const usageItems = Array.isArray(t('privacy.sections.usage.items', { returnObjects: true })) ? t('privacy.sections.usage.items', { returnObjects: true }) as string[] : [];
+  const sharingItems = Array.isArray(t('privacy.sections.sharing.items', { returnObjects: true })) ? t('privacy.sections.sharing.items', { returnObjects: true }) as string[] : [];
+  const rightsItems = Array.isArray(t('privacy.sections.rights.items', { returnObjects: true })) ? t('privacy.sections.rights.items', { returnObjects: true }) as string[] : [];
+  const thirdPartyItems = Array.isArray(t('privacy.sections.thirdParties.items', { returnObjects: true })) ? t('privacy.sections.thirdParties.items', { returnObjects: true }) as string[] : [];
+  const legalItems = Array.isArray(t('privacy.sections.legal.items', { returnObjects: true })) ? t('privacy.sections.legal.items', { returnObjects: true }) as string[] : [];
+  const cookiesItems = Array.isArray(t('privacy.sections.cookies.items', { returnObjects: true })) ? t('privacy.sections.cookies.items', { returnObjects: true }) as string[] : [];
+  const retentionItems = Array.isArray(t('privacy.sections.retention.items', { returnObjects: true })) ? t('privacy.sections.retention.items', { returnObjects: true }) as string[] : [];
 
   useEffect(() => {
     document.title = `${t('privacy.title')} - 饭约社`;
@@ -129,9 +129,11 @@ export const Privacy = () => {
                 {t('privacy.sections.exercise.description')}
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                {(t('privacy.sections.exercise.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
-                  <li key={index}>{item}</li>
-                ))}
+                {Array.isArray(t('privacy.sections.exercise.items', { returnObjects: true })) ? 
+                  (t('privacy.sections.exercise.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  )) : null
+                }
               </ul>
             </section>
 

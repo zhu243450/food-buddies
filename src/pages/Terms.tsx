@@ -8,10 +8,10 @@ export const Terms = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const responsibilityItems = t('terms.sections.responsibilities.items', { returnObjects: true }) as string[];
-  const rulesItems = t('terms.sections.rules.items', { returnObjects: true }) as string[];
-  const cancellationItems = t('terms.sections.cancellation.items', { returnObjects: true }) as string[];
-  const disclaimerItems = t('terms.sections.disclaimer.items', { returnObjects: true }) as string[];
+  const responsibilityItems = Array.isArray(t('terms.sections.responsibilities.items', { returnObjects: true })) ? t('terms.sections.responsibilities.items', { returnObjects: true }) as string[] : [];
+  const rulesItems = Array.isArray(t('terms.sections.rules.items', { returnObjects: true })) ? t('terms.sections.rules.items', { returnObjects: true }) as string[] : [];
+  const cancellationItems = Array.isArray(t('terms.sections.cancellation.items', { returnObjects: true })) ? t('terms.sections.cancellation.items', { returnObjects: true }) as string[] : [];
+  const disclaimerItems = Array.isArray(t('terms.sections.disclaimer.items', { returnObjects: true })) ? t('terms.sections.disclaimer.items', { returnObjects: true }) as string[] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
