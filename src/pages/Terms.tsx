@@ -19,13 +19,7 @@ export const Terms = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => {
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate('/');
-              }
-            }}
+            onClick={() => navigate(-1)}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
