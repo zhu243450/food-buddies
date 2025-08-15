@@ -8,19 +8,10 @@ export const Terms = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // 安全获取数组数据的辅助函数
-  const getArrayData = (key: string): string[] => {
-    const data = t(key, { returnObjects: true });
-    if (Array.isArray(data)) {
-      return data.filter(item => typeof item === 'string') as string[];
-    }
-    return [];
-  };
-
-  const responsibilityItems = getArrayData('terms.sections.responsibilities.items');
-  const rulesItems = getArrayData('terms.sections.rules.items');
-  const cancellationItems = getArrayData('terms.sections.cancellation.items');
-  const disclaimerItems = getArrayData('terms.sections.disclaimer.items');
+  const responsibilityItems = t('terms.sections.responsibilities.items', { returnObjects: true }) as string[];
+  const rulesItems = t('terms.sections.rules.items', { returnObjects: true }) as string[];
+  const cancellationItems = t('terms.sections.cancellation.items', { returnObjects: true }) as string[];
+  const disclaimerItems = t('terms.sections.disclaimer.items', { returnObjects: true }) as string[];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
@@ -28,13 +19,7 @@ export const Terms = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => {
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate('/');
-              }
-            }}
+            onClick={() => navigate(-1)}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -126,9 +111,9 @@ export const Terms = () => {
               </p>
               <div className="bg-muted p-4 rounded-lg mt-2">
                 <p className="text-sm">
-                  {t('contact.emailLabel')}：{t('contact.email')}<br />
-                  {t('contact.phoneLabel')}：{t('contact.phone')}<br />
-                  {t('contact.addressLabel')}：{t('contact.address')}
+                  邮箱：weishang99@gmail.com<br />
+                  电话：+86 19068522408<br />
+                  地址：广东省东莞市塘厦镇塘莆东路22号之一
                 </p>
               </div>
             </section>
