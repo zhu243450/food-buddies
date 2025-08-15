@@ -8,10 +8,19 @@ export const Terms = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const responsibilityItems = Array.isArray(t('terms.sections.responsibilities.items', { returnObjects: true })) ? t('terms.sections.responsibilities.items', { returnObjects: true }) as string[] : [];
-  const rulesItems = Array.isArray(t('terms.sections.rules.items', { returnObjects: true })) ? t('terms.sections.rules.items', { returnObjects: true }) as string[] : [];
-  const cancellationItems = Array.isArray(t('terms.sections.cancellation.items', { returnObjects: true })) ? t('terms.sections.cancellation.items', { returnObjects: true }) as string[] : [];
-  const disclaimerItems = Array.isArray(t('terms.sections.disclaimer.items', { returnObjects: true })) ? t('terms.sections.disclaimer.items', { returnObjects: true }) as string[] : [];
+  // 安全获取数组数据的辅助函数
+  const getArrayData = (key: string): string[] => {
+    const data = t(key, { returnObjects: true });
+    if (Array.isArray(data)) {
+      return data.filter(item => typeof item === 'string') as string[];
+    }
+    return [];
+  };
+
+  const responsibilityItems = getArrayData('terms.sections.responsibilities.items');
+  const rulesItems = getArrayData('terms.sections.rules.items');
+  const cancellationItems = getArrayData('terms.sections.cancellation.items');
+  const disclaimerItems = getArrayData('terms.sections.disclaimer.items');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
