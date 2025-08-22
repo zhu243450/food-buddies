@@ -47,10 +47,16 @@ const MyDinners = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // 监听认证状态变化
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('MyDinners页面认证状态变化:', { event, session });
+    let isComponentMounted = true;
+    
+    const checkUserSession = async () => {
+      try {
+        console.log('MyDinners页面检查用户会话');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!isComponentMounted) return;
+        
+        console.log('当前会话状态:', !!session);
         
         if (!session?.user) {
           console.log('用户未登录，重定向到auth页面');
@@ -59,26 +65,36 @@ const MyDinners = () => {
         }
         
         setUser(session.user);
+      } catch (error) {
+        console.error('检查用户会话时出错:', error);
+        if (isComponentMounted) {
+          navigate("/auth", { replace: true });
+        }
+      }
+    };
+
+    // 监听认证状态变化 - 只关注登出事件
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!isComponentMounted) return;
+        
+        console.log('MyDinners页面认证状态变化:', { event, session: !!session });
+        
+        if (event === 'SIGNED_OUT' || !session?.user) {
+          console.log('用户已登出，重定向到auth页面');
+          navigate("/auth", { replace: true });
+        } else if (session?.user) {
+          setUser(session.user);
+        }
       }
     );
 
-    const getUser = async () => {
-      console.log('MyDinners页面检查用户会话');
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('当前会话:', session);
-      
-      if (!session?.user) {
-        console.log('用户未登录，重定向到auth页面');
-        navigate("/auth", { replace: true });
-        return;
-      }
-      
-      setUser(session.user);
+    checkUserSession();
+
+    return () => {
+      isComponentMounted = false;
+      subscription.unsubscribe();
     };
-
-    getUser();
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
   useEffect(() => {

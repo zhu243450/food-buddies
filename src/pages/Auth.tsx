@@ -26,29 +26,57 @@ const Auth = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    let redirectTimeout: NodeJS.Timeout;
+    
+    // 先检查当前会话，避免闪烁
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('Auth页面检测到用户登录，重定向到my-dinners');
-          navigate("/my-dinners", { replace: true });
+          console.log('Auth页面检测到已有会话，延迟重定向');
+          // 使用延迟重定向避免竞态条件
+          redirectTimeout = setTimeout(() => {
+            navigate("/my-dinners", { replace: true });
+          }, 100);
+        }
+      } catch (error) {
+        console.error('检查会话时出错:', error);
+      }
+    };
+
+    // 监听认证状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth页面认证状态变化:', { event, session: !!session });
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // 只在登录成功时重定向，避免其他状态变化时的误重定向
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('用户成功登录，延迟重定向');
+          // 清除之前的重定向
+          if (redirectTimeout) {
+            clearTimeout(redirectTimeout);
+          }
+          // 延迟重定向确保状态已更新
+          redirectTimeout = setTimeout(() => {
+            navigate("/my-dinners", { replace: true });
+          }, 200);
         }
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        console.log('Auth页面检测到已有会话，重定向到my-dinners');
-        navigate("/my-dinners", { replace: true });
-      }
-    });
+    checkInitialSession();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (redirectTimeout) {
+        clearTimeout(redirectTimeout);
+      }
+    };
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {

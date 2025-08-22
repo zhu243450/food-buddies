@@ -17,38 +17,56 @@ const Index = () => {
   const seoData = getPageSEO('home');
 
   useEffect(() => {
-    // 监听认证状态变化
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Index页面认证状态变化:', { event, session });
+    let isComponentMounted = true;
+    
+    // 检查当前会话
+    const checkUser = async () => {
+      try {
+        console.log('Index页面检查用户会话');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!isComponentMounted) return;
+        
+        console.log('当前会话:', !!session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           console.log('用户已登录，重定向到my-dinners');
           navigate("/my-dinners", { replace: true });
+        } else {
+          setLoading(false);
         }
-        setLoading(false);
+      } catch (error) {
+        console.error('检查用户会话时出错:', error);
+        if (isComponentMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // 监听认证状态变化 - 只监听登录事件
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!isComponentMounted) return;
+        
+        console.log('Index页面认证状态变化:', { event, session: !!session });
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('检测到用户登录，重定向');
+          navigate("/my-dinners", { replace: true });
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setLoading(false);
+        }
       }
     );
 
-    // 检查当前会话
-    const checkUser = async () => {
-      console.log('Index页面检查用户会话');
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('当前会话:', session);
-      
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        console.log('用户已登录，重定向到my-dinners');
-        navigate("/my-dinners", { replace: true });
-      }
-      setLoading(false);
-    };
-
     checkUser();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isComponentMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   // 如果正在加载或用户已登录，显示空白页面
