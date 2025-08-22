@@ -436,8 +436,40 @@
         "title": "International Data Transfers",
         "description": "Your personal information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place, including Standard Contractual Clauses (SCCs) and adequacy decisions, to protect your data during international transfers."
       },
+      "compliance": {
+        "title": "Transparency and Compliance Framework",
+        "description": "We have established a comprehensive transparency and compliance framework to ensure lawful and transparent data processing:",
+        "items": [
+          "Tiered access control: Administrators can only access chat records in necessary cases such as report investigations",
+          "Audit logging: All administrator access activities are logged, including access time, accessor, and access reason",
+          "Data minimization principle: Only collect and process necessary data, regularly clean up unnecessary data",
+          "Transparency reporting: Regularly publish data processing statistics while protecting user privacy",
+          "User rights protection: Users can query their data access history and request data deletion or correction"
+        ]
+      },
+      "investigation": {
+        "title": "Data Processing in Report Investigations",
+        "description": "When we receive user reports or need to investigate violations, we process data according to the following principles:",
+        "items": [
+          "Necessity principle: Only access chat records and data related to the report",
+          "Minimal scope: Only access specific conversations suspected of violations, not expanding the scope",
+          "Time limitation: Investigation access permissions are immediately revoked after completion",
+          "Record keeping: All investigation access is recorded in audit logs for supervisory review",
+          "Result notification: Investigation results are promptly communicated to relevant users",
+          "Data cleanup: Related data from resolved cases is cleaned up according to specified timeframes"
+        ]
+      },
       "retention": {
-        "title": "Data Retention",
+        "title": "Data Retention Periods",
+        "description": "We set reasonable retention periods for different types of data:",
+        "items": [
+          "Chat records: Normally stored long-term, accessible by authorized personnel during report investigations",
+          "Audit logs: Automatically cleaned after 90 days to ensure timely oversight",
+          "Report data: Related data from resolved cases is regularly cleaned after case closure",
+          "User accounts: Personal data is completely deleted within 30 days after user account deletion",
+          "Access records: Administrator access records are kept for 1 year for compliance auditing",
+          "Temporary data: Session and cache data is regularly auto-cleaned"
+        ]
         "description": "We retain your personal information for as long as necessary to provide our services and comply with legal obligations:",
         "items": [
           "Account information: Until you delete your account, plus 30 days for backup purposes",
