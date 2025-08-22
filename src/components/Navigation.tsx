@@ -98,10 +98,46 @@ const Navigation = () => {
       {/* Desktop Header with Notification */}
       <div className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/40">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="text-xl font-bold">
+          <div className="text-xl font-bold cursor-pointer" onClick={() => navigate('/')}>
             {t('common.appName', '饭约社')}
           </div>
-          <NotificationDropdown />
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                const isSpecial = item.special;
+                
+                return (
+                  <Button
+                    key={item.path}
+                    variant={isActive ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => navigate(item.path)}
+                    className={`
+                      relative flex items-center gap-2
+                      ${isSpecial 
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg" 
+                        : ""
+                      }
+                    `}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                    {item.hasNotification && (
+                      <Badge 
+                        variant="destructive" 
+                        className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                      >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </Badge>
+                    )}
+                  </Button>
+                );
+              })}
+            </div>
+            <NotificationDropdown />
+          </div>
         </div>
       </div>
 
