@@ -71,21 +71,22 @@ export const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={profile?.avatar_url} />
-            <AvatarFallback>
-              {profile?.nickname?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-[20px]"
-            >
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
-          )}
+        <Button 
+          variant="ghost" 
+          className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 w-full max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50"
+        >
+          <div className="relative">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={profile?.avatar_url} />
+              <AvatarFallback className="text-xs">
+                {profile?.nickname?.charAt(0)?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            {unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border border-background"></div>
+            )}
+          </div>
+          <span className="text-xs font-medium truncate w-full text-center">我的</span>
         </Button>
       </DropdownMenuTrigger>
       

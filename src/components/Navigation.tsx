@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
-import { Home, Search, Plus, User, MessageCircle } from "lucide-react";
+import { Home, Search, Plus, MessageCircle } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -88,7 +88,6 @@ const Navigation = () => {
     { icon: Search, label: t('nav.discover'), path: "/discover" },
     { icon: Plus, label: t('dinner.create'), path: "/create-dinner", special: true },
     { icon: MessageCircle, label: t('nav.chat'), path: "/chat-list", hasNotification: unreadCount > 0 },
-    { icon: User, label: t('nav.profile'), path: "/profile" },
   ];
 
   return (
@@ -132,9 +131,7 @@ const Navigation = () => {
         })}
         
         {/* 用户菜单 */}
-        <div className="flex-1 max-w-[80px] flex justify-center">
-          <UserMenu />
-        </div>
+        <UserMenu />
       </div>
     </div>
   );
