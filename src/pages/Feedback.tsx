@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Send } from 'lucide-react';
+import { ImageUploader } from '@/components/ImageUploader';
 import Navigation from '@/components/Navigation';
 
 export default function Feedback() {
@@ -23,6 +24,7 @@ export default function Feedback() {
     title: '',
     description: ''
   });
+  const [evidenceUrls, setEvidenceUrls] = useState<string[]>([]);
 
   const { getPageSEO } = useSEO();
   const seoData = getPageSEO('feedback');
@@ -70,7 +72,8 @@ export default function Feedback() {
           report_type: 'general_feedback',
           category: formData.category,
           title: formData.title,
-          description: formData.description
+          description: formData.description,
+          evidence_urls: evidenceUrls.length > 0 ? evidenceUrls : null
         });
 
       if (error) throw error;
@@ -86,6 +89,7 @@ export default function Feedback() {
         title: '',
         description: ''
       });
+      setEvidenceUrls([]);
 
     } catch (error) {
       console.error('提交反馈失败:', error);
@@ -191,6 +195,17 @@ export default function Feedback() {
                   <p className="text-xs text-muted-foreground">
                     {formData.description.length}/1000
                   </p>
+                </div>
+
+                {/* 图片上传 */}
+                <div className="space-y-2">
+                  <Label>相关图片（可选）</Label>
+                  <ImageUploader
+                    userId={user.id}
+                    onImagesChange={setEvidenceUrls}
+                    maxImages={5}
+                    maxSizePerImage={10}
+                  />
                 </div>
 
                 {/* 提交按钮 */}

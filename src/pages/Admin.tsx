@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye, Ban, UserX, MessageSquareOff } from "lucide-react";
+import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye, Ban, UserX, MessageSquareOff, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -884,6 +884,12 @@ const Admin = () => {
                               <div className="flex flex-col">
                                 <span className="font-medium truncate" title={r.title}>{r.title}</span>
                                 <span className="text-xs text-muted-foreground truncate md:hidden">{r.report_type}</span>
+                                {r.evidence_urls && r.evidence_urls.length > 0 && (
+                                  <div className="flex items-center gap-1 text-xs text-blue-600 mt-1">
+                                    <ImageIcon className="h-3 w-3" />
+                                    <span>{r.evidence_urls.length} 张图片</span>
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">{r.report_type}</TableCell>
@@ -935,6 +941,25 @@ const Admin = () => {
                           <div className="text-sm text-muted-foreground">描述</div>
                           <div className="whitespace-pre-wrap text-sm">{selectedReport.description}</div>
                         </div>
+                        {selectedReport.evidence_urls && selectedReport.evidence_urls.length > 0 && (
+                          <div>
+                            <div className="text-sm text-muted-foreground mb-2">相关图片 ({selectedReport.evidence_urls.length})</div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {selectedReport.evidence_urls.map((url: string, index: number) => (
+                                <div key={index} className="aspect-square relative rounded-lg overflow-hidden border bg-muted">
+                                  <img
+                                    src={url}
+                                    alt={`证据图片 ${index + 1}`}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                                    onClick={() => window.open(url, '_blank')}
+                                    loading="lazy"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">点击图片可查看大图</p>
+                          </div>
+                        )}
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">处理备注</div>
                           <Textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="填写处理说明..." className="resize-none" rows={4} />
