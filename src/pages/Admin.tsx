@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye, Ban, UserX, MessageSquareOff, Image as ImageIcon } from "lucide-react";
+import { EvidenceImageViewer } from '@/components/EvidenceImageViewer';
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -946,15 +947,13 @@ const Admin = () => {
                             <div className="text-sm text-muted-foreground mb-2">相关图片 ({selectedReport.evidence_urls.length})</div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                               {selectedReport.evidence_urls.map((url: string, index: number) => (
-                                <div key={index} className="aspect-square relative rounded-lg overflow-hidden border bg-muted">
-                                  <img
-                                    src={url}
-                                    alt={`证据图片 ${index + 1}`}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                                    onClick={() => window.open(url, '_blank')}
-                                    loading="lazy"
-                                  />
-                                </div>
+                                <EvidenceImageViewer
+                                  key={index}
+                                  url={url}
+                                  alt={`证据图片 ${index + 1}`}
+                                  className="group"
+                                  onClick={() => window.open(url, '_blank')}
+                                />
                               ))}
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">点击图片可查看大图</p>

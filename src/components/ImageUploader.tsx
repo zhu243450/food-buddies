@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, X, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { EvidenceImageViewer } from '@/components/EvidenceImageViewer';
 
 interface ImageUploaderProps {
   userId: string;
@@ -60,12 +61,14 @@ export function ImageUploader({
 
       if (error) throw error;
 
-      // 获取公共URL
-      const { data: { publicUrl } } = supabase.storage
+      // 获取签名URL（用于私有存储桶）
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('feedback-evidence')
-        .getPublicUrl(data.path);
+        .createSignedUrl(data.path, 3600 * 24 * 7); // 7天有效期
 
-      return publicUrl;
+      if (signedUrlError) throw signedUrlError;
+
+      return signedUrlData.signedUrl;
     } catch (error) {
       console.error('上传失败:', error);
       return null;
@@ -227,33 +230,33 @@ export function ImageUploader({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {images.map((image, index) => (
             <Card key={index} className="relative overflow-hidden">
-              <div className="aspect-square relative">
-                {image.uploading ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                      <p className="text-xs text-muted-foreground">上传中...</p>
-                    </div>
+                  <div className="aspect-square relative">
+                    {image.uploading ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-lg">
+                        <div className="flex flex-col items-center space-y-2">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                          <p className="text-xs text-muted-foreground">上传中...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <EvidenceImageViewer
+                          url={image.url}
+                          alt={`上传的图片 ${index + 1}`}
+                          className="relative"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-6 w-6 rounded-full z-10"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
                   </div>
-                ) : (
-                  <>
-                    <img
-                      src={image.url}
-                      alt={`上传的图片 ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-6 w-6 rounded-full"
-                      onClick={() => removeImage(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </>
-                )}
-              </div>
             </Card>
           ))}
         </div>
