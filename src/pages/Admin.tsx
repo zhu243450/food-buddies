@@ -1599,6 +1599,7 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
         const { data } = await supabase.rpc('check_user_cancellation_restrictions', {
           user_id_param: profile.user_id
         });
+        console.log('Restriction info for', profile.nickname, ':', data);
         if (data && data.length > 0) {
           setRestrictionInfo(data[0]);
         }
@@ -1668,6 +1669,12 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
           <span className="text-xs text-muted-foreground truncate">
             {profile.user_id.slice(0, 8)}...
           </span>
+          {/* 调试信息 */}
+          {restrictionInfo && (
+            <span className="text-xs text-blue-600">
+              限制: {restrictionInfo.can_create_dinner ? '无' : restrictionInfo.restriction_reason}
+            </span>
+          )}
         </div>
       </TableCell>
       <TableCell className="hidden md:table-cell">
