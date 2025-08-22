@@ -9,14 +9,23 @@ export const Privacy = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const collectionItems = t('privacy.sections.collection.items', { returnObjects: true }) as string[];
-  const usageItems = t('privacy.sections.usage.items', { returnObjects: true }) as string[];
-  const sharingItems = t('privacy.sections.sharing.items', { returnObjects: true }) as string[];
-  const rightsItems = t('privacy.sections.rights.items', { returnObjects: true }) as string[];
-  const thirdPartyItems = t('privacy.sections.thirdParties.items', { returnObjects: true }) as string[];
-  const legalItems = t('privacy.sections.legal.items', { returnObjects: true }) as string[];
-  const cookiesItems = t('privacy.sections.cookies.items', { returnObjects: true }) as string[];
-  const retentionItems = t('privacy.sections.retention.items', { returnObjects: true }) as string[];
+  // Helper function to safely get array data from translations
+  const getArrayData = (key: string): string[] => {
+    const data = t(key, { returnObjects: true }) as unknown;
+    if (Array.isArray(data) && data.every(item => typeof item === 'string')) {
+      return data as string[];
+    }
+    return [];
+  };
+
+  const collectionItems = getArrayData('privacy.sections.collection.items');
+  const usageItems = getArrayData('privacy.sections.usage.items');
+  const sharingItems = getArrayData('privacy.sections.sharing.items');
+  const rightsItems = getArrayData('privacy.sections.rights.items');
+  const thirdPartyItems = getArrayData('privacy.sections.thirdParties.items');
+  const legalItems = getArrayData('privacy.sections.legal.items');
+  const cookiesItems = getArrayData('privacy.sections.cookies.items');
+  const retentionItems = getArrayData('privacy.sections.retention.items');
 
   useEffect(() => {
     document.title = `${t('privacy.title')} - 饭约社`;
@@ -28,7 +37,13 @@ export const Privacy = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/');
+              }
+            }}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -129,7 +144,7 @@ export const Privacy = () => {
                 {t('privacy.sections.exercise.description')}
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                {(t('privacy.sections.exercise.items', { returnObjects: true }) as string[]).map((item: string, index: number) => (
+                {getArrayData('privacy.sections.exercise.items').map((item: string, index: number) => (
                   <li key={index}>{item}</li>
                 ))}
               </ul>

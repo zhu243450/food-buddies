@@ -8,10 +8,19 @@ export const Terms = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const responsibilityItems = t('terms.sections.responsibilities.items', { returnObjects: true }) as string[];
-  const rulesItems = t('terms.sections.rules.items', { returnObjects: true }) as string[];
-  const cancellationItems = t('terms.sections.cancellation.items', { returnObjects: true }) as string[];
-  const disclaimerItems = t('terms.sections.disclaimer.items', { returnObjects: true }) as string[];
+  // Helper function to safely get array data from translations
+  const getArrayData = (key: string): string[] => {
+    const data = t(key, { returnObjects: true }) as unknown;
+    if (Array.isArray(data) && data.every(item => typeof item === 'string')) {
+      return data as string[];
+    }
+    return [];
+  };
+
+  const responsibilityItems = getArrayData('terms.sections.responsibilities.items');
+  const rulesItems = getArrayData('terms.sections.rules.items');
+  const cancellationItems = getArrayData('terms.sections.cancellation.items');
+  const disclaimerItems = getArrayData('terms.sections.disclaimer.items');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
@@ -19,7 +28,13 @@ export const Terms = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (window.history.length > 1) {
+                navigate(-1);
+              } else {
+                navigate('/');
+              }
+            }}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
