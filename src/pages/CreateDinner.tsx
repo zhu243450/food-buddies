@@ -147,6 +147,7 @@ const CreateDinner = () => {
       .from("dinners")
       .insert({
         created_by: user.id,
+        status: 'active', // 设置默认状态
         ...formData,
       });
 

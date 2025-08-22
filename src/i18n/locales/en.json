@@ -645,6 +645,51 @@
       "keywords": "about FanYueShe,company introduction,social dining platform"
     }
   },
+  "createDinner": {
+    "uploading": "Uploading...",
+    "modes": {
+      "instant": {
+        "label": "🔥 Instant Mode",
+        "desc": "Want to eat today, come if available"
+      },
+      "scheduled": {
+        "label": "📅 Scheduled Mode",  
+        "desc": "I'm free this weekend, let's have a meal?"
+      },
+      "group": {
+        "label": "👥 Group Mode",
+        "desc": "3-5 people dining, reduce one-on-one awkwardness"
+      }
+    },
+    "urgencyLevels": {
+      "urgent": {
+        "label": "🚨 Urgent",
+        "desc": "Need to eat right now"
+      },
+      "normal": {
+        "label": "⏰ Normal", 
+        "desc": "Proceed as scheduled"
+      },
+      "flexible": {
+        "label": "🌊 Flexible",
+        "desc": "Time can be adjusted"
+      }
+    },
+    "genderPrefs": {
+      "no_preference": {
+        "label": "No Preference",
+        "desc": "No gender preference"
+      },
+      "same_gender": {
+        "label": "Same Gender Preferred",
+        "desc": "Prefer same gender dining companions"
+      },
+      "opposite_gender": {
+        "label": "Opposite Gender Preferred", 
+        "desc": "Prefer opposite gender dining companions"
+      }
+    }
+  },
   "admin": {
     "dashboard": "Admin Dashboard",
     "admin": "Admin", 

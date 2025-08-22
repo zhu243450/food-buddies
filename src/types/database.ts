@@ -18,6 +18,13 @@ export interface Database {
           location_longitude?: number;
           preferred_radius?: number;
           avatar_url?: string;
+          wechat_openid?: string;
+          qq_openid?: string;
+          is_banned?: boolean;
+          ban_reason?: string;
+          banned_at?: string;
+          banned_until?: string;
+          banned_by?: string;
           created_at: string;
           updated_at: string;
         };
@@ -37,6 +44,13 @@ export interface Database {
           location_longitude?: number;
           preferred_radius?: number;
           avatar_url?: string;
+          wechat_openid?: string;
+          qq_openid?: string;
+          is_banned?: boolean;
+          ban_reason?: string;
+          banned_at?: string;
+          banned_until?: string;
+          banned_by?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -56,6 +70,13 @@ export interface Database {
           location_longitude?: number;
           preferred_radius?: number;
           avatar_url?: string;
+          wechat_openid?: string;
+          qq_openid?: string;
+          is_banned?: boolean;
+          ban_reason?: string;
+          banned_at?: string;
+          banned_until?: string;
+          banned_by?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -76,6 +97,7 @@ export interface Database {
           gender_preference?: string;
           personality_tags?: string[];
           dietary_restrictions?: string[];
+          status?: string;
           created_at: string;
           updated_at: string;
         };
@@ -94,6 +116,7 @@ export interface Database {
           gender_preference?: string;
           personality_tags?: string[];
           dietary_restrictions?: string[];
+          status?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -112,6 +135,7 @@ export interface Database {
           gender_preference?: string;
           personality_tags?: string[];
           dietary_restrictions?: string[];
+          status?: string;
           created_at?: string;
           updated_at?: string;
         };
