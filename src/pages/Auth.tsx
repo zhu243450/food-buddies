@@ -93,28 +93,51 @@ const Auth = () => {
     
     setLoading(true);
     
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
 
-    if (error) {
+      if (error) {
+        // 处理速率限制错误
+        if (error.message.includes("For security purposes, you can only request this after")) {
+          const match = error.message.match(/after (\d+) seconds/);
+          const seconds = match ? match[1] : "60";
+          toast({
+            title: "发送频率过快",
+            description: `为了安全考虑，请等待 ${seconds} 秒后再试。如果您已经注册过，请直接登录。`,
+            variant: "destructive",
+          });
+        } else if (error.message === "User already registered") {
+          toast({
+            title: "用户已存在",
+            description: "此邮箱已经注册过了，请直接登录。",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: t('auth.signUpFailed'),
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: t('auth.signUpSuccess'),
+          description: t('auth.checkEmailConfirmation'),
+        });
+      }
+    } catch (error: any) {
       toast({
         title: t('auth.signUpFailed'),
-        description: error.message === "User already registered" 
-          ? t('auth.userAlreadyRegistered')
-          : error.message,
+        description: error.message || "注册时发生未知错误",
         variant: "destructive",
-      });
-    } else {
-      toast({
-        title: t('auth.signUpSuccess'),
-        description: t('auth.checkEmailConfirmation'),
       });
     }
     
