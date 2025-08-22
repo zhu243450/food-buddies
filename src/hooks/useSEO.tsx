@@ -115,6 +115,20 @@ export const useSEO = () => {
             "url": baseUrl
           }
         };
+
+      case 'feedback':
+        return {
+          title: t('seo.feedback.title', '意见反馈'),
+          description: t('seo.feedback.description', '向我们提供您宝贵的意见和建议，帮助我们改善产品体验。'),
+          keywords: t('seo.feedback.keywords', '意见反馈,用户建议,产品改进,客户服务'),
+          structuredData: {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": t('seo.feedback.title'),
+            "description": t('seo.feedback.description'),
+            "url": currentUrl
+          }
+        };
         
       default:
         return {

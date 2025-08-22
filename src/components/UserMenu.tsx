@@ -1,0 +1,154 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useNotifications } from '@/hooks/useNotifications';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { 
+  User, 
+  Bell, 
+  MessageSquare, 
+  Settings, 
+  LogOut, 
+  Shield,
+  HelpCircle
+} from 'lucide-react';
+
+export const UserMenu = () => {
+  const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    // 获取用户信息
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        // 获取用户资料
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        setProfile(profileData);
+
+        // 检查是否是管理员
+        const { data: adminCheck } = await supabase
+          .rpc('has_role', { 
+            _user_id: user.id, 
+            _role: 'admin' 
+          });
+        
+        setIsAdmin(adminCheck || false);
+      }
+    };
+
+    getUser();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
+  if (!user) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={profile?.avatar_url} />
+            <AvatarFallback>
+              {profile?.nickname?.charAt(0)?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          {unreadCount > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-0 min-w-[20px]"
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      
+      <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-sm border" align="end">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {profile?.nickname || '用户'}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate('/profile')}>
+            <User className="mr-2 h-4 w-4" />
+            <span>个人资料</span>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem onClick={() => navigate('/notifications')}>
+            <Bell className="mr-2 h-4 w-4" />
+            <span>通知中心</span>
+            {unreadCount > 0 && (
+              <Badge variant="destructive" className="ml-auto h-5 text-xs">
+                {unreadCount}
+              </Badge>
+            )}
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem onClick={() => navigate('/feedback')}>
+            <MessageSquare className="mr-2 h-4 w-4" />
+            <span>意见反馈</span>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem onClick={() => navigate('/help')}>
+            <HelpCircle className="mr-2 h-4 w-4" />
+            <span>帮助中心</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => navigate('/admin')}>
+                <Shield className="mr-2 h-4 w-4" />
+                <span>管理后台</span>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </>
+        )}
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>退出登录</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};

@@ -22,6 +22,7 @@ import { Terms } from "./pages/Terms";
 import { About } from "./pages/About";
 import { Help } from "./pages/Help";
 import Notifications from "./pages/Notifications";
+import Feedback from "./pages/Feedback";
 import { Footer } from "./components/Footer";
 import { useTranslation } from "react-i18next";
 import "./i18n";
@@ -79,6 +80,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/help" element={<Help />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/feedback" element={<Feedback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

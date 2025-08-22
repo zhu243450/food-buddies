@@ -349,6 +349,78 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          created_at: string
+          description: string
+          evidence_urls: string[] | null
+          id: string
+          related_chat_session_id: string | null
+          related_dinner_id: string | null
+          report_type: string
+          reported_user_id: string | null
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category: string
+          created_at?: string
+          description: string
+          evidence_urls?: string[] | null
+          id?: string
+          related_chat_session_id?: string | null
+          related_dinner_id?: string | null
+          report_type: string
+          reported_user_id?: string | null
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          evidence_urls?: string[] | null
+          id?: string
+          related_chat_session_id?: string | null
+          related_dinner_id?: string | null
+          report_type?: string
+          reported_user_id?: string | null
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_related_chat_session_id_fkey"
+            columns: ["related_chat_session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_related_dinner_id_fkey"
+            columns: ["related_dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_at: string
