@@ -470,14 +470,7 @@
           "Access records: Administrator access records are kept for 1 year for compliance auditing",
           "Temporary data: Session and cache data is regularly auto-cleaned"
         ]
-        "description": "We retain your personal information for as long as necessary to provide our services and comply with legal obligations:",
-        "items": [
-          "Account information: Until you delete your account, plus 30 days for backup purposes",
-          "Chat messages: Until deleted by you or 2 years after account deletion",
-          "Usage analytics: Anonymized data may be retained indefinitely for research purposes",
-          "Legal compliance: Some data may be retained longer as required by law",
-          "Safety investigations: Data related to safety incidents may be retained for up to 7 years"
-        ]
+      },
       },
       "children": {
         "title": "Children's Privacy",
