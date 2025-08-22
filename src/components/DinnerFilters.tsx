@@ -23,6 +23,7 @@ export interface DinnerFilters {
   dinnerMode: string[];
   urgencyLevel: string[];
   maxParticipants: number[];
+  showExpired: boolean;
 }
 
 interface DinnerFiltersProps {
@@ -177,7 +178,8 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
       dietaryRestrictions: [],
       dinnerMode: [],
       urgencyLevel: [],
-      maxParticipants: [2, 20]
+      maxParticipants: [2, 20],
+      showExpired: false
     });
   };
 
@@ -192,6 +194,7 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
     if (filters.dinnerMode.length > 0) count++;
     if (filters.urgencyLevel.length > 0) count++;
     if (filters.maxParticipants[0] !== 2 || filters.maxParticipants[1] !== 20) count++;
+    if (filters.showExpired) count++;
     return count;
   };
 
@@ -456,6 +459,22 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
                   step={1}
                   className="mt-1"
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 显示过期饭局选项 */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="show-expired"
+                  checked={filters.showExpired}
+                  onCheckedChange={(checked) => handleFilterChange("showExpired", checked)}
+                />
+                <Label htmlFor="show-expired" className="text-sm cursor-pointer">
+                  {t('filter.showExpired')}
+                </Label>
               </div>
             </CardContent>
           </Card>

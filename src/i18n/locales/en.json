@@ -225,7 +225,8 @@
     "getCurrentLocation": "Get current location",
     "searchRadius": "Search radius: {{radius}}km",
     "participantsRange": "{{min}} - {{max}} people",
-    "applyFilters": "Apply filters ({{count}})"
+    "applyFilters": "Apply filters ({{count}})",
+    "showExpired": "Show expired dinners"
   },
   "location": {
     "notSupported": "Location not supported",
