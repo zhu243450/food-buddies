@@ -102,7 +102,7 @@ const Chat = () => {
         // 合并消息和profile数据
         const messagesWithProfiles = messagesData?.map(message => ({
           ...message,
-          message_type: (message.message_type || 'text') as 'text' | 'image',
+          message_type: message.message_type as 'text' | 'image',
           sender: profilesData?.find(profile => profile.user_id === message.sender_id) || null
         })) || [];
 
@@ -156,7 +156,7 @@ const Chat = () => {
 
           const messageWithProfile: MessageWithProfile = {
             ...newMessage,
-            message_type: (newMessage.message_type || 'text') as 'text' | 'image',
+            message_type: newMessage.message_type as 'text' | 'image',
             sender: senderProfile
           };
 
