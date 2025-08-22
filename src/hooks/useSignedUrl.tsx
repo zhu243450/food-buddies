@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export function useSignedUrl(filePath: string | null, bucketName: string = 'feedback-evidence') {
+export function useSignedUrl(filePath: string | null, bucketName: string = 'chat-images') {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

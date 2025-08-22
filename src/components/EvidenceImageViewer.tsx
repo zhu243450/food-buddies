@@ -8,9 +8,10 @@ interface EvidenceImageViewerProps {
   alt: string;
   className?: string;
   onClick?: () => void;
+  bucketName?: string;
 }
 
-export function EvidenceImageViewer({ url, alt, className = "", onClick }: EvidenceImageViewerProps) {
+export function EvidenceImageViewer({ url, alt, className = "", onClick, bucketName = 'feedback-evidence' }: EvidenceImageViewerProps) {
   // 从完整URL中提取文件路径
   const getFilePathFromUrl = (fullUrl: string): string | null => {
     try {
@@ -22,7 +23,11 @@ export function EvidenceImageViewer({ url, alt, className = "", onClick }: Evide
       // 从Supabase存储URL中提取文件路径
       const urlObj = new URL(fullUrl);
       const pathParts = urlObj.pathname.split('/');
-      const bucketIndex = pathParts.findIndex(part => part === 'feedback-evidence');
+      let bucketIndex = pathParts.findIndex(part => part === 'chat-images');
+      
+      if (bucketIndex === -1) {
+        bucketIndex = pathParts.findIndex(part => part === 'feedback-evidence');
+      }
       
       if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
         return pathParts.slice(bucketIndex + 1).join('/');
@@ -35,7 +40,7 @@ export function EvidenceImageViewer({ url, alt, className = "", onClick }: Evide
   };
 
   const filePath = getFilePathFromUrl(url);
-  const { signedUrl, loading, error } = useSignedUrl(filePath);
+  const { signedUrl, loading, error } = useSignedUrl(filePath, bucketName);
 
   // 如果URL已经是签名URL或者无法解析路径，直接使用原URL
   const displayUrl = signedUrl || url;

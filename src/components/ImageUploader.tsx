@@ -12,6 +12,8 @@ interface ImageUploaderProps {
   onImagesChange: (urls: string[]) => void;
   maxImages?: number;
   maxSizePerImage?: number; // in MB
+  bucketName?: string;
+  alertText?: string;
 }
 
 interface UploadedImage {
@@ -24,7 +26,9 @@ export function ImageUploader({
   userId,
   onImagesChange,
   maxImages = 5,
-  maxSizePerImage = 10
+  maxSizePerImage = 10,
+  bucketName = 'feedback-evidence',
+  alertText = '上传的图片将作为反馈证据，管理员可以查看这些图片'
 }: ImageUploaderProps) {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -53,7 +57,7 @@ export function ImageUploader({
       const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       
       const { data, error } = await supabase.storage
-        .from('feedback-evidence')
+        .from(bucketName)
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
@@ -63,7 +67,7 @@ export function ImageUploader({
 
       // 获取签名URL（用于私有存储桶）
       const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('feedback-evidence')
+        .from(bucketName)
         .createSignedUrl(data.path, 3600 * 24 * 7); // 7天有效期
 
       if (signedUrlError) throw signedUrlError;
@@ -220,7 +224,7 @@ export function ImageUploader({
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            上传的图片将作为反馈证据，管理员可以查看这些图片
+            {alertText}
           </AlertDescription>
         </Alert>
       )}
@@ -240,11 +244,12 @@ export function ImageUploader({
                       </div>
                     ) : (
                       <>
-                        <EvidenceImageViewer
-                          url={image.url}
-                          alt={`上传的图片 ${index + 1}`}
-                          className="relative"
-                        />
+        <EvidenceImageViewer
+          url={image.url}
+          alt={`上传的图片 ${index + 1}`}
+          className="relative"
+          bucketName={bucketName}
+        />
                         <Button
                           type="button"
                           variant="destructive"

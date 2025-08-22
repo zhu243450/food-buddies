@@ -9,11 +9,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ChatImageUploader } from "@/components/ChatImageUploader";
+import { ChatMessage } from "@/components/ChatMessage";
 import type { User } from '@supabase/supabase-js';
-import type { ChatSession, ChatMessage, Profile } from '@/types/database';
+import type { ChatSession, ChatMessage as ChatMessageType, Profile } from '@/types/database';
 
-interface MessageWithProfile extends ChatMessage {
+interface MessageWithProfile extends ChatMessageType {
   sender?: Profile;
+  message_type: 'text' | 'image'; // 明确定义消息类型
 }
 
 const Chat = () => {
@@ -23,6 +26,7 @@ const Chat = () => {
   const [session, setChatSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
   const [otherUser, setOtherUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -97,6 +101,7 @@ const Chat = () => {
         // 合并消息和profile数据
         const messagesWithProfiles = messagesData?.map(message => ({
           ...message,
+          message_type: (message.message_type || 'text') as 'text' | 'image',
           sender: profilesData?.find(profile => profile.user_id === message.sender_id) || null
         })) || [];
 
@@ -139,7 +144,7 @@ const Chat = () => {
           filter: `session_id=eq.${sessionId}`
         },
         async (payload) => {
-          const newMessage = payload.new as ChatMessage;
+          const newMessage = payload.new as ChatMessageType;
           
           // 获取发送者资料
           const { data: senderProfile } = await supabase
@@ -150,6 +155,7 @@ const Chat = () => {
 
           const messageWithProfile: MessageWithProfile = {
             ...newMessage,
+            message_type: (newMessage.message_type || 'text') as 'text' | 'image',
             sender: senderProfile
           };
 
@@ -176,8 +182,9 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !user || !sessionId) return;
+  const handleSendMessage = async (messageType: 'text' | 'image' = 'text', content?: string) => {
+    const messageContent = content || newMessage.trim();
+    if (!messageContent || !user || !sessionId) return;
 
     setSending(true);
     try {
@@ -205,12 +212,17 @@ const Chat = () => {
         .insert({
           session_id: sessionId,
           sender_id: user.id,
-          content: newMessage,
-          message_type: "text"
+          content: messageContent,
+          message_type: messageType
         });
 
       if (error) throw error;
-      setNewMessage("");
+      
+      if (messageType === 'text') {
+        setNewMessage("");
+      } else {
+        setPendingImageUrl(null);
+      }
     } catch (error: any) {
       toast({
         title: t('chat.sendFailed'),
@@ -225,7 +237,17 @@ const Chat = () => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSendMessage('text');
+    }
+  };
+
+  const handleImageUploaded = (imageUrl: string) => {
+    setPendingImageUrl(imageUrl);
+  };
+
+  const handleSendImage = () => {
+    if (pendingImageUrl) {
+      handleSendMessage('image', pendingImageUrl);
     }
   };
 
@@ -306,30 +328,14 @@ const Chat = () => {
             <p>{t('chat.noMessages')}</p>
           </div>
         ) : (
-          messages.map((message) => {
-            const isOwn = message.sender_id === user?.id;
-            return (
-              <div
-                key={message.id}
-                className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
-              >
-                <div className={`max-w-[70%] ${isOwn ? "order-2" : "order-1"}`}>
-                  <div
-                    className={`rounded-lg px-3 py-2 ${
-                      isOwn
-                        ? "bg-primary text-black"
-                        : "bg-muted text-foreground"
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 px-1">
-                    {formatTime(message.created_at)}
-                  </p>
-                </div>
-              </div>
-            );
-          })
+          messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              user={user}
+              formatTime={formatTime}
+            />
+          ))
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -345,6 +351,11 @@ const Chat = () => {
             </div>
           ) : (
             <div className="flex gap-2">
+              <ChatImageUploader
+                userId={user.id}
+                onImageUploaded={handleImageUploaded}
+                disabled={sending}
+              />
               <Input
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -353,18 +364,33 @@ const Chat = () => {
                 className="flex-1"
                 disabled={sending}
               />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || sending}
-                size="sm"
-                className="px-4"
-              >
-                {sending ? (
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
+              {pendingImageUrl ? (
+                <Button
+                  onClick={handleSendImage}
+                  disabled={sending}
+                  size="sm"
+                  className="px-4"
+                >
+                  {sending ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => handleSendMessage('text')}
+                  disabled={!newMessage.trim() || sending}
+                  size="sm"
+                  className="px-4"
+                >
+                  {sending ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
