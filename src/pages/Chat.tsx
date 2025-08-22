@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, MessageCircle } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatImageUploader } from "@/components/ChatImageUploader";
 import { ChatMessage } from "@/components/ChatMessage";
+import { EvidenceImageViewer } from "@/components/EvidenceImageViewer";
 import type { User } from '@supabase/supabase-js';
 import type { ChatSession, ChatMessage as ChatMessageType, Profile } from '@/types/database';
 
@@ -222,6 +223,9 @@ const Chat = () => {
         setNewMessage("");
       } else {
         setPendingImageUrl(null);
+        if (newMessage.trim()) {
+          setNewMessage("");
+        }
       }
     } catch (error: any) {
       toast({
@@ -247,7 +251,16 @@ const Chat = () => {
 
   const handleSendImage = () => {
     if (pendingImageUrl) {
-      handleSendMessage('image', pendingImageUrl);
+      // 如果有文字说明，将图片URL和文字组合发送
+      if (newMessage.trim()) {
+        handleSendMessage('image', pendingImageUrl);
+        // 发送文字说明作为单独的消息
+        setTimeout(() => {
+          handleSendMessage('text', newMessage.trim());
+        }, 100);
+      } else {
+        handleSendMessage('image', pendingImageUrl);
+      }
     }
   };
 
@@ -350,47 +363,76 @@ const Chat = () => {
               </Badge>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <ChatImageUploader
-                userId={user.id}
-                onImageUploaded={handleImageUploaded}
-                disabled={sending}
-              />
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={t('chat.inputPlaceholder')}
-                className="flex-1"
-                disabled={sending}
-              />
-              {pendingImageUrl ? (
-                <Button
-                  onClick={handleSendImage}
-                  disabled={sending}
-                  size="sm"
-                  className="px-4"
-                >
-                  {sending ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => handleSendMessage('text')}
-                  disabled={!newMessage.trim() || sending}
-                  size="sm"
-                  className="px-4"
-                >
-                  {sending ? (
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
+            <div className="space-y-2">
+              {/* 待发送图片预览 */}
+              {pendingImageUrl && (
+                <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                  <div className="w-12 h-12 rounded overflow-hidden">
+                    <EvidenceImageViewer
+                      url={pendingImageUrl}
+                      alt="待发送图片"
+                      className="w-full h-full"
+                      bucketName="chat-images"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">图片已准备发送</p>
+                    <p className="text-xs text-muted-foreground">点击发送按钮或选择取消</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPendingImageUrl(null)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
+              
+              {/* 输入框区域 */}
+              <div className="flex gap-2">
+                <ChatImageUploader
+                  userId={user.id}
+                  onImageUploaded={handleImageUploaded}
+                  disabled={sending}
+                />
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={pendingImageUrl ? "添加文字说明（可选）" : t('chat.inputPlaceholder')}
+                  className="flex-1"
+                  disabled={sending}
+                />
+                {pendingImageUrl ? (
+                  <Button
+                    onClick={handleSendImage}
+                    disabled={sending}
+                    size="sm"
+                    className="px-4"
+                  >
+                    {sending ? (
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => handleSendMessage('text')}
+                    disabled={!newMessage.trim() || sending}
+                    size="sm"
+                    className="px-4"
+                  >
+                    {sending ? (
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
