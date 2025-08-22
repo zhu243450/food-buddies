@@ -221,6 +221,44 @@ export interface Database {
           created_at?: string;
         };
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          message: string;
+          type?: string;
+          category?: string;
+          related_dinner_id?: string;
+          is_read?: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          message: string;
+          type?: string;
+          category?: string;
+          related_dinner_id?: string;
+          is_read?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          message?: string;
+          type?: string;
+          category?: string;
+          related_dinner_id?: string;
+          is_read?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 }
@@ -230,3 +268,4 @@ export type Dinner = Database['public']['Tables']['dinners']['Row'];
 export type DinnerParticipant = Database['public']['Tables']['dinner_participants']['Row'];
 export type ChatSession = Database['public']['Tables']['chat_sessions']['Row'];
 export type ChatMessage = Database['public']['Tables']['chat_messages']['Row'];
+export type Notification = Database['public']['Tables']['notifications']['Row'];

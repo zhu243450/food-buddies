@@ -229,6 +229,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_dinner_id: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_dinner_id?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_dinner_id?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           accept_strangers: boolean | null
@@ -429,6 +468,15 @@ export type Database = {
           message: string
           success: boolean
         }[]
+      }
+      send_dinner_cancellation_notifications: {
+        Args: {
+          cancellation_type: string
+          canceller_user_id: string
+          dinner_id_param: string
+          reason?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
