@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_access_logs: {
+        Row: {
+          access_type: string
+          accessed_data_summary: string | null
+          admin_user_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          justification: string
+          related_report_id: string | null
+          target_resource_id: string | null
+          target_resource_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          access_type: string
+          accessed_data_summary?: string | null
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          justification: string
+          related_report_id?: string | null
+          target_resource_id?: string | null
+          target_resource_type: string
+          user_agent?: string | null
+        }
+        Update: {
+          access_type?: string
+          accessed_data_summary?: string | null
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          justification?: string
+          related_report_id?: string | null
+          target_resource_id?: string | null
+          target_resource_type?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       cancellation_records: {
         Row: {
           cancellation_reason: string | null
@@ -354,9 +396,11 @@ export type Database = {
           admin_notes: string | null
           category: string
           created_at: string
+          data_retention_days: number | null
           description: string
           evidence_urls: string[] | null
           id: string
+          investigation_notes: string | null
           related_chat_session_id: string | null
           related_dinner_id: string | null
           report_type: string
@@ -372,9 +416,11 @@ export type Database = {
           admin_notes?: string | null
           category: string
           created_at?: string
+          data_retention_days?: number | null
           description: string
           evidence_urls?: string[] | null
           id?: string
+          investigation_notes?: string | null
           related_chat_session_id?: string | null
           related_dinner_id?: string | null
           report_type: string
@@ -390,9 +436,11 @@ export type Database = {
           admin_notes?: string | null
           category?: string
           created_at?: string
+          data_retention_days?: number | null
           description?: string
           evidence_urls?: string[] | null
           id?: string
+          investigation_notes?: string | null
           related_chat_session_id?: string | null
           related_dinner_id?: string | null
           report_type?: string
@@ -453,6 +501,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_access_chat_messages: {
+        Args: {
+          justification_param?: string
+          report_id_param: string
+          session_id_param: string
+        }
+        Returns: {
+          access_logged: boolean
+          content: string
+          created_at: string
+          message_id: string
+          message_type: string
+          sender_id: string
+          sender_nickname: string
+        }[]
+      }
+      admin_get_reportable_chat_sessions: {
+        Args: { report_id_param: string }
+        Returns: {
+          dinner_title: string
+          last_message_at: string
+          message_count: number
+          participant1_nickname: string
+          participant2_nickname: string
+          session_created_at: string
+          session_id: string
+        }[]
+      }
       calculate_match_score: {
         Args: { dinner_id_param: string; user_id_param: string }
         Returns: number
@@ -482,6 +558,10 @@ export type Database = {
           restriction_end_date: string
           restriction_reason: string
         }[]
+      }
+      cleanup_resolved_report_data: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       get_admin_cancellation_stats: {
         Args: Record<PropertyKey, never>
