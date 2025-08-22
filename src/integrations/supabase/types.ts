@@ -469,6 +469,36 @@ export type Database = {
           },
         ]
       }
+      restriction_overrides: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delay_until: string | null
+          id: string
+          mode: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delay_until?: string | null
+          id?: string
+          mode: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delay_until?: string | null
+          id?: string
+          mode?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string

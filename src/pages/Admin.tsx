@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye, Ban, UserX, MessageSquareOff, Image as ImageIcon } from "lucide-react";
+import { Users, Calendar, AlertCircle, Shield, ArrowLeft, Search, Crown, UserCog, Eye, Ban, UserX, MessageSquareOff, Image as ImageIcon, Clock } from "lucide-react";
 import { EvidenceImageViewer } from '@/components/EvidenceImageViewer';
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -513,6 +513,52 @@ const Admin = () => {
       toast.error('禁言用户失败: ' + error.message);
     } finally {
       setBanLoading(false);
+    }
+  };
+
+  // 处罚管理方法
+  const handleRemoveRestriction = async (user: Profile) => {
+    try {
+      const { error } = await supabase
+        .from('restriction_overrides')
+        .insert({
+          user_id: user.user_id,
+          mode: 'remove',
+          reason: '管理员手动解除处罚'
+        });
+
+      if (error) throw error;
+      toast.success('已解除用户的发布限制');
+      await loadUsers();
+    } catch (error: any) {
+      console.error('Remove restriction failed:', error);
+      toast.error('解除处罚失败: ' + error.message);
+    }
+  };
+
+  const handleDelayRestriction = async (user: Profile) => {
+    const days = prompt('延迟处罚几天？(输入天数)', '1');
+    if (!days || isNaN(Number(days))) return;
+
+    try {
+      const delayUntil = new Date();
+      delayUntil.setDate(delayUntil.getDate() + Number(days));
+
+      const { error } = await supabase
+        .from('restriction_overrides')
+        .insert({
+          user_id: user.user_id,
+          mode: 'delay',
+          delay_until: delayUntil.toISOString(),
+          reason: `管理员延迟处罚${days}天`
+        });
+
+      if (error) throw error;
+      toast.success(`已延迟用户处罚${days}天`);
+      await loadUsers();
+    } catch (error: any) {
+      console.error('Delay restriction failed:', error);
+      toast.error('延迟处罚失败: ' + error.message);
     }
   };
   const filteredUsers = users.filter(user => {
@@ -1298,6 +1344,8 @@ const Admin = () => {
                             onRoleChange={handleRoleChange}
                             onBanUser={handleBanUser}
                             onUnbanUser={handleUnbanUser}
+                            onRemoveRestriction={handleRemoveRestriction}
+                            onDelayRestriction={handleDelayRestriction}
                           />
                         ))
                       )}
@@ -1525,11 +1573,14 @@ interface UserRowProps {
   onRoleChange: (userId: string, newRole: string) => void;
   onBanUser: (user: Profile) => void;
   onUnbanUser: (user: Profile) => void;
+  onRemoveRestriction: (user: Profile) => void;
+  onDelayRestriction: (user: Profile) => void;
 }
 
-const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onUnbanUser }) => {
+const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onUnbanUser, onRemoveRestriction, onDelayRestriction }) => {
   const [currentRole, setCurrentRole] = useState<string>('user');
   const [roleLoading, setRoleLoading] = useState(false);
+  const [restrictionInfo, setRestrictionInfo] = useState<{can_create_dinner: boolean, restriction_reason: string, late_cancellation_count: number} | null>(null);
 
   useEffect(() => {
     const loadUserRole = async () => {
@@ -1542,7 +1593,22 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
         console.error('Failed to load user role:', error);
       }
     };
+
+    const loadRestrictionInfo = async () => {
+      try {
+        const { data } = await supabase.rpc('check_user_cancellation_restrictions', {
+          user_id_param: profile.user_id
+        });
+        if (data && data.length > 0) {
+          setRestrictionInfo(data[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load restriction info:', error);
+      }
+    };
+
     loadUserRole();
+    loadRestrictionInfo();
   }, [profile.user_id]);
 
   const handleRoleChange = async (newRole: string) => {
@@ -1674,6 +1740,30 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
             >
               <Ban className="w-3 h-3" />
             </Button>
+          )}
+
+          {/* 处罚管理按钮 */}
+          {restrictionInfo && !restrictionInfo.can_create_dinner && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onRemoveRestriction(profile)}
+                className="h-7 px-2 text-xs text-green-600 hover:text-green-700"
+                title="解除处罚"
+              >
+                <Shield className="w-3 h-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onDelayRestriction(profile)}
+                className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                title="延迟处罚"
+              >
+                <Clock className="w-3 h-3" />
+              </Button>
+            </>
           )}
         </div>
       </TableCell>
