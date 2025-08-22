@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
+import { AdminChatInvestigation } from "./AdminChatInvestigation";
 
 interface UserStats {
   total_users: number;
@@ -102,6 +103,17 @@ const Admin = () => {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState<string>('');
   const [statusUpdating, setStatusUpdating] = useState(false);
+
+  // 聊天记录审查相关状态
+  const [chatDialogOpen, setChatDialogOpen] = useState(false);
+  const [chatSessions, setChatSessions] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [selectedChatSession, setSelectedChatSession] = useState<any>(null);
+  const [accessJustification, setAccessJustification] = useState('');
+
+  // 审计日志查看状态
+  const [auditLogOpen, setAuditLogOpen] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -274,6 +286,59 @@ const Admin = () => {
       toast.error('更新失败');
     } finally {
       setStatusUpdating(false);
+    }
+  };
+
+  // 聊天记录审查相关方法
+  const openChatInvestigation = async (report: any) => {
+    if (!report.related_chat_session_id && !report.reported_user_id) {
+      toast.error('该举报没有相关的聊天记录');
+      return;
+    }
+
+    setChatLoading(true);
+    setSelectedReport(report);
+    setChatDialogOpen(true);
+    setAccessJustification(`调查举报: ${report.title}`);
+
+    try {
+      // 获取相关聊天会话列表
+      const { data: sessions, error } = await supabase.rpc('admin_get_reportable_chat_sessions', {
+        report_id_param: report.id
+      });
+
+      if (error) throw error;
+      setChatSessions(sessions || []);
+
+      // 如果只有一个会话，自动加载消息
+      if (sessions && sessions.length === 1) {
+        await loadChatMessages(sessions[0].session_id, report.id);
+      }
+    } catch (error: any) {
+      console.error('Failed to load chat sessions:', error);
+      toast.error('加载聊天会话失败: ' + error.message);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const loadChatMessages = async (sessionId: string, reportId: string) => {
+    setChatLoading(true);
+    try {
+      const { data: messages, error } = await supabase.rpc('admin_access_chat_messages', {
+        session_id_param: sessionId,
+        report_id_param: reportId,
+        justification_param: accessJustification || '举报调查'
+      });
+
+      if (error) throw error;
+      setChatMessages(messages || []);
+      setSelectedChatSession(chatSessions.find(s => s.session_id === sessionId) || null);
+    } catch (error: any) {
+      console.error('Failed to load chat messages:', error);
+      toast.error('加载聊天记录失败: ' + error.message);
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -945,19 +1010,35 @@ const Admin = () => {
                         {selectedReport.evidence_urls && selectedReport.evidence_urls.length > 0 && (
                           <div>
                             <div className="text-sm text-muted-foreground mb-2">相关图片 ({selectedReport.evidence_urls.length})</div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                              {selectedReport.evidence_urls.map((url: string, index: number) => (
-                                <EvidenceImageViewer
-                                  key={index}
-                                  url={url}
-                                  alt={`证据图片 ${index + 1}`}
-                                  className="group"
-                                  onClick={() => window.open(url, '_blank')}
-                                />
-                              ))}
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">点击图片可查看大图</p>
-                          </div>
+                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                               {selectedReport.evidence_urls.map((url: string, index: number) => (
+                                 <EvidenceImageViewer
+                                   key={index}
+                                   url={url}
+                                   alt={`证据图片 ${index + 1}`}
+                                   className="group"
+                                   onClick={() => window.open(url, '_blank')}
+                                   bucketName="feedback-evidence"
+                                 />
+                               ))}
+                             </div>
+                             <p className="text-xs text-muted-foreground mt-1">点击图片可查看大图</p>
+                           </div>
+                         )}
+                         {/* 聊天记录审查按钮 */}
+                         {(selectedReport.related_chat_session_id || selectedReport.reported_user_id) && (
+                           <div>
+                             <div className="text-sm text-muted-foreground mb-2">聊天记录审查</div>
+                             <Button 
+                               variant="outline" 
+                               size="sm"
+                               onClick={() => openChatInvestigation(selectedReport)}
+                               className="w-full"
+                             >
+                               <MessageSquareOff className="w-4 h-4 mr-2" />
+                               查看相关聊天记录
+                             </Button>
+                           </div>
                         )}
                         <div>
                           <div className="text-sm text-muted-foreground mb-1">处理备注</div>
@@ -980,6 +1061,156 @@ const Admin = () => {
                               await loadReports();
                             }
                           }}>保存备注</Button>
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+
+                {/* 聊天记录审查弹窗 */}
+                <Dialog open={chatDialogOpen} onOpenChange={setChatDialogOpen}>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>聊天记录审查</DialogTitle>
+                      <DialogDescription>
+                        基于举报调查的聊天记录访问 - 所有访问行为均已记录
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    {selectedReport && (
+                      <div className="space-y-4">
+                        {/* 举报信息摘要 */}
+                        <div className="bg-muted/30 p-3 rounded-lg">
+                          <div className="text-sm font-medium">举报信息: {selectedReport.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            类型: {selectedReport.report_type} | 状态: {selectedReport.status}
+                          </div>
+                        </div>
+
+                        {/* 访问理由 */}
+                        <div>
+                          <label className="text-sm font-medium">访问理由</label>
+                          <Input
+                            value={accessJustification}
+                            onChange={(e) => setAccessJustification(e.target.value)}
+                            placeholder="请输入查看聊天记录的具体理由..."
+                            className="mt-1"
+                          />
+                        </div>
+
+                        {/* 聊天会话列表 */}
+                        <div>
+                          <div className="text-sm font-medium mb-2">相关聊天会话</div>
+                          {chatLoading ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                              <p className="text-sm text-muted-foreground mt-2">加载中...</p>
+                            </div>
+                          ) : chatSessions.length === 0 ? (
+                            <div className="text-center py-4 text-muted-foreground">
+                              无相关聊天记录
+                            </div>
+                          ) : (
+                            <div className="grid gap-2">
+                              {chatSessions.map((session) => (
+                                <div
+                                  key={session.session_id}
+                                  className={`border rounded-lg p-3 cursor-pointer transition-colors ${
+                                    selectedChatSession?.session_id === session.session_id
+                                      ? 'border-primary bg-primary/5'
+                                      : 'border-border hover:border-primary/50'
+                                  }`}
+                                  onClick={() => {
+                                    if (!accessJustification.trim()) {
+                                      toast.error('请先填写访问理由');
+                                      return;
+                                    }
+                                    loadChatMessages(session.session_id, selectedReport.id);
+                                  }}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <div className="font-medium text-sm">
+                                        {session.participant1_nickname} ↔ {session.participant2_nickname}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        饭局: {session.dinner_title || '未知'}
+                                      </div>
+                                    </div>
+                                    <div className="text-right text-xs text-muted-foreground">
+                                      <div>{session.message_count} 条消息</div>
+                                      <div>
+                                        {session.last_message_at 
+                                          ? new Date(session.last_message_at).toLocaleDateString()
+                                          : '无消息'
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 聊天消息显示 */}
+                        {selectedChatSession && (
+                          <div>
+                            <div className="text-sm font-medium mb-2">
+                              聊天记录: {selectedChatSession.participant1_nickname} ↔ {selectedChatSession.participant2_nickname}
+                            </div>
+                            <div className="border rounded-lg p-4 max-h-60 overflow-y-auto bg-muted/20">
+                              {chatMessages.length === 0 ? (
+                                <div className="text-center text-muted-foreground">无聊天记录</div>
+                              ) : (
+                                <div className="space-y-3">
+                                  {chatMessages.map((message) => (
+                                    <div key={message.message_id} className="flex gap-3">
+                                      <div className="text-xs text-muted-foreground min-w-0 flex-shrink-0">
+                                        {new Date(message.created_at).toLocaleString()}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-medium text-primary">
+                                          {message.sender_nickname}
+                                        </div>
+                                        {message.message_type === 'image' ? (
+                                          <div className="mt-1">
+                                            <EvidenceImageViewer
+                                              url={message.content}
+                                              alt="聊天图片"
+                                              className="max-w-32 h-auto"
+                                              bucketName="chat-images"
+                                            />
+                                          </div>
+                                        ) : (
+                                          <div className="text-sm whitespace-pre-wrap break-words">
+                                            {message.content}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* 访问记录提醒 */}
+                            <div className="mt-2 text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/20 p-2 rounded border border-amber-200 dark:border-amber-800">
+                              ⚠️ 此次访问已记录到审计日志中，包含访问时间、理由和数据摘要
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex justify-end gap-2 pt-4 border-t">
+                          <Button variant="outline" onClick={() => {
+                            setChatDialogOpen(false);
+                            setChatSessions([]);
+                            setChatMessages([]);
+                            setSelectedChatSession(null);
+                            setAccessJustification('');
+                          }}>
+                            关闭
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -1083,12 +1314,71 @@ const Admin = () => {
                 <CardTitle>系统管理</CardTitle>
                 <CardDescription>系统设置和高级管理功能</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">系统管理功能正在开发中...</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    将支持系统设置、数据导出等功能
-                  </p>
+              <CardContent className="space-y-4">
+                {/* 合规与审计功能 */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">合规与审计</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Shield className="w-4 h-4" />
+                            访问审计日志
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            查看管理员访问用户数据的完整记录，确保合规性
+                          </p>
+                          <Button 
+                            onClick={() => setAuditLogOpen(true)}
+                            className="w-full"
+                            variant="outline"
+                          >
+                            查看审计日志
+                          </Button>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4" />
+                            合规状态
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span>GDPR 合规</span>
+                              <Badge variant="secondary">✓ 已启用</Badge>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>数据审计</span>
+                              <Badge variant="secondary">✓ 已启用</Badge>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span>举报调查机制</span>
+                              <Badge variant="secondary">✓ 已启用</Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                      🛡️ 隐私保护与合规说明
+                    </div>
+                    <div className="text-xs text-green-700 dark:text-green-300 space-y-1">
+                      <div>• 本系统严格遵循 GDPR、CCPA、《个人信息保护法》等法律法规</div>
+                      <div>• 聊天记录仅在收到举报时基于合法利益进行访问，所有访问均记录审计日志</div>
+                      <div>• 实施数据最小化原则，已解决举报的相关数据会在90天后自动清理</div>
+                      <div>• 用户享有数据查看、修改、删除等权利，可通过客服申请</div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1218,6 +1508,12 @@ const Admin = () => {
             </DialogContent>
           </Dialog>
         </Tabs>
+
+        {/* 审计日志查看弹窗 */}
+        <AdminChatInvestigation 
+          open={auditLogOpen} 
+          onOpenChange={setAuditLogOpen}
+        />
       </div>
     </div>
   );
