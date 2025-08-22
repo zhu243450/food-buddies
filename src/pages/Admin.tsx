@@ -90,6 +90,18 @@ const Admin = () => {
   const [banDuration, setBanDuration] = useState<string>('');
   const [banLoading, setBanLoading] = useState(false);
 
+  // 举报/反馈管理相关状态
+  const [reports, setReports] = useState<any[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportSearch, setReportSearch] = useState("");
+  const [reportType, setReportType] = useState<string>('all');
+  const [reportStatus, setReportStatus] = useState<string>('all');
+  const [pendingReports, setPendingReports] = useState<number>(0);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [adminNotes, setAdminNotes] = useState<string>('');
+  const [statusUpdating, setStatusUpdating] = useState(false);
+
   useEffect(() => {
     checkAdminAccess();
   }, []);
@@ -120,7 +132,15 @@ const Admin = () => {
       setIsAdmin(true);
       setCurrentUser(user);
       setUserRoles(roles || []);
-      await Promise.all([loadStats(), loadUsers()]);
+      await Promise.all([loadStats(), loadUsers(), loadReports()]);
+      await loadDinners();
+      await Promise.all([loadStats(), loadUsers(), loadReports()]);
+      await loadDinners();
+  await Promise.all([loadStats(), loadUsers(), loadReports()]);
+  await loadDinners();
+  await Promise.all([loadStats(), loadUsers(), loadReports()]);
+  await loadDinners();
+      await Promise.all([loadStats(), loadUsers(), loadReports()]);
       await loadDinners();
     } catch (error) {
       console.error('Admin access check failed:', error);
@@ -220,6 +240,71 @@ const Admin = () => {
       setDinnersLoading(false);
     }
   };
+
+  // 举报/反馈：加载列表
+  const loadReports = async () => {
+    setReportsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setReports(data || []);
+      setPendingReports((data || []).filter((r: any) => r.status === 'pending').length);
+    } catch (error) {
+      console.error('Failed to load reports:', error);
+      toast.error('加载举报/反馈失败');
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  // 举报/反馈：更新状态
+  const updateReportStatus = async (reportId: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
+    try {
+      setStatusUpdating(true);
+      const updates: any = { status: newStatus };
+      if (newStatus === 'resolved') {
+        updates.resolved_by = currentUser?.id;
+        updates.resolved_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from('reports')
+        .update(updates)
+        .eq('id', reportId);
+      if (error) throw error;
+      toast.success('状态已更新');
+      await loadReports();
+    } catch (e) {
+      console.error('更新举报状态失败:', e);
+      toast.error('更新失败');
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const channel = supabase
+      .channel('reports-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reports' },
+        (payload) => {
+          setPendingReports((prev) => prev + 1);
+          const r: any = payload.new;
+          toast.message('收到新的反馈/举报', {
+            description: `${r.report_type} · ${r.title}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
 
   const openDinner = async (d: Dinner) => {
     try {
@@ -394,6 +479,17 @@ const Admin = () => {
     return matchesSearch && statusOk;
   });
 
+  const filteredReports = reports.filter((r: any) => {
+    const keyword = reportSearch.trim().toLowerCase();
+    const matchesSearch =
+      !keyword ||
+      r.title.toLowerCase().includes(keyword) ||
+      (r.description || '').toLowerCase().includes(keyword);
+    const typeOk = reportType === 'all' || r.report_type === reportType;
+    const statusOk = reportStatus === 'all' || r.status === reportStatus;
+    return matchesSearch && typeOk && statusOk;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -435,10 +531,16 @@ const Admin = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 pb-20">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">数据概览</TabsTrigger>
             <TabsTrigger value="dinners">饭局管理</TabsTrigger>
             <TabsTrigger value="users">用户管理</TabsTrigger>
+            <TabsTrigger value="reports">
+              举报/反馈
+              {pendingReports > 0 && (
+                <Badge variant="destructive" className="ml-2">{pendingReports}</Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="management">系统管理</TabsTrigger>
           </TabsList>
 
@@ -708,6 +810,168 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="reports" className="space-y-6">
+            <Card className="border-border/40 bg-card/80 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-destructive" />
+                  举报/反馈
+                </CardTitle>
+                <CardDescription>查看并处理用户的意见反馈与举报信息</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="搜索标题或描述"
+                      value={reportSearch}
+                      onChange={(e) => setReportSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={reportType} onValueChange={setReportType}>
+                    <SelectTrigger className="w-full sm:w-44">
+                      <SelectValue placeholder="按类型筛选" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部类型</SelectItem>
+                      <SelectItem value="general_feedback">意见反馈</SelectItem>
+                      <SelectItem value="user_report">用户举报</SelectItem>
+                      <SelectItem value="dinner_report">饭局举报</SelectItem>
+                      <SelectItem value="chat_report">聊天举报</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={reportStatus} onValueChange={setReportStatus}>
+                    <SelectTrigger className="w-full sm:w-40">
+                      <SelectValue placeholder="按状态筛选" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部状态</SelectItem>
+                      <SelectItem value="pending">待处理</SelectItem>
+                      <SelectItem value="in_progress">处理中</SelectItem>
+                      <SelectItem value="resolved">已解决</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={loadReports} variant="outline" disabled={reportsLoading} className="w-full sm:w-auto">
+                    {reportsLoading ? '加载中...' : '刷新'}
+                  </Button>
+                </div>
+
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50">
+                        <TableHead>标题</TableHead>
+                        <TableHead className="hidden md:table-cell">类型</TableHead>
+                        <TableHead className="hidden sm:table-cell">分类</TableHead>
+                        <TableHead>状态</TableHead>
+                        <TableHead className="hidden md:table-cell">提交人</TableHead>
+                        <TableHead className="hidden sm:table-cell">时间</TableHead>
+                        <TableHead className="w-40">操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reportsLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                            <p className="text-muted-foreground mt-2">加载中...</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredReports.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">暂无举报/反馈</p>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredReports.map((r) => (
+                          <TableRow key={r.id} className="hover:bg-muted/50">
+                            <TableCell className="max-w-[220px]">
+                              <div className="flex flex-col">
+                                <span className="font-medium truncate" title={r.title}>{r.title}</span>
+                                <span className="text-xs text-muted-foreground truncate md:hidden">{r.report_type}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">{r.report_type}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{r.category}</TableCell>
+                            <TableCell>
+                              <Badge variant={r.status === 'pending' ? 'destructive' : r.status === 'resolved' ? 'secondary' : 'outline'}>
+                                {r.status === 'pending' ? '待处理' : r.status === 'in_progress' ? '处理中' : '已解决'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">{(r.reporter_id || '').slice(0,8)}...</TableCell>
+                            <TableCell className="hidden sm:table-cell">{new Date(r.created_at).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-wrap gap-2">
+                                <Button size="sm" variant="outline" onClick={() => { setSelectedReport(r); setReportDialogOpen(true); }}>查看</Button>
+                                {r.status !== 'in_progress' && (
+                                  <Button size="sm" variant="outline" onClick={() => updateReportStatus(r.id, 'in_progress')}>标记处理中</Button>
+                                )}
+                                {r.status !== 'resolved' && (
+                                  <Button size="sm" onClick={() => updateReportStatus(r.id, 'resolved')} disabled={statusUpdating}>
+                                    {statusUpdating ? '处理中...' : '标记已解决'}
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>举报/反馈详情</DialogTitle>
+                      <DialogDescription>查看并添加处理备注</DialogDescription>
+                    </DialogHeader>
+                    {selectedReport && (
+                      <div className="space-y-3">
+                        <div>
+                          <div className="text-sm text-muted-foreground">标题</div>
+                          <div className="font-medium">{selectedReport.title}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">类型 / 分类</div>
+                          <div className="font-medium">{selectedReport.report_type} / {selectedReport.category}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">描述</div>
+                          <div className="whitespace-pre-wrap text-sm">{selectedReport.description}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground mb-1">处理备注</div>
+                          <Textarea value={adminNotes} onChange={(e) => setAdminNotes(e.target.value)} placeholder="填写处理说明..." className="resize-none" rows={4} />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setReportDialogOpen(false)}>关闭</Button>
+                          <Button onClick={async () => {
+                            if (!selectedReport) return;
+                            const { error } = await supabase
+                              .from('reports')
+                              .update({ admin_notes: adminNotes, updated_at: new Date().toISOString() })
+                              .eq('id', selectedReport.id);
+                            if (error) {
+                              toast.error('保存备注失败');
+                            } else {
+                              toast.success('备注已保存');
+                              setReportDialogOpen(false);
+                              setAdminNotes('');
+                              await loadReports();
+                            }
+                          }}>保存备注</Button>
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="users" className="space-y-6">
             {/* 搜索和筛选 */}
