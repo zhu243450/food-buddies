@@ -34,7 +34,7 @@ const Discover = () => {
     dinnerMode: [],
     urgencyLevel: [],
     maxParticipants: [2, 20],
-    showExpired: false
+    showExpired: false  // 默认不显示过期饭局
   });
   const navigate = useNavigate();
 
@@ -65,17 +65,13 @@ const Discover = () => {
       if (error) {
         console.error("Error fetching dinners:", error);
       } else {
-        // 根据筛选器决定是否包含已过期的饭局
-        const filteredData = data?.filter(dinner => {
-          const isActive = (dinner as any).status === 'active' || !(dinner as any).status;
-          const isExpired = new Date(dinner.dinner_time) < new Date();
-          
-          // 如果显示过期饭局选项开启，包含所有饭局；否则只包含活跃且未过期的
-          return filters.showExpired ? isActive : (isActive && !isExpired);
-        }) || [];
+        // 获取所有活跃饭局，默认过滤掉已过期的
+        const activeDinners = data?.filter(dinner => 
+          (dinner as any).status === 'active' || !(dinner as any).status
+        ) || [];
         
-        setAllDinners(filteredData);
-        setFilteredDinners(filteredData);
+        setAllDinners(activeDinners);
+        setFilteredDinners(activeDinners);
       }
 
       // Fetch joined dinner IDs
@@ -93,13 +89,11 @@ const Discover = () => {
       // Fetch participant counts for all dinners (including creators)
       if (data && data.length > 0) {
         // Filter active dinners for participant count calculation
-        const filteredData = data?.filter(dinner => {
-          const isActive = (dinner as any).status === 'active' || !(dinner as any).status;
-          const isExpired = new Date(dinner.dinner_time) < new Date();
-          return filters.showExpired ? isActive : (isActive && !isExpired);
-        }) || [];
+        const activeDinners = data?.filter(dinner => 
+          (dinner as any).status === 'active' || !(dinner as any).status
+        ) || [];
         
-        const dinnerIds = filteredData.map(dinner => dinner.id);
+        const dinnerIds = activeDinners.map(dinner => dinner.id);
         const { data: participantData, error: participantError } = await supabase
           .from("dinner_participants")
           .select("dinner_id")
@@ -110,8 +104,8 @@ const Discover = () => {
         } else {
           const counts: Record<string, number> = {};
           
-          // First, add creator count for each filtered dinner (creator always counts as 1 participant)
-          filteredData.forEach(dinner => {
+          // First, add creator count for each active dinner (creator always counts as 1 participant)
+          activeDinners.forEach(dinner => {
             counts[dinner.id] = 1; // Creator counts as 1
           });
           
@@ -151,7 +145,7 @@ const Discover = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, filters.showExpired]);
+  }, [user]);
 
   // 筛选逻辑
   useEffect(() => {
@@ -169,13 +163,13 @@ const Discover = () => {
       });
     }
 
-    // 过期筛选（如果开启显示过期饭局，跳过时间过滤）
+    // 默认过滤掉已过期的饭局（除非用户选择显示）
     if (!filters.showExpired) {
       const now = new Date();
       filtered = filtered.filter(dinner => new Date(dinner.dinner_time) >= now);
     }
 
-    // 时间范围筛选
+    // 性别偏好筛选
     if (filters.timeRange !== "all") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

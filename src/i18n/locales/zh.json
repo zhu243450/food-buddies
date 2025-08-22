@@ -227,7 +227,7 @@
     "searchRadius": "搜索半径: {{radius}}km",
     "participantsRange": "{{min}} - {{max}} 人",
     "applyFilters": "应用筛选 ({{count}})",
-    "showExpired": "显示已过期饭局"
+    "showExpired": "包含已过期饭局"
   },
   "location": {
     "notSupported": "不支持定位",

@@ -227,7 +227,7 @@
     "searchRadius": "Search radius: {{radius}}km",
     "participantsRange": "{{min}} - {{max}} people",
     "applyFilters": "Apply filters ({{count}})",
-    "showExpired": "Show expired dinners"
+    "showExpired": "Include expired dinners"
   },
   "location": {
     "notSupported": "Location not supported",
