@@ -134,14 +134,6 @@ const Admin = () => {
       setUserRoles(roles || []);
       await Promise.all([loadStats(), loadUsers(), loadReports()]);
       await loadDinners();
-      await Promise.all([loadStats(), loadUsers(), loadReports()]);
-      await loadDinners();
-  await Promise.all([loadStats(), loadUsers(), loadReports()]);
-  await loadDinners();
-  await Promise.all([loadStats(), loadUsers(), loadReports()]);
-  await loadDinners();
-      await Promise.all([loadStats(), loadUsers(), loadReports()]);
-      await loadDinners();
     } catch (error) {
       console.error('Admin access check failed:', error);
       toast.error('权限检查失败');

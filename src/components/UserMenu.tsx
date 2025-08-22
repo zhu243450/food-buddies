@@ -30,6 +30,7 @@ export const UserMenu = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingReports, setPendingReports] = useState(0);
 
   useEffect(() => {
     // 获取用户信息
@@ -55,11 +56,53 @@ export const UserMenu = () => {
           });
         
         setIsAdmin(adminCheck || false);
+
+        // 如果是管理员，获取待处理举报数量
+        if (adminCheck) {
+          const { data: reportsData } = await supabase
+            .from('reports')
+            .select('id')
+            .eq('status', 'pending');
+          setPendingReports(reportsData?.length || 0);
+        }
       }
     };
 
     getUser();
   }, []);
+
+  // 管理员实时监听新举报
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const channel = supabase
+      .channel('admin-reports-notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reports' },
+        () => {
+          setPendingReports((prev) => prev + 1);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'reports' },
+        (payload) => {
+          const newReport = payload.new as any;
+          const oldReport = payload.old as any;
+          if (oldReport.status === 'pending' && newReport.status !== 'pending') {
+            setPendingReports((prev) => Math.max(0, prev - 1));
+          } else if (oldReport.status !== 'pending' && newReport.status === 'pending') {
+            setPendingReports((prev) => prev + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAdmin]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -82,7 +125,7 @@ export const UserMenu = () => {
                 {profile?.nickname?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
-            {unreadCount > 0 && (
+            {(unreadCount > 0 || (isAdmin && pendingReports > 0)) && (
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border border-background"></div>
             )}
           </div>
@@ -138,6 +181,11 @@ export const UserMenu = () => {
               <DropdownMenuItem onClick={() => navigate('/admin')}>
                 <Shield className="mr-2 h-4 w-4" />
                 <span>管理后台</span>
+                {pendingReports > 0 && (
+                  <Badge variant="destructive" className="ml-auto h-5 text-xs">
+                    {pendingReports}
+                  </Badge>
+                )}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>
