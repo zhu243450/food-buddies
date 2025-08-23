@@ -280,7 +280,48 @@ const DinnerDetail = () => {
     });
   };
 
-  if (!user || loading) return null;
+  if (!user || loading) {
+    return (
+      <>
+        <SEO {...getPageSEO('dinner-detail')} />
+        <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
+          <div className="max-w-2xl mx-auto">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate("/discover")}
+              className="mb-4 hover:bg-accent/20 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('common.back')}
+            </Button>
+            
+            {loading ? (
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
+                <CardContent className="p-8 text-center">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-8 bg-muted rounded w-3/4 mx-auto"></div>
+                    <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+                    <div className="h-32 bg-muted rounded"></div>
+                  </div>
+                  <p className="text-muted-foreground mt-4">{t('common.loading')}</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">{t('common.pleaseLogin')}</p>
+                  <Button onClick={() => navigate("/auth")} className="mt-4">
+                    {t('common.login')}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          <Navigation />
+        </div>
+      </>
+    );
+  }
 
   if (!dinner) {
     return (

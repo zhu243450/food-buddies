@@ -32,6 +32,8 @@
     "female": "Female",
     "other": "Other", 
     "getStarted": "Get Started",
+    "pleaseLogin": "Please login first",
+    "login": "Login",
     "locale": "en-US"
   },
   "nav": {
