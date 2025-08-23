@@ -119,10 +119,70 @@ const Profile = () => {
       } catch (error) {
         console.error('Failed to check admin role:', error);
       }
+
+      // 设置实时监听用户照片的点赞和评论
+      const likesChannel = supabase
+        .channel('user-photo-likes')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'photo_likes' },
+          async (payload) => {
+            if (payload.new && 'user_id' in payload.new && payload.new.user_id !== user.id) {
+              // 检查是否是对用户照片的点赞
+              const { data: photo } = await supabase
+                .from('dinner_photos')
+                .select('user_id')
+                .eq('id', (payload.new as any).photo_id)
+                .single();
+              
+              if (photo?.user_id === user.id) {
+                // 显示通知
+                toast({
+                  title: "👍 新点赞",
+                  description: "有人点赞了您的照片",
+                  className: "border-red-500 bg-red-50 text-red-900",
+                });
+                // 刷新照片数据
+                fetchUserPhotos();
+              }
+            }
+          })
+        .subscribe();
+
+      const commentsChannel = supabase
+        .channel('user-photo-comments')
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'photo_comments' },
+          async (payload) => {
+            if (payload.new && 'user_id' in payload.new && payload.new.user_id !== user.id) {
+              // 检查是否是对用户照片的评论
+              const { data: photo } = await supabase
+                .from('dinner_photos')
+                .select('user_id')
+                .eq('id', (payload.new as any).photo_id)
+                .single();
+              
+              if (photo?.user_id === user.id) {
+                // 显示通知
+                toast({
+                  title: "💬 新评论",
+                  description: "有人评论了您的照片",
+                  className: "border-red-500 bg-red-50 text-red-900",
+                });
+                // 刷新照片数据
+                fetchUserPhotos();
+              }
+            }
+          })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(likesChannel);
+        supabase.removeChannel(commentsChannel);
+      };
     };
 
     getUser();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   // 当user设置后，获取照片
   useEffect(() => {

@@ -264,7 +264,43 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
 
   useEffect(() => {
     fetchPhotos();
-  }, [dinnerId]);
+
+    // 设置实时监听 - 监听当前饭局照片的点赞和评论
+    const likesChannel = supabase
+      .channel('photo-likes-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'photo_likes' },
+        (payload) => {
+          console.log('Like change:', payload);
+          // 重新获取点赞数据
+          if (payload.new && 'photo_id' in payload.new && photos.some(p => p.id === (payload.new as any).photo_id)) {
+            fetchLikes([(payload.new as any).photo_id as string]);
+          } else if (payload.old && 'photo_id' in payload.old && photos.some(p => p.id === (payload.old as any).photo_id)) {
+            fetchLikes([(payload.old as any).photo_id as string]);
+          }
+        })
+      .subscribe();
+
+    const commentsChannel = supabase
+      .channel('photo-comments-changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'photo_comments' },
+        (payload) => {
+          console.log('Comment change:', payload);
+          // 重新获取评论数据
+          if (payload.new && 'photo_id' in payload.new && photos.some(p => p.id === (payload.new as any).photo_id)) {
+            fetchComments([(payload.new as any).photo_id as string]);
+          } else if (payload.old && 'photo_id' in payload.old && photos.some(p => p.id === (payload.old as any).photo_id)) {
+            fetchComments([(payload.old as any).photo_id as string]);
+          }
+        })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(likesChannel);
+      supabase.removeChannel(commentsChannel);
+    };
+  }, [dinnerId, photos]);
 
   if (loading) {
     return (

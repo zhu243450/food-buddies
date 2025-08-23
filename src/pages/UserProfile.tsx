@@ -124,6 +124,52 @@ const UserProfile = () => {
     };
 
     fetchUserProfile();
+
+    // 添加实时监听点赞和评论
+    const likesChannel = supabase
+      .channel('userprofile-photo-likes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'photo_likes' },
+        async (payload) => {
+          // 如果是对当前查看用户照片的操作，刷新数据
+          if (payload.new && 'photo_id' in payload.new) {
+            const { data: photo } = await supabase
+              .from('dinner_photos')
+              .select('user_id')
+              .eq('id', (payload.new as any).photo_id)
+              .single();
+            
+            if (photo?.user_id === userId) {
+              fetchLikes([(payload.new as any).photo_id]);
+            }
+          }
+        })
+      .subscribe();
+
+    const commentsChannel = supabase
+      .channel('userprofile-photo-comments')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'photo_comments' },
+        async (payload) => {
+          // 如果是对当前查看用户照片的操作，刷新数据
+          if (payload.new && 'photo_id' in payload.new) {
+            const { data: photo } = await supabase
+              .from('dinner_photos')
+              .select('user_id')
+              .eq('id', (payload.new as any).photo_id)
+              .single();
+            
+            if (photo?.user_id === userId) {
+              fetchComments([(payload.new as any).photo_id]);
+            }
+          }
+        })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(likesChannel);
+      supabase.removeChannel(commentsChannel);
+    };
   }, [userId, currentUser, navigate]);
 
   // 获取点赞数据
