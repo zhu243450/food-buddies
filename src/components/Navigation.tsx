@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { Home, Search, Plus, MessageCircle } from "lucide-react";
@@ -12,6 +12,8 @@ const Navigation = () => {
   const { t } = useTranslation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [user, setUser] = useState(null);
+  const [sessionIds, setSessionIds] = useState<string[]>([]);
+  const fetchTimer = useRef<number>();
 
   // 获取当前用户
   useEffect(() => {
@@ -22,27 +24,20 @@ const Navigation = () => {
     getUser();
   }, []);
 
-  // 获取未读消息数量
-  const fetchUnreadCount = async () => {
+  // 获取未读消息数量（使用已缓存的会话ID）
+  const fetchUnreadCount = async (ids?: string[]) => {
     if (!user) return;
+    const targetIds = ids ?? sessionIds;
+    if (!targetIds || targetIds.length === 0) {
+      setUnreadCount(0);
+      return;
+    }
 
     try {
-      const { data: sessions } = await supabase
-        .from("chat_sessions")
-        .select("id")
-        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`);
-
-      if (!sessions || sessions.length === 0) {
-        setUnreadCount(0);
-        return;
-      }
-
-      const sessionIds = sessions.map(s => s.id);
-      
       const { count } = await supabase
         .from("chat_messages")
         .select("*", { count: 'exact', head: true })
-        .in("session_id", sessionIds)
+        .in("session_id", targetIds)
         .eq("is_read", false)
         .neq("sender_id", user.id);
 
@@ -54,9 +49,30 @@ const Navigation = () => {
 
   // 初始化未读消息数量
   useEffect(() => {
-    if (user) {
-      fetchUnreadCount();
-    }
+    if (!user) return;
+    let cancelled = false;
+    const loadSessions = async () => {
+      try {
+        const { data: sessions } = await supabase
+          .from("chat_sessions")
+          .select("id")
+          .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`);
+        if (cancelled) return;
+        const ids = (sessions || []).map((s) => s.id);
+        setSessionIds(ids);
+        if (ids.length === 0) {
+          setUnreadCount(0);
+        } else {
+          fetchUnreadCount(ids);
+        }
+      } catch (e) {
+        console.error("Error loading sessions:", e);
+      }
+    };
+    loadSessions();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   // 实时监听新消息
@@ -67,21 +83,31 @@ const Navigation = () => {
       .channel('navigation_messages')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'chat_messages'
-        },
-        () => {
-          fetchUnreadCount();
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `sender_id=neq.${user.id}` },
+        (payload: any) => {
+          if (sessionIds.includes(payload.new.session_id)) {
+            if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
+            fetchTimer.current = window.setTimeout(() => fetchUnreadCount(), 200);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `sender_id=neq.${user.id}` },
+        (payload: any) => {
+          if (sessionIds.includes(payload.new.session_id)) {
+            if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
+            fetchTimer.current = window.setTimeout(() => fetchUnreadCount(), 200);
+          }
         }
       )
       .subscribe();
 
     return () => {
+      if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, sessionIds]);
 
   const navItems = [
     { icon: Home, label: t('nav.myDinners'), path: "/my-dinners" },
@@ -102,7 +128,7 @@ const Navigation = () => {
               key={item.path}
               variant="ghost"
               size="sm"
-              onClick={() => navigate(item.path)}
+              onClick={() => { if (location.pathname !== item.path) navigate(item.path); }}
               className={`
                 flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px]
                 ${isSpecial 
