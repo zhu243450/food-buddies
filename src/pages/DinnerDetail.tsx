@@ -4,11 +4,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X, Share2 } from "lucide-react";
+import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X, Share2, Camera } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
+import DinnerPhotoGallery from "@/components/DinnerPhotoGallery";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
@@ -506,6 +507,27 @@ const DinnerDetail = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* 照片画廊 - 只有参与者和创建者能看到 */}
+        {(isParticipant || dinner.created_by === user.id) && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="w-5 h-5" />
+                饭局照片
+              </CardTitle>
+              <CardDescription>
+                分享和查看饭局的美好时光
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DinnerPhotoGallery 
+                dinnerId={id!} 
+                currentUserId={user.id}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <CancelDinnerDialog
