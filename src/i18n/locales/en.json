@@ -870,6 +870,12 @@
     "noJoinedDinners": "You haven't joined any dinners yet",
     "noJoinedDesc": "Go discover like-minded dining companions!",
     "noCreatedDinners": "You haven't created any dinners yet",
-    "noCreatedDesc": "Create your first dinner and invite friends to join!"
+    "noCreatedDesc": "Create your first dinner and invite friends to join!",
+    "myPhotos": "My Photos",
+    "photos": "Photos",
+    "sharedPhotos": "Shared Photos",
+    "noPhotosYet": "No photos yet",
+    "joinDinnersToShare": "Join dinners to share photos",
+    "noPhotosShared": "No photos shared yet"
   }
 }

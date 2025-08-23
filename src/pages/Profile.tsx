@@ -15,6 +15,9 @@ import Navigation from "@/components/Navigation";
 import { User as UserIcon, Camera, Shield, LogOut } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
+import DinnerPhotoUploader from "@/components/DinnerPhotoUploader";
+import DinnerPhotoGallery from "@/components/DinnerPhotoGallery";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { User } from '@supabase/supabase-js';
 
 const Profile = () => {
@@ -26,6 +29,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [myDinners, setMyDinners] = useState<any[]>([]);
   
   const seoData = getPageSEO('profile');
   
@@ -93,6 +97,29 @@ const Profile = () => {
       } catch (error) {
         console.error('Failed to check admin role:', error);
       }
+
+      // 获取我参与和创建的饭局（用于照片分享）
+      const [joinedResult, createdResult] = await Promise.all([
+        supabase
+          .from("dinner_participants")
+          .select(`
+            dinners!fk_dinner_participants_dinner_id (
+              id, title, dinner_time, location
+            )
+          `)
+          .eq("user_id", user.id),
+        supabase
+          .from("dinners")
+          .select("id, title, dinner_time, location")
+          .eq("created_by", user.id)
+      ]);
+
+      const allDinners = [
+        ...(joinedResult.data?.map((item: any) => item.dinners).filter(Boolean) || []),
+        ...(createdResult.data || [])
+      ];
+      
+      setMyDinners(allDinners);
     };
 
     getUser();
@@ -205,15 +232,23 @@ const Profile = () => {
       <SEO {...seoData} />
       <div className="min-h-screen bg-gradient-to-br from-background to-accent/10 p-4 pb-24">
         <div className="max-w-md mx-auto">
-          <Card className="border-0 shadow-xl bg-card">
-            <CardHeader className="bg-primary text-black rounded-t-xl p-4">
-              <CardTitle className="text-lg flex items-center gap-2 font-bold">
-                <UserIcon className="w-5 h-5" />
-                {t('profile.profile')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
+          
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="profile">{t('profile.profile')}</TabsTrigger>
+              <TabsTrigger value="photos">{t('profile.myPhotos')}</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile">
+              <Card className="border-0 shadow-xl bg-card">
+                <CardHeader className="bg-primary text-black rounded-t-xl p-4">
+                  <CardTitle className="text-lg flex items-center gap-2 font-bold">
+                    <UserIcon className="w-5 h-5" />
+                    {t('profile.profile')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                 
                 {/* 头像区域 */}
                 <div className="flex items-center gap-4 p-3 bg-accent/5 rounded-lg">
@@ -405,9 +440,53 @@ const Profile = () => {
                   {t('profile.logout')}
                 </Button>
 
-              </form>
-            </CardContent>
-          </Card>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="photos">
+              <Card className="border-0 shadow-xl bg-card">
+                <CardHeader className="bg-primary text-black rounded-t-xl p-4">
+                  <CardTitle className="text-lg flex items-center gap-2 font-bold">
+                    <Camera className="w-5 h-5" />
+                    {t('profile.myPhotos')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-6">
+                  {myDinners.length > 0 ? (
+                    myDinners.map((dinner) => (
+                      <div key={dinner.id} className="space-y-4">
+                        <div className="p-3 bg-accent/10 rounded-lg border-l-4 border-primary">
+                          <h3 className="font-semibold text-sm">{dinner.title}</h3>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(dinner.dinner_time).toLocaleDateString()} · {dinner.location}
+                          </p>
+                        </div>
+                        
+                        {/* 照片画廊 */}
+                        <DinnerPhotoGallery dinnerId={dinner.id} />
+                        
+                        {/* 照片上传 */}
+                        <DinnerPhotoUploader 
+                          dinnerId={dinner.id}
+                          onUploadSuccess={() => {
+                            // 可以添加刷新逻辑
+                          }}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">{t('profile.noPhotosYet')}</p>
+                      <p className="text-sm text-muted-foreground mt-2">{t('profile.joinDinnersToShare')}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
         <Navigation />
       </div>
