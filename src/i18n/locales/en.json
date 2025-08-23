@@ -915,5 +915,15 @@
     "noPhotosYet": "No photos yet",
     "joinDinnersToShare": "Join dinners to share photos",
     "noPhotosShared": "No photos shared yet"
+  },
+  "userMenu": {
+    "mine": "Mine",
+    "user": "User", 
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "feedback": "Feedback", 
+    "help": "Help Center",
+    "admin": "Admin Panel",
+    "logout": "Logout"
   }
 }

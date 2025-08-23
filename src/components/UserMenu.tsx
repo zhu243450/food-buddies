@@ -23,9 +23,11 @@ import {
   Shield,
   HelpCircle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const UserMenu = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { unreadCount } = useNotifications();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -129,7 +131,7 @@ export const UserMenu = () => {
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border border-background"></div>
             )}
           </div>
-          <span className="text-xs font-medium truncate w-full text-center">我的</span>
+          <span className="text-xs font-medium truncate w-full text-center">{t('userMenu.mine')}</span>
         </Button>
       </DropdownMenuTrigger>
       
@@ -137,7 +139,7 @@ export const UserMenu = () => {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {profile?.nickname || '用户'}
+              {profile?.nickname || t('userMenu.user')}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
@@ -150,12 +152,12 @@ export const UserMenu = () => {
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate('/profile')}>
             <User className="mr-2 h-4 w-4" />
-            <span>个人资料</span>
+            <span>{t('userMenu.profile')}</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={() => navigate('/notifications')}>
             <Bell className="mr-2 h-4 w-4" />
-            <span>通知中心</span>
+            <span>{t('userMenu.notifications')}</span>
             {unreadCount > 0 && (
               <Badge variant="destructive" className="ml-auto h-5 text-xs">
                 {unreadCount}
@@ -165,12 +167,12 @@ export const UserMenu = () => {
           
           <DropdownMenuItem onClick={() => navigate('/feedback')}>
             <MessageSquare className="mr-2 h-4 w-4" />
-            <span>意见反馈</span>
+            <span>{t('userMenu.feedback')}</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={() => navigate('/help')}>
             <HelpCircle className="mr-2 h-4 w-4" />
-            <span>帮助中心</span>
+            <span>{t('userMenu.help')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         
@@ -180,7 +182,7 @@ export const UserMenu = () => {
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => navigate('/admin')}>
                 <Shield className="mr-2 h-4 w-4" />
-                <span>管理后台</span>
+                <span>{t('userMenu.admin')}</span>
                 {pendingReports > 0 && (
                   <Badge variant="destructive" className="ml-auto h-5 text-xs">
                     {pendingReports}
@@ -195,7 +197,7 @@ export const UserMenu = () => {
         
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>退出登录</span>
+          <span>{t('userMenu.logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
