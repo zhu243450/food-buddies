@@ -16,6 +16,7 @@ import { User as UserIcon, Camera, Shield, LogOut } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import DinnerPhotoUploader from "@/components/DinnerPhotoUploader";
+import PersonalPhotoGallery from "@/components/PersonalPhotoGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { User } from '@supabase/supabase-js';
 
@@ -530,42 +531,11 @@ const Profile = () => {
                   </div>
                   
                   {/* 显示所有照片 */}
-                  {myPhotos.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {myPhotos.map((photo: any) => (
-                        <div key={photo.id} className="space-y-2">
-                          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                            <img 
-                              src={photo.photo_url} 
-                              alt={photo.description || "照片"} 
-                              className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            {photo.description && (
-                              <p className="text-xs text-foreground">{photo.description}</p>
-                            )}
-                            {photo.dinners ? (
-                              <div className="text-xs text-muted-foreground">
-                                <p className="font-medium">{photo.dinners.title}</p>
-                                <p>{new Date(photo.dinners.dinner_time).toLocaleDateString()}</p>
-                              </div>
-                            ) : (
-                              <div className="text-xs text-muted-foreground">
-                                <p>{t('profile.personalPhoto', '个人分享')}</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">{t('profile.noPhotosYet')}</p>
-                      <p className="text-sm text-muted-foreground mt-2">{t('profile.startSharing', '开始分享您的美食时光吧！')}</p>
-                    </div>
-                  )}
+                  <PersonalPhotoGallery 
+                    photos={myPhotos}
+                    currentUserId={user.id}
+                    onPhotoDeleted={fetchUserPhotos}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
