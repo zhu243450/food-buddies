@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2 } from "lucide-react";
+import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2, Camera } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
+import DinnerPhotoUploader from "@/components/DinnerPhotoUploader";
+import DinnerPhotoGallery from "@/components/DinnerPhotoGallery";
 import type { User } from '@supabase/supabase-js';
 
 interface Dinner {
@@ -462,12 +464,16 @@ const MyDinners = () => {
         </div>
 
         <Tabs defaultValue="joined" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-transparent p-2 rounded-xl gap-2">
+          <TabsList className="grid w-full grid-cols-3 bg-transparent p-2 rounded-xl gap-2">
             <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
               {t('myDinners.joinedTab')}
             </TabsTrigger>
             <TabsTrigger value="created" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
               {t('myDinners.createdTab')}
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
+              <Camera className="w-4 h-4 mr-2" />
+              {t('myDinners.photosTab')}
             </TabsTrigger>
           </TabsList>
           
@@ -519,6 +525,55 @@ const MyDinners = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="photos" className="mt-6">
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-foreground mb-2">{t('myDinners.sharePhotos')}</h2>
+                <p className="text-muted-foreground text-sm">{t('myDinners.sharePhotosDesc')}</p>
+              </div>
+              
+              {/* 显示我参与和创建的所有饭局的照片上传区域 */}
+              {[...joinedDinners, ...createdDinners].map((dinner) => (
+                <Card key={dinner.id} className="border-0 shadow-lg bg-gradient-to-br from-card to-accent/5">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <span>{dinner.title}</span>
+                      <Badge variant="secondary" className="text-xs">
+                        {formatDateTime(dinner.dinner_time)}
+                      </Badge>
+                    </CardTitle>
+                    <CardDescription>{dinner.location}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 照片画廊 */}
+                    <DinnerPhotoGallery dinnerId={dinner.id} />
+                    
+                    {/* 照片上传 */}
+                    <DinnerPhotoUploader 
+                      dinnerId={dinner.id}
+                      onUploadSuccess={() => {
+                        // 可以添加刷新逻辑
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {[...joinedDinners, ...createdDinners].length === 0 && (
+                <div className="text-center py-12">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
+                    <Camera className="w-12 h-12 text-primary" />
+                  </div>
+                  <p className="text-muted-foreground text-lg mb-2">{t('myDinners.noDinnersForPhotos')}</p>
+                  <p className="text-muted-foreground text-sm">{t('myDinners.joinOrCreateFirst')}</p>
+                  <Button onClick={() => navigate("/discover")} className="mt-4">
+                    {t('myDinners.discoverDinners')}
+                  </Button>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>

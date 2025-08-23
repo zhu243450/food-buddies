@@ -4,13 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X, Share2, Camera } from "lucide-react";
+import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
-import DinnerPhotoUploader from "@/components/DinnerPhotoUploader";
-import DinnerPhotoGallery from "@/components/DinnerPhotoGallery";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
@@ -39,7 +37,6 @@ const DinnerDetail = () => {
   const [joining, setJoining] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [photoGalleryKey, setPhotoGalleryKey] = useState(0); // 用于刷新照片画廊
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -263,11 +260,6 @@ const DinnerDetail = () => {
     }
   };
 
-  const handlePhotoUploadSuccess = () => {
-    // 刷新照片画廊
-    setPhotoGalleryKey(prev => prev + 1);
-  };
-
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString(t('common.locale'), {
@@ -453,41 +445,7 @@ const DinnerDetail = () => {
               </div>
             </div>
 
-            {/* 照片分享区域 */}
-            {(isParticipant || dinner.created_by === user.id) && (
-              <div className="p-4 rounded-lg bg-gradient-to-r from-accent/5 to-primary/5 border border-accent/20">
-                <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-primary" />
-                  饭局照片分享
-                </h3>
-                <div className="space-y-4">
-                  <DinnerPhotoUploader 
-                    dinnerId={dinner.id} 
-                    onUploadSuccess={handlePhotoUploadSuccess}
-                  />
-                  <DinnerPhotoGallery 
-                    key={photoGalleryKey}
-                    dinnerId={dinner.id} 
-                    currentUserId={user.id}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* 非参与者也可以查看照片，但不能上传 */}
-            {!isParticipant && dinner.created_by !== user.id && (
-              <div className="p-4 rounded-lg bg-gradient-to-r from-accent/5 to-primary/5 border border-accent/20">
-                <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-primary" />
-                  饭局照片
-                </h3>
-                <DinnerPhotoGallery 
-                  key={photoGalleryKey}
-                  dinnerId={dinner.id} 
-                  currentUserId={user.id}
-                />
-              </div>
-            )}
+            {/* 动态按钮区域 */}
 
             {canJoin && (
               <Button 

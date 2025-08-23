@@ -849,5 +849,27 @@
         "Maintain rational consumption to avoid disputes"
       ]
     }
+  },
+  "myDinners": {
+    "participantsJoined": "🔥 {{count}} joined",
+    "people": "people",
+    "fullBadge": "Full",
+    "sameGenderPref": "Same Gender Priority",
+    "oppositeGenderPref": "Opposite Gender Priority",
+    "friendsOnlyBadge": "🔒 Friends Only",
+    "photosTab": "Photos",
+    "sharePhotos": "Share Dinner Photos",
+    "sharePhotosDesc": "Upload and share memorable moments from dinners you've joined or created",
+    "noDinnersForPhotos": "No dinners available for photo sharing",
+    "joinOrCreateFirst": "Join or create a dinner first!",
+    "discoverDinners": "Discover Dinners",
+    "summary": "You've joined {{joined}} dinners and created {{created}} dinners",
+    "welcomeMsg": "Start your culinary social journey!",
+    "joinedTab": "Dinners I Joined",
+    "createdTab": "Dinners I Created",
+    "noJoinedDinners": "You haven't joined any dinners yet",
+    "noJoinedDesc": "Go discover like-minded dining companions!",
+    "noCreatedDinners": "You haven't created any dinners yet",
+    "noCreatedDesc": "Create your first dinner and invite friends to join!"
   }
 }
