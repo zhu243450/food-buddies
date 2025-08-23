@@ -127,7 +127,17 @@ export default function Feedback() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                try {
+                  if (document.referrer && document.referrer !== window.location.href) {
+                    navigate(-1);
+                  } else {
+                    navigate('/my-dinners');
+                  }
+                } catch {
+                  navigate('/my-dinners');
+                }
+              }}
               className="rounded-full"
             >
               <ArrowLeft className="h-5 w-5" />

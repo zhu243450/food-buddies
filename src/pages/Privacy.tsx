@@ -38,10 +38,14 @@ export const Privacy = () => {
           <Button 
             variant="ghost" 
             onClick={() => {
-              if (window.history.length > 1) {
-                navigate(-1);
-              } else {
-                navigate('/');
+              try {
+                if (document.referrer && document.referrer !== window.location.href) {
+                  navigate(-1);
+                } else {
+                  navigate('/my-dinners');
+                }
+              } catch {
+                navigate('/my-dinners');
               }
             }}
             className="gap-2"

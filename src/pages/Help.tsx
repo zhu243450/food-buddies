@@ -17,7 +17,17 @@ export const Help = () => {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              try {
+                if (document.referrer && document.referrer !== window.location.href) {
+                  navigate(-1);
+                } else {
+                  navigate('/my-dinners');
+                }
+              } catch {
+                navigate('/my-dinners');
+              }
+            }}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />

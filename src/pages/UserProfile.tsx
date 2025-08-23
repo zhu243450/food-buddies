@@ -274,7 +274,20 @@ const UserProfile = () => {
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto text-center">
           <p>{t('profile.profileNotFound', '用户资料不存在')}</p>
-          <Button onClick={() => navigate(-1)} className="mt-4">
+          <Button 
+            onClick={() => {
+              try {
+                if (document.referrer && document.referrer !== window.location.href) {
+                  navigate(-1);
+                } else {
+                  navigate('/discover');
+                }
+              } catch {
+                navigate('/discover');
+              }
+            }} 
+            className="mt-4"
+          >
             {t('common.back')}
           </Button>
         </div>
@@ -287,7 +300,17 @@ const UserProfile = () => {
       <div className="max-w-md mx-auto">
         <Button 
           variant="ghost" 
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            try {
+              if (document.referrer && document.referrer !== window.location.href) {
+                navigate(-1);
+              } else {
+                navigate('/discover');
+              }
+            } catch {
+              navigate('/discover');
+            }
+          }}
           className="mb-4 hover:bg-accent/20 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />

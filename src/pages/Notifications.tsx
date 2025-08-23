@@ -64,7 +64,17 @@ const Notifications = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                  try {
+                    if (document.referrer && document.referrer !== window.location.href) {
+                      navigate(-1);
+                    } else {
+                      navigate('/my-dinners');
+                    }
+                  } catch {
+                    navigate('/my-dinners');
+                  }
+                }}
                 className="p-2"
               >
                 <ArrowLeft className="w-5 h-5" />
