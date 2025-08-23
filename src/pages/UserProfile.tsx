@@ -200,7 +200,7 @@ const UserProfile = () => {
       .from('photo_comments')
       .select(`
         *,
-        profiles!fk_photo_comments_user_id(nickname, avatar_url)
+        profiles!user_id(nickname, avatar_url)
       `)
       .in('photo_id', photoIds)
       .order('created_at', { ascending: true });
@@ -280,7 +280,7 @@ const UserProfile = () => {
         })
         .select(`
           *,
-          profiles!fk_photo_comments_user_id(nickname, avatar_url)
+          profiles!user_id(nickname, avatar_url)
         `)
         .single();
         
