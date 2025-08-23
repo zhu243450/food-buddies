@@ -128,7 +128,7 @@ export const UserMenu = () => {
   if (!user) return null;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu key={`user-menu-${renderKey}`}>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
