@@ -259,6 +259,13 @@ export type Database = {
             referencedRelation: "dinners"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_dinner_photos_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       dinners: {
@@ -386,6 +393,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_photo_comments_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "photo_comments_photo_id_fkey"
             columns: ["photo_id"]

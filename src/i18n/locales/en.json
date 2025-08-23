@@ -673,6 +673,28 @@
       "keywords": "about FanYueShe,company introduction,social dining platform"
     }
   },
+  "photoGallery": {
+    "loadFailed": "Load Failed",
+    "loadFailedDesc": "Unable to load photos",
+    "operationFailed": "Operation Failed", 
+    "likeOperationFailed": "Like operation failed",
+    "commentSuccess": "Comment Successful",
+    "commentPublished": "Comment published",
+    "commentFailed": "Comment Failed",
+    "commentFailedDesc": "Failed to publish comment",
+    "deleteSuccess": "Delete Successful",
+    "photoDeleted": "Photo deleted",
+    "deleteFailed": "Delete Failed",
+    "deleteFailedDesc": "Failed to delete photo",
+    "noPhotos": "No photos shared yet",
+    "beFirstToShare": "Be the first to share a memorable moment!",
+    "photoDetails": "Photo Details",
+    "deletePhoto": "Delete Photo",
+    "comments": "comments",
+    "anonymousUser": "Anonymous User",
+    "addComment": "Add comment...",
+    "dinnerPhoto": "Dinner Photo"
+  },
   "createDinner": {
     "uploading": "Uploading...",
     "modes": {

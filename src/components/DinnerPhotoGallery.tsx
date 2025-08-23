@@ -59,7 +59,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
         .from('dinner_photos')
         .select(`
           *,
-          profiles!inner(nickname, avatar_url)
+          profiles!fk_dinner_photos_user_id(nickname, avatar_url)
         `)
         .eq('dinner_id', dinnerId)
         .order('created_at', { ascending: false });
@@ -78,8 +78,8 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
     } catch (error) {
       console.error('Error fetching photos:', error);
       toast({
-        title: "加载失败",
-        description: "无法加载照片",
+        title: t('photoGallery.loadFailed'),
+        description: t('photoGallery.loadFailedDesc'),
         variant: "destructive",
       });
     } finally {
@@ -115,7 +115,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
       .from('photo_comments')
       .select(`
         *,
-        profiles!inner(nickname, avatar_url)
+        profiles!fk_photo_comments_user_id(nickname, avatar_url)
       `)
       .in('photo_id', photoIds)
       .order('created_at', { ascending: true });
@@ -172,8 +172,8 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
     } catch (error) {
       console.error('Error toggling like:', error);
       toast({
-        title: "操作失败",
-        description: "点赞操作失败",
+        title: t('photoGallery.operationFailed'),
+        description: t('photoGallery.likeOperationFailed'),
         variant: "destructive",
       });
     }
@@ -195,7 +195,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
         })
         .select(`
           *,
-          profiles!inner(nickname, avatar_url)
+          profiles!fk_photo_comments_user_id(nickname, avatar_url)
         `)
         .single();
         
@@ -209,14 +209,14 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
       setNewComment("");
       
       toast({
-        title: "评论成功",
-        description: "评论已发布",
+        title: t('photoGallery.commentSuccess'),
+        description: t('photoGallery.commentPublished'),
       });
     } catch (error) {
       console.error('Error submitting comment:', error);
       toast({
-        title: "评论失败",
-        description: "评论发布失败",
+        title: t('photoGallery.commentFailed'),
+        description: t('photoGallery.commentFailedDesc'),
         variant: "destructive",
       });
     } finally {
@@ -249,14 +249,14 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
       setSelectedPhoto(null);
       
       toast({
-        title: "删除成功",
-        description: "照片已删除",
+        title: t('photoGallery.deleteSuccess'),
+        description: t('photoGallery.photoDeleted'),
       });
     } catch (error) {
       console.error('Error deleting photo:', error);
       toast({
-        title: "删除失败",
-        description: "照片删除失败",
+        title: t('photoGallery.deleteFailed'),
+        description: t('photoGallery.deleteFailedDesc'),
         variant: "destructive",
       });
     }
@@ -280,8 +280,8 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
     return (
       <div className="text-center py-8 text-muted-foreground">
         <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-        <p>还没有人分享照片</p>
-        <p className="text-sm">成为第一个分享美食瞬间的人吧！</p>
+        <p>{t('photoGallery.noPhotos')}</p>
+        <p className="text-sm">{t('photoGallery.beFirstToShare')}</p>
       </div>
     );
   }
@@ -302,7 +302,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
             >
               <img
                 src={photo.photo_url}
-                alt={photo.description || "饭局照片"}
+                alt={photo.description || t('photoGallery.dinnerPhoto')}
                 className="w-full h-full object-cover transition-transform group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -332,7 +332,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
               <div className="relative bg-black">
                 <img
                   src={selectedPhoto.photo_url}
-                  alt={selectedPhoto.description || "饭局照片"}
+                  alt={selectedPhoto.description || t('photoGallery.dinnerPhoto')}
                   className="w-full h-full object-contain"
                 />
                 <Button
@@ -349,7 +349,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
               <div className="flex flex-col h-[600px]">
                 <DialogHeader className="p-4 border-b flex-shrink-0">
                   <div className="flex items-center justify-between">
-                    <DialogTitle className="text-lg">照片详情</DialogTitle>
+                    <DialogTitle className="text-lg">{t('photoGallery.photoDetails')}</DialogTitle>
                     {selectedPhoto.user_id === currentUserId && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -363,7 +363,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
                             onClick={() => handleDeletePhoto(selectedPhoto)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            删除照片
+                            {t('photoGallery.deletePhoto')}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -389,7 +389,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
                     </Button>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MessageCircle className="w-4 h-4" />
-                      {comments[selectedPhoto.id]?.length || 0} 评论
+                      {comments[selectedPhoto.id]?.length || 0} {t('photoGallery.comments')}
                     </div>
                   </div>
                 </div>
@@ -408,10 +408,10 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-sm font-medium">
-                              {comment.profiles?.nickname || '匿名用户'}
+                              {comment.profiles?.nickname || t('photoGallery.anonymousUser')}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {new Date(comment.created_at).toLocaleString('zh-CN')}
+                              {new Date(comment.created_at).toLocaleString(t('common.locale'))}
                             </span>
                           </div>
                           <p className="text-sm text-muted-foreground">{comment.content}</p>
@@ -426,7 +426,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
                   <div className="p-4 border-t flex-shrink-0">
                     <div className="flex gap-2">
                       <Textarea
-                        placeholder="添加评论..."
+                        placeholder={t('photoGallery.addComment')}
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         className="resize-none text-sm"

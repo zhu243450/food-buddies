@@ -669,6 +669,28 @@
     "unknownUser": "未知用户",
     "me": "我: "
   },
+  "photoGallery": {
+    "loadFailed": "加载失败",
+    "loadFailedDesc": "无法加载照片",
+    "operationFailed": "操作失败", 
+    "likeOperationFailed": "点赞操作失败",
+    "commentSuccess": "评论成功",
+    "commentPublished": "评论已发布",
+    "commentFailed": "评论失败",
+    "commentFailedDesc": "评论发布失败",
+    "deleteSuccess": "删除成功",
+    "photoDeleted": "照片已删除",
+    "deleteFailed": "删除失败",
+    "deleteFailedDesc": "照片删除失败",
+    "noPhotos": "还没有人分享照片",
+    "beFirstToShare": "成为第一个分享美食瞬间的人吧！",
+    "photoDetails": "照片详情",
+    "deletePhoto": "删除照片",
+    "comments": "评论",
+    "anonymousUser": "匿名用户",
+    "addComment": "添加评论...",
+    "dinnerPhoto": "饭局照片"
+  },
   "createDinner": {
     "uploading": "上传中...",
     "modes": {
