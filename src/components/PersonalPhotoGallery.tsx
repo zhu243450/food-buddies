@@ -31,8 +31,10 @@ interface PhotoLike {
 
 interface PhotoComment {
   id: string;
+  photo_id: string;
   content: string;
   user_id: string;
+  parent_comment_id?: string | null;
   created_at: string;
   profiles: {
     nickname: string;
@@ -51,6 +53,7 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
   const [likes, setLikes] = useState<{ [photoId: string]: PhotoLike[] }>({});
   const [comments, setComments] = useState<{ [photoId: string]: PhotoComment[] }>({});
   const [newComment, setNewComment] = useState("");
+  const [replyToComment, setReplyToComment] = useState<PhotoComment | null>(null);
   const [submittingComment, setSubmittingComment] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -145,20 +148,23 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
     }
   };
 
-  // 提交评论
-  const handleSubmitComment = async (photoId: string) => {
+  // 提交评论/回复
+  const handleSubmitComment = async (photoId: string, parentCommentId?: string) => {
     if (!newComment.trim()) return;
 
     setSubmittingComment(true);
     
     try {
+      const insertPayload: any = {
+        photo_id: photoId,
+        user_id: currentUserId,
+        content: newComment.trim(),
+      };
+      if (parentCommentId) insertPayload.parent_comment_id = parentCommentId;
+
       const { data, error } = await supabase
         .from('photo_comments')
-        .insert({
-          photo_id: photoId,
-          user_id: currentUserId,
-          content: newComment.trim()
-        })
+        .insert(insertPayload)
         .select(`
           *,
           profiles!fk_photo_comments_user_id(nickname, avatar_url)
@@ -173,10 +179,11 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
       }));
       
       setNewComment("");
+      setReplyToComment(null);
       
       toast({
         title: t('photoGallery.commentSuccess'),
-        description: t('photoGallery.commentPublished'),
+        description: parentCommentId ? t('photoGallery.replyPublished', '回复已发布') : t('photoGallery.commentPublished'),
       });
     } catch (error) {
       console.error('Error submitting comment:', error);
@@ -476,35 +483,100 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
                 {/* 评论区域 */}
                 <div className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-4">
-                    {comments[selectedPhoto.id]?.map((comment) => (
-                      <div key={comment.id} className="flex items-start gap-3">
-                        <Avatar className="w-8 h-8 flex-shrink-0">
-                          <AvatarImage src={comment.profiles?.avatar_url} />
-                          <AvatarFallback>
-                            <User className="w-4 h-4" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium">
-                              {comment.profiles?.nickname || t('photoGallery.anonymousUser')}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(comment.created_at).toLocaleString(t('common.locale'))}
-                            </span>
+                    {(() => {
+                      const all = comments[selectedPhoto.id] || [];
+                      const repliesByParent: { [id: string]: PhotoComment[] } = {};
+                      all.forEach(c => {
+                        if (c.parent_comment_id) {
+                          if (!repliesByParent[c.parent_comment_id]) repliesByParent[c.parent_comment_id] = [];
+                          repliesByParent[c.parent_comment_id].push(c);
+                        }
+                      });
+                      const topLevel = all.filter(c => !c.parent_comment_id);
+                      return topLevel.map((comment) => (
+                        <div key={comment.id} className="space-y-2">
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-8 h-8 flex-shrink-0">
+                              <AvatarImage src={comment.profiles?.avatar_url} />
+                              <AvatarFallback>
+                                <User className="w-4 h-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm font-medium">{comment.profiles?.nickname || t('photoGallery.anonymousUser')}</span>
+                                <span className="text-xs text-muted-foreground">{new Date(comment.created_at).toLocaleString(t('common.locale'))}</span>
+                              </div>
+                              <p className="text-sm text-foreground">{comment.content}</p>
+                              <div className="mt-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => setReplyToComment(comment)}
+                                >
+                                  回复
+                                </Button>
+                              </div>
+
+                              {/* 子回复 */}
+                              {repliesByParent[comment.id]?.length ? (
+                                <div className="mt-2 space-y-3 border-l pl-3">
+                                  {repliesByParent[comment.id].map((reply) => (
+                                    <div key={reply.id} className="flex items-start gap-3">
+                                      <Avatar className="w-7 h-7 flex-shrink-0">
+                                        <AvatarImage src={reply.profiles?.avatar_url} />
+                                        <AvatarFallback>
+                                          <User className="w-4 h-4" />
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="text-sm font-medium">{reply.profiles?.nickname || t('photoGallery.anonymousUser')}</span>
+                                          <span className="text-xs text-muted-foreground">{new Date(reply.created_at).toLocaleString(t('common.locale'))}</span>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{reply.content}</p>
+                                        <div className="mt-1">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 px-2 text-xs"
+                                            onClick={() => setReplyToComment(reply)}
+                                          >
+                                            回复
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">{comment.content}</p>
                         </div>
-                      </div>
-                    ))}
+                      ));
+                    })()}
                   </div>
                 </div>
 
                 {/* 评论输入 */}
                 <div className="p-4 border-t flex-shrink-0">
+                  {replyToComment && (
+                    <div className="mb-2 text-xs text-muted-foreground flex items-center gap-2">
+                      正在回复 <span className="font-medium">@{replyToComment.profiles?.nickname || '用户'}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => setReplyToComment(null)}
+                      >
+                        取消
+                      </Button>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <Textarea
-                      placeholder={t('photoGallery.addComment')}
+                      placeholder={replyToComment ? `回复 @${replyToComment.profiles?.nickname || '用户'}：` : t('photoGallery.addComment')}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       className="resize-none text-sm"
@@ -512,7 +584,7 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
                     />
                     <Button
                       size="sm"
-                      onClick={() => handleSubmitComment(selectedPhoto.id)}
+                      onClick={() => handleSubmitComment(selectedPhoto.id, replyToComment?.id || undefined)}
                       disabled={!newComment.trim() || submittingComment}
                     >
                       <Send className="w-4 h-4" />

@@ -372,6 +372,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          parent_comment_id: string | null
           photo_id: string
           updated_at: string
           user_id: string
@@ -380,6 +381,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          parent_comment_id?: string | null
           photo_id: string
           updated_at?: string
           user_id: string
@@ -388,6 +390,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          parent_comment_id?: string | null
           photo_id?: string
           updated_at?: string
           user_id?: string
@@ -399,6 +402,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "photo_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "photo_comments"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "photo_comments_photo_id_fkey"
