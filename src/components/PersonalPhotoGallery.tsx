@@ -15,7 +15,9 @@ interface PersonalPhoto {
   description: string;
   user_id: string;
   created_at: string;
+  dinner_id?: string;
   dinners?: {
+    id: string;
     title: string;
     dinner_time: string;
   };
@@ -249,10 +251,30 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
             const { photo_id, user_id } = payload.new as any;
             
             if (photoIds.includes(photo_id) && user_id !== currentUserId) {
-              // 别人给当前用户的照片点赞
+              // 获取点赞者信息和照片信息
+              const { data: likerProfile } = await supabase
+                .from('profiles')
+                .select('nickname')
+                .eq('user_id', user_id)
+                .single();
+
+              const photo = photos.find(p => p.id === photo_id);
+              
+              // 创建通知记录
+              await supabase
+                .from('notifications')
+                .insert({
+                  user_id: currentUserId,
+                  title: '新的点赞',
+                  message: `${likerProfile?.nickname || '有人'} 赞了您的照片`,
+                  type: 'info',
+                  category: 'photo_like',
+                  related_dinner_id: photo?.dinner_id
+                });
+
               toast({
-                title: t('photoGallery.newLike'),
-                description: t('photoGallery.someonelikedYourPhoto'),
+                title: '新的点赞',
+                description: `${likerProfile?.nickname || '有人'} 赞了您的照片`,
               });
             }
             
@@ -269,13 +291,33 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
         { event: '*', schema: 'public', table: 'photo_comments' },
         async (payload) => {
           if (payload.eventType === 'INSERT' && payload.new) {
-            const { photo_id, user_id } = payload.new as any;
+            const { photo_id, user_id, content } = payload.new as any;
             
             if (photoIds.includes(photo_id) && user_id !== currentUserId) {
-              // 别人给当前用户的照片评论
+              // 获取评论者信息和照片信息
+              const { data: commenterProfile } = await supabase
+                .from('profiles')
+                .select('nickname')
+                .eq('user_id', user_id)
+                .single();
+
+              const photo = photos.find(p => p.id === photo_id);
+              
+              // 创建通知记录
+              await supabase
+                .from('notifications')
+                .insert({
+                  user_id: currentUserId,
+                  title: '新的评论',
+                  message: `${commenterProfile?.nickname || '有人'} 评论了您的照片: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+                  type: 'info',
+                  category: 'photo_comment',
+                  related_dinner_id: photo?.dinner_id
+                });
+
               toast({
-                title: t('photoGallery.newComment'),
-                description: t('photoGallery.someoneCommentedYourPhoto'),
+                title: '新的评论',
+                description: `${commenterProfile?.nickname || '有人'} 评论了您的照片`,
               });
             }
             
