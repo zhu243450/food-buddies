@@ -35,10 +35,19 @@ export const UserMenu = () => {
   const [pendingReports, setPendingReports] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
 
+  console.log('UserMenu: Current language:', i18n.language);
+  console.log('UserMenu: Translation for mine:', t('userMenu.mine'));
+  console.log('UserMenu: Translation for profile:', t('userMenu.profile'));
+
   // 监听语言变化，强制重新渲染
   useEffect(() => {
-    const handleLanguageChanged = () => {
-      setRenderKey(prev => prev + 1);
+    const handleLanguageChanged = (lng: string) => {
+      console.log('UserMenu: Language changed event received:', lng);
+      setRenderKey(prev => {
+        const newKey = prev + 1;
+        console.log('UserMenu: Setting new render key:', newKey);
+        return newKey;
+      });
     };
     
     i18n.on('languageChanged', handleLanguageChanged);

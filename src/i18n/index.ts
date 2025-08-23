@@ -11,6 +11,7 @@ const resources = {
 
 // 从localStorage读取用户设置的语言，没有则使用默认中文
 const savedLanguage = localStorage.getItem('language') || 'zh';
+console.log('i18n init: Saved language from localStorage:', savedLanguage);
 
 i18n
   .use(initReactI18next)
@@ -21,6 +22,9 @@ i18n
     interpolation: {
       escapeValue: false,
     },
+  })
+  .then(() => {
+    console.log('i18n initialized with language:', i18n.language);
   });
 
 export default i18n;
