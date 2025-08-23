@@ -9,11 +9,14 @@ const resources = {
   zh: { translation: zh }
 };
 
+// 从localStorage读取用户设置的语言，没有则使用默认中文
+const savedLanguage = localStorage.getItem('language') || 'zh';
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'zh', // 默认中文
+    lng: savedLanguage, // 使用保存的语言设置
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,

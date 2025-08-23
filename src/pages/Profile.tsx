@@ -138,8 +138,8 @@ const Profile = () => {
               if (photo?.user_id === user.id) {
                 // 显示通知
                 toast({
-                  title: "👍 新点赞",
-                  description: "有人点赞了您的照片",
+                  title: t('photoGallery.newLike'),
+                  description: t('photoGallery.someonelikedYourPhoto'),
                   className: "border-red-500 bg-red-50 text-red-900",
                 });
                 // 刷新照片数据
@@ -165,8 +165,8 @@ const Profile = () => {
               if (photo?.user_id === user.id) {
                 // 显示通知
                 toast({
-                  title: "💬 新评论",
-                  description: "有人评论了您的照片",
+                  title: t('photoGallery.newComment'),
+                  description: t('photoGallery.someoneCommentedYourPhoto'),
                   className: "border-red-500 bg-red-50 text-red-900",
                 });
                 // 刷新照片数据
@@ -320,7 +320,7 @@ const Profile = () => {
                 {/* 头像区域 */}
                 <div className="flex items-center gap-4 p-3 bg-accent/5 rounded-lg">
                   <Avatar className="w-16 h-16 ring-2 ring-primary/20">
-                    <AvatarImage src={formData.avatar_url} alt="头像" />
+                    <AvatarImage src={formData.avatar_url} alt={t('profile.avatar')} />
                     <AvatarFallback className="text-lg font-bold bg-primary/10 text-primary">
                       {formData.nickname ? formData.nickname[0] : <UserIcon className="w-6 h-6" />}
                     </AvatarFallback>
@@ -340,7 +340,7 @@ const Profile = () => {
                       {uploading ? (
                         <>
                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                          {t('common.uploading', '上传中...')}
+                          {t('common.uploading')}
                          </>
                        ) : (
                          <>
