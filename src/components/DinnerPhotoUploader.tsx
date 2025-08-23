@@ -8,11 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from 'react-i18next';
 
 interface DinnerPhotoUploaderProps {
-  dinnerId: string;
+  dinnerId: string | null; // 允许为null，表示个人分享照片
   onUploadSuccess?: () => void;
+  onPhotoUploaded?: () => void; // 新增回调函数
 }
 
-const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess }: DinnerPhotoUploaderProps) => {
+const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: DinnerPhotoUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -158,6 +159,7 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess }: DinnerPhotoUploaderP
       setPreviews({});
       setIsOpen(false);
       onUploadSuccess?.();
+      onPhotoUploaded?.();
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -176,14 +178,14 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess }: DinnerPhotoUploaderP
       <DialogTrigger asChild>
         <Button className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white">
           <Camera className="w-4 h-4 mr-2" />
-          分享美食照片
+          {dinnerId ? t('dinnerPhotos.sharePhoto', '分享美食照片') : t('profile.sharePersonalPhoto', '分享照片')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Image className="w-5 h-5 text-primary" />
-            分享饭局照片
+            {dinnerId ? t('dinnerPhotos.shareTitle', '分享饭局照片') : t('profile.sharePersonalTitle', '分享照片')}
           </DialogTitle>
         </DialogHeader>
         

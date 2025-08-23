@@ -65,7 +65,7 @@ const UserProfile = () => {
 
       setUserProfile(data);
       
-      // 获取用户的饭局照片
+      // 获取用户的所有照片（包括个人分享和饭局照片）
       const { data: photos, error: photosError } = await supabase
         .from("dinner_photos")
         .select(`
@@ -73,7 +73,8 @@ const UserProfile = () => {
           photo_url,
           description,
           created_at,
-          dinners!dinner_photos_dinner_id_fkey (
+          dinner_id,
+          dinners:dinner_id (
             title,
             dinner_time,
             location
@@ -244,10 +245,14 @@ const UserProfile = () => {
                           {photo.description && (
                             <p className="text-xs text-foreground">{photo.description}</p>
                           )}
-                          {photo.dinners && (
+                          {photo.dinners ? (
                             <div className="text-xs text-muted-foreground">
                               <p className="font-medium">{photo.dinners.title}</p>
                               <p>{new Date(photo.dinners.dinner_time).toLocaleDateString()}</p>
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">
+                              <p>{t('profile.personalPhoto', '个人分享')}</p>
                             </div>
                           )}
                         </div>

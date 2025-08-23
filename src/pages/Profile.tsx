@@ -16,7 +16,6 @@ import { User as UserIcon, Camera, Shield, LogOut } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import DinnerPhotoUploader from "@/components/DinnerPhotoUploader";
-import DinnerPhotoGallery from "@/components/DinnerPhotoGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { User } from '@supabase/supabase-js';
 
@@ -29,7 +28,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [myDinners, setMyDinners] = useState<any[]>([]);
+  const [myPhotos, setMyPhotos] = useState<any[]>([]);
   
   const seoData = getPageSEO('profile');
   
@@ -59,6 +58,29 @@ const Profile = () => {
     accept_strangers: false,
     avatar_url: "",
   });
+
+  const fetchUserPhotos = async () => {
+    if (!user) return;
+    
+    const { data: allPhotos } = await supabase
+      .from("dinner_photos")
+      .select(`
+        id,
+        photo_url,
+        description,
+        created_at,
+        dinner_id,
+        dinners:dinner_id (
+          title,
+          dinner_time,
+          location
+        )
+      `)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    setMyPhotos(allPhotos || []);
+  };
 
   useEffect(() => {
     const getUser = async () => {
@@ -97,33 +119,17 @@ const Profile = () => {
       } catch (error) {
         console.error('Failed to check admin role:', error);
       }
-
-      // 获取我参与和创建的饭局（用于照片分享）
-      const [joinedResult, createdResult] = await Promise.all([
-        supabase
-          .from("dinner_participants")
-          .select(`
-            dinners!fk_dinner_participants_dinner_id (
-              id, title, dinner_time, location
-            )
-          `)
-          .eq("user_id", user.id),
-        supabase
-          .from("dinners")
-          .select("id, title, dinner_time, location")
-          .eq("created_by", user.id)
-      ]);
-
-      const allDinners = [
-        ...(joinedResult.data?.map((item: any) => item.dinners).filter(Boolean) || []),
-        ...(createdResult.data || [])
-      ];
-      
-      setMyDinners(allDinners);
     };
 
     getUser();
   }, [navigate]);
+
+  // 当user设置后，获取照片
+  useEffect(() => {
+    if (user) {
+      fetchUserPhotos();
+    }
+  }, [user]);
 
   const handleFoodPreferenceChange = (preference: string, checked: boolean) => {
     setFormData(prev => ({
@@ -453,34 +459,51 @@ const Profile = () => {
                     {t('profile.myPhotos')}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 space-y-6">
-                  {myDinners.length > 0 ? (
-                    myDinners.map((dinner) => (
-                      <div key={dinner.id} className="space-y-4">
-                        <div className="p-3 bg-accent/10 rounded-lg border-l-4 border-primary">
-                          <h3 className="font-semibold text-sm">{dinner.title}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(dinner.dinner_time).toLocaleDateString()} · {dinner.location}
-                          </p>
+                <CardContent className="p-4 space-y-4">
+                  {/* 通用照片上传区域 */}
+                  <div className="mb-6">
+                    <DinnerPhotoUploader 
+                      key={`general-${user.id}`}
+                      dinnerId={null} // 不绑定特定饭局，允许用户随时分享照片
+                      onPhotoUploaded={fetchUserPhotos}
+                    />
+                  </div>
+                  
+                  {/* 显示所有照片 */}
+                  {myPhotos.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {myPhotos.map((photo: any) => (
+                        <div key={photo.id} className="space-y-2">
+                          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                            <img 
+                              src={photo.photo_url} 
+                              alt={photo.description || "照片"} 
+                              className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            {photo.description && (
+                              <p className="text-xs text-foreground">{photo.description}</p>
+                            )}
+                            {photo.dinners ? (
+                              <div className="text-xs text-muted-foreground">
+                                <p className="font-medium">{photo.dinners.title}</p>
+                                <p>{new Date(photo.dinners.dinner_time).toLocaleDateString()}</p>
+                              </div>
+                            ) : (
+                              <div className="text-xs text-muted-foreground">
+                                <p>{t('profile.personalPhoto', '个人分享')}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        
-                        {/* 照片画廊 */}
-                        <DinnerPhotoGallery dinnerId={dinner.id} />
-                        
-                        {/* 照片上传 */}
-                        <DinnerPhotoUploader 
-                          dinnerId={dinner.id}
-                          onUploadSuccess={() => {
-                            // 可以添加刷新逻辑
-                          }}
-                        />
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   ) : (
                     <div className="text-center py-8">
                       <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">{t('profile.noPhotosYet')}</p>
-                      <p className="text-sm text-muted-foreground mt-2">{t('profile.joinDinnersToShare')}</p>
+                      <p className="text-sm text-muted-foreground mt-2">{t('profile.startSharing', '开始分享您的美食时光吧！')}</p>
                     </div>
                   )}
                 </CardContent>
