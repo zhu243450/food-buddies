@@ -253,7 +253,6 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
               toast({
                 title: t('photoGallery.newLike'),
                 description: t('photoGallery.someonelikedYourPhoto'),
-                variant: "destructive",
               });
             }
             
@@ -277,7 +276,6 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
               toast({
                 title: t('photoGallery.newComment'),
                 description: t('photoGallery.someoneCommentedYourPhoto'),
-                variant: "destructive",
               });
             }
             
