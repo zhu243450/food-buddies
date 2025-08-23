@@ -264,19 +264,43 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
 
   useEffect(() => {
     fetchPhotos();
+  }, [dinnerId]);
 
+  // 独立的实时监听effect，不依赖photos
+  useEffect(() => {
     // 设置实时监听 - 监听当前饭局照片的点赞和评论
     const likesChannel = supabase
       .channel('photo-likes-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'photo_likes' },
-        (payload) => {
+        async (payload) => {
           console.log('Like change:', payload);
-          // 重新获取点赞数据
-          if (payload.new && 'photo_id' in payload.new && photos.some(p => p.id === (payload.new as any).photo_id)) {
-            fetchLikes([(payload.new as any).photo_id as string]);
-          } else if (payload.old && 'photo_id' in payload.old && photos.some(p => p.id === (payload.old as any).photo_id)) {
-            fetchLikes([(payload.old as any).photo_id as string]);
+          
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const { photo_id, user_id } = payload.new as any;
+            
+            // 获取照片信息，检查是否属于当前饭局且不是当前用户操作
+            const { data: photoData } = await supabase
+              .from('dinner_photos')
+              .select('user_id')
+              .eq('id', photo_id)
+              .eq('dinner_id', dinnerId)
+              .single();
+              
+            if (photoData && photoData.user_id === currentUserId && user_id !== currentUserId) {
+              // 别人给当前用户的照片点赞
+              toast({
+                title: t('photoGallery.newLike'),
+                description: t('photoGallery.someonelikedYourPhoto'),
+                variant: "destructive", // 使用红色通知
+              });
+            }
+            
+            // 重新获取点赞数据
+            fetchLikes([photo_id]);
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            // 重新获取点赞数据
+            fetchLikes([(payload.old as any).photo_id]);
           }
         })
       .subscribe();
@@ -285,13 +309,34 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
       .channel('photo-comments-changes')
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'photo_comments' },
-        (payload) => {
+        async (payload) => {
           console.log('Comment change:', payload);
-          // 重新获取评论数据
-          if (payload.new && 'photo_id' in payload.new && photos.some(p => p.id === (payload.new as any).photo_id)) {
-            fetchComments([(payload.new as any).photo_id as string]);
-          } else if (payload.old && 'photo_id' in payload.old && photos.some(p => p.id === (payload.old as any).photo_id)) {
-            fetchComments([(payload.old as any).photo_id as string]);
+          
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const { photo_id, user_id } = payload.new as any;
+            
+            // 获取照片信息，检查是否属于当前饭局且不是当前用户操作
+            const { data: photoData } = await supabase
+              .from('dinner_photos')
+              .select('user_id')
+              .eq('id', photo_id)
+              .eq('dinner_id', dinnerId)
+              .single();
+              
+            if (photoData && photoData.user_id === currentUserId && user_id !== currentUserId) {
+              // 别人给当前用户的照片评论
+              toast({
+                title: t('photoGallery.newComment'),
+                description: t('photoGallery.someoneCommentedYourPhoto'),
+                variant: "destructive", // 使用红色通知
+              });
+            }
+            
+            // 重新获取评论数据
+            fetchComments([photo_id]);
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            // 重新获取评论数据
+            fetchComments([(payload.old as any).photo_id]);
           }
         })
       .subscribe();
@@ -300,7 +345,7 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
       supabase.removeChannel(likesChannel);
       supabase.removeChannel(commentsChannel);
     };
-  }, [dinnerId, photos]);
+  }, [dinnerId, currentUserId]);
 
   if (loading) {
     return (
