@@ -26,12 +26,8 @@ export const LanguageSwitcher = () => {
   }, [i18n]);
 
   const changeLanguage = async (languageCode: string) => {
-    console.log('LanguageSwitcher: Changing language to:', languageCode);
-    console.log('LanguageSwitcher: Current language before change:', i18n.language);
     await i18n.changeLanguage(languageCode);
-    console.log('LanguageSwitcher: Language changed to:', i18n.language);
     localStorage.setItem('language', languageCode);
-    console.log('LanguageSwitcher: Saved to localStorage:', localStorage.getItem('language'));
   };
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];

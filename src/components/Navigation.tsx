@@ -16,18 +16,10 @@ const Navigation = () => {
   const fetchTimer = useRef<number>();
   const [renderKey, setRenderKey] = useState(0);
 
-  console.log('Navigation: Current language:', i18n.language);
-  console.log('Navigation: Render key:', renderKey);
-
   // 监听语言变化，强制重新渲染
   useEffect(() => {
     const handleLanguageChanged = (lng: string) => {
-      console.log('Navigation: Language changed event received:', lng);
-      setRenderKey(prev => {
-        const newKey = prev + 1;
-        console.log('Navigation: Setting new render key:', newKey);
-        return newKey;
-      });
+      setRenderKey(prev => prev + 1);
     };
     
     i18n.on('languageChanged', handleLanguageChanged);

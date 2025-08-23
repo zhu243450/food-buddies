@@ -925,16 +925,16 @@
         "建议告知朋友聚餐安排",
         "保持理性消费，避免纠纷"
       ]
-    },
-    "userMenu": {
-      "mine": "我的",
-      "user": "用户",
-      "profile": "个人资料", 
-      "notifications": "通知中心",
-      "feedback": "意见反馈",
-      "help": "帮助中心",
-      "admin": "管理后台",
-      "logout": "退出登录"
     }
+  },
+  "userMenu": {
+    "mine": "我的",
+    "user": "用户",
+    "profile": "个人资料", 
+    "notifications": "通知中心",
+    "feedback": "意见反馈",
+    "help": "帮助中心",
+    "admin": "管理后台",
+    "logout": "退出登录"
   }
 }
