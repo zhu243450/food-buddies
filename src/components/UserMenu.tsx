@@ -27,12 +27,26 @@ import { useTranslation } from 'react-i18next';
 
 export const UserMenu = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { unreadCount } = useNotifications();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingReports, setPendingReports] = useState(0);
+  const [renderKey, setRenderKey] = useState(0);
+
+  // 监听语言变化，强制重新渲染
+  useEffect(() => {
+    const handleLanguageChanged = () => {
+      setRenderKey(prev => prev + 1);
+    };
+    
+    i18n.on('languageChanged', handleLanguageChanged);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, [i18n]);
 
   useEffect(() => {
     // 获取用户信息

@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
+import { useEffect } from 'react';
 
 const languages = [
   { code: 'zh', name: '中文' },
@@ -16,8 +17,16 @@ const languages = [
 export const LanguageSwitcher = () => {
   const { i18n, t } = useTranslation();
 
-  const changeLanguage = (languageCode: string) => {
-    i18n.changeLanguage(languageCode);
+  // 确保组件挂载时读取正确的语言设置
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
+
+  const changeLanguage = async (languageCode: string) => {
+    await i18n.changeLanguage(languageCode);
     localStorage.setItem('language', languageCode);
   };
 

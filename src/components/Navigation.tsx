@@ -9,11 +9,25 @@ import { supabase } from "@/integrations/supabase/client";
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [unreadCount, setUnreadCount] = useState(0);
   const [user, setUser] = useState(null);
   const [sessionIds, setSessionIds] = useState<string[]>([]);
   const fetchTimer = useRef<number>();
+  const [renderKey, setRenderKey] = useState(0);
+
+  // 监听语言变化，强制重新渲染
+  useEffect(() => {
+    const handleLanguageChanged = () => {
+      setRenderKey(prev => prev + 1);
+    };
+    
+    i18n.on('languageChanged', handleLanguageChanged);
+    
+    return () => {
+      i18n.off('languageChanged', handleLanguageChanged);
+    };
+  }, [i18n]);
 
   // 获取当前用户
   useEffect(() => {
