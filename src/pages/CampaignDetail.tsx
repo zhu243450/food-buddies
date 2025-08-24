@@ -113,6 +113,16 @@ export const CampaignDetail = () => {
     }
   };
 
+  const handleGoBack = () => {
+    // 尝试使用浏览器历史记录返回
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      // 如果没有历史记录，默认返回首页
+      navigate('/');
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN', {
       year: 'numeric',
@@ -169,7 +179,7 @@ export const CampaignDetail = () => {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={handleGoBack}
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
