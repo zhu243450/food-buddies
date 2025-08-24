@@ -100,6 +100,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          participant_count: number
           rules: Json | null
           start_date: string
           target_audience: string
@@ -118,6 +119,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          participant_count?: number
           rules?: Json | null
           start_date: string
           target_audience?: string
@@ -136,6 +138,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          participant_count?: number
           rules?: Json | null
           start_date?: string
           target_audience?: string

@@ -58,12 +58,8 @@ export const CampaignDetail = () => {
 
       setCampaign(data);
       
-      // 加载参与人数
-      const { count } = await supabase
-        .from('campaign_participations')
-        .select('*', { count: 'exact', head: true })
-        .eq('campaign_id', campaignId);
-      setParticipantCount(count ?? 0);
+      // 从campaigns表直接读取参与人数(已通过触发器维护)
+      setParticipantCount(data.participant_count);
       
       // 检查用户是否已参与
       const { data: { user } } = await supabase.auth.getUser();

@@ -28,34 +28,17 @@ const Auth = () => {
   useEffect(() => {
     let redirectTimeout: NodeJS.Timeout;
     
-    // 先检查当前会话，避免闪烁
-    const checkInitialSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          console.log('Auth页面检测到已有会话，延迟重定向');
-          // 使用延迟重定向避免竞态条件
-          redirectTimeout = setTimeout(() => {
-            navigate("/my-dinners", { replace: true });
-          }, 100);
-        }
-      } catch (error) {
-        console.error('检查会话时出错:', error);
-      }
-    };
-
-    // 监听认证状态变化
+    // 监听认证状态变化(必须在getSession前设置避免错过事件)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth页面认证状态变化:', { event, session: !!session });
+        
+        // 同步更新状态
         setSession(session);
         setUser(session?.user ?? null);
         
-        // 只在登录成功时重定向，避免其他状态变化时的误重定向
-        if (event === 'SIGNED_IN' && session?.user) {
+        // 只在登录成功或初始令牌刷新时重定向
+        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
           console.log('用户成功登录，延迟重定向');
           // 清除之前的重定向
           if (redirectTimeout) {
@@ -64,10 +47,34 @@ const Auth = () => {
           // 延迟重定向确保状态已更新
           redirectTimeout = setTimeout(() => {
             navigate("/my-dinners", { replace: true });
-          }, 200);
+          }, 50);
         }
       }
     );
+
+    // 检查初始会话(在监听器设置后)
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('获取会话时出错:', error);
+          return;
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          console.log('Auth页面检测到已有会话，重定向');
+          redirectTimeout = setTimeout(() => {
+            navigate("/my-dinners", { replace: true });
+          }, 50);
+        }
+      } catch (error) {
+        console.error('检查会话时出错:', error);
+      }
+    };
 
     checkInitialSession();
 
