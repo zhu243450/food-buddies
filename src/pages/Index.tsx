@@ -92,18 +92,37 @@ const Index = () => {
         
         {/* Main Content */}
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-5">
-          <div className="text-center space-y-6 max-w-md">
-            <h1 className="text-5xl font-bold text-foreground mb-4">{t('about.title')}</h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              {t('about.subtitle')}
-            </p>
-            <Button 
-              onClick={() => navigate("/auth")} 
-              size="lg" 
-              className="w-48 h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
-            >
-              {t('common.getStarted')}
-            </Button>
+          <div className="text-center space-y-8 max-w-lg">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-bold text-foreground">{t('about.title')}</h1>
+              <p className="text-lg text-muted-foreground">
+                {t('about.subtitle')}
+              </p>
+            </div>
+            
+            {/* Auth Actions */}
+            <div className="space-y-4">
+              <div className="flex gap-4 justify-center">
+                <Button 
+                  onClick={() => navigate("/auth")} 
+                  size="lg" 
+                  className="flex-1 max-w-[140px] h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
+                >
+                  {t('auth.signIn')}
+                </Button>
+                <Button 
+                  onClick={() => navigate("/auth")} 
+                  size="lg" 
+                  variant="outline"
+                  className="flex-1 max-w-[140px] h-12 text-lg font-semibold border-primary text-primary hover:bg-primary/10 transition-colors"
+                >
+                  {t('auth.signUp')}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                立即加入饭约社，开始你的美食社交之旅
+              </p>
+            </div>
           </div>
         </div>
       </div>
