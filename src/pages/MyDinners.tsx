@@ -102,85 +102,91 @@ const MyDinners = () => {
     const fetchMyDinners = async () => {
       if (!user) return;
 
-      // 获取我参与的饭局
-      const { data: joinedData, error: joinedError } = await supabase
-        .from("dinner_participants")
-        .select(`
-          dinners!fk_dinner_participants_dinner_id (
-            id,
-            title,
-            description,
-            dinner_time,
-            location,
-            max_participants,
-            food_preferences,
-            friends_only,
-            dinner_mode,
-            urgency_level,
-            gender_preference,
-            personality_tags,
-            dietary_restrictions,
-            created_by,
-            created_at,
-            updated_at,
-            status
-          )
-        `)
-        .eq("user_id", user.id);
+      try {
+        // 并行获取数据，但使用 Promise.all 优化
+        const [joinedResponse, createdResponse] = await Promise.all([
+          supabase
+            .from("dinner_participants")
+            .select(`
+              dinners!fk_dinner_participants_dinner_id (
+                id,
+                title,
+                description,
+                dinner_time,
+                location,
+                max_participants,
+                food_preferences,
+                friends_only,
+                dinner_mode,
+                urgency_level,
+                gender_preference,
+                personality_tags,
+                dietary_restrictions,
+                created_by,
+                created_at,
+                updated_at,
+                status
+              )
+            `)
+            .eq("user_id", user.id),
+          
+          supabase
+            .from("dinners")
+            .select("*")
+            .eq("created_by", user.id)
+            .order("dinner_time", { ascending: true })
+        ]);
 
-      if (joinedError) {
-        console.error("Error fetching joined dinners:", joinedError);
-      } else {
-        const joinedDinnersData = joinedData?.map(item => (item as any).dinners).filter((dinner: any) => dinner.status === 'active' || !dinner.status) || [];
-        setJoinedDinners(joinedDinnersData);
-      }
-
-      // 获取我创建的饭局
-      const { data: createdData, error: createdError } = await supabase
-        .from("dinners")
-        .select("*")
-        .eq("created_by", user.id)
-        .order("dinner_time", { ascending: true });
-
-      if (createdError) {
-        console.error("Error fetching created dinners:", createdError);
-      } else {
-        // 过滤只显示活跃的饭局
-        const activeDinners = createdData?.filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
-        setCreatedDinners(activeDinners);
-      }
-
-      // 获取所有饭局的参与者数量
-      const allDinnerIds = [
-        ...(joinedData?.map(item => (item as any).dinners.id) || []),
-        ...(createdData?.map(dinner => dinner.id) || [])
-      ];
-
-      if (allDinnerIds.length > 0) {
-        const { data: participantData, error: participantError } = await supabase
-          .from("dinner_participants")
-          .select("dinner_id")
-          .in("dinner_id", allDinnerIds);
-
-        if (participantError) {
-          console.error("Error fetching participant counts:", participantError);
+        // 处理参与的饭局
+        if (joinedResponse.error) {
+          console.error("Error fetching joined dinners:", joinedResponse.error);
         } else {
-          const counts: Record<string, number> = {};
-          participantData?.forEach(participant => {
-            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
-          });
-          setParticipantCounts(counts);
+          const joinedDinnersData = joinedResponse.data?.map(item => (item as any).dinners).filter((dinner: any) => dinner.status === 'active' || !dinner.status) || [];
+          setJoinedDinners(joinedDinnersData);
         }
-      }
 
-      setLoading(false);
+        // 处理创建的饭局
+        if (createdResponse.error) {
+          console.error("Error fetching created dinners:", createdResponse.error);
+        } else {
+          const activeDinners = createdResponse.data?.filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
+          setCreatedDinners(activeDinners);
+        }
+
+        // 获取参与者数量（仅在有饭局时）
+        const allDinnerIds = [
+          ...(joinedResponse.data?.map(item => (item as any).dinners.id) || []),
+          ...(createdResponse.data?.map(dinner => dinner.id) || [])
+        ];
+
+        if (allDinnerIds.length > 0) {
+          const { data: participantData, error: participantError } = await supabase
+            .from("dinner_participants")
+            .select("dinner_id")
+            .in("dinner_id", allDinnerIds);
+
+          if (participantError) {
+            console.error("Error fetching participant counts:", participantError);
+          } else {
+            const counts: Record<string, number> = {};
+            participantData?.forEach(participant => {
+              counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
+            });
+            setParticipantCounts(counts);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching dinners:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchMyDinners();
 
-    // 设置实时监听参与者变化
+    // 优化实时监听 - 避免页面刷新
     const channel = supabase
-      .channel('dinner-participants-changes')
+      .channel('my-dinner-participants-changes')
       .on(
         'postgres_changes',
         {
@@ -188,9 +194,10 @@ const MyDinners = () => {
           schema: 'public',
           table: 'dinner_participants'
         },
-        () => {
-          // 当有人加入或离开饭局时重新获取数据
-          window.location.reload();
+        (payload) => {
+          // 只重新获取数据，不刷新整个页面
+          console.log('Participant change detected:', payload);
+          fetchMyDinners();
         }
       )
       .subscribe();
@@ -273,8 +280,10 @@ const MyDinners = () => {
           variant: isLate ? "destructive" : "default",
         });
 
-        // 重新获取数据
-        window.location.reload();
+        // 重新获取数据，不刷新页面
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         const message = result.message || result.f2 || "操作失败";
         toast({

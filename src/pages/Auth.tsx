@@ -27,38 +27,34 @@ const Auth = () => {
 
   useEffect(() => {
     let redirectTimeout: NodeJS.Timeout;
+    let mounted = true;
     
-    // 监听认证状态变化(必须在getSession前设置避免错过事件)
+    // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+        
         console.log('Auth页面认证状态变化:', { event, session: !!session });
         
         // 同步更新状态
         setSession(session);
         setUser(session?.user ?? null);
         
-        // 只在登录成功或初始令牌刷新时重定向
-        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
-          console.log('用户成功登录，延迟重定向');
-          // 清除之前的重定向
-          if (redirectTimeout) {
-            clearTimeout(redirectTimeout);
-          }
-          // 延迟重定向确保状态已更新
-          redirectTimeout = setTimeout(() => {
-            navigate("/my-dinners", { replace: true });
-          }, 50);
+        // 只在登录成功时立即重定向，避免延迟
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('用户成功登录，立即重定向');
+          navigate("/my-dinners", { replace: true });
         }
       }
     );
 
-    // 检查初始会话(在监听器设置后)
+    // 检查初始会话
     const checkInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('获取会话时出错:', error);
+        if (!mounted || error) {
+          if (error) console.error('获取会话时出错:', error);
           return;
         }
         
@@ -66,10 +62,8 @@ const Auth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('Auth页面检测到已有会话，重定向');
-          redirectTimeout = setTimeout(() => {
-            navigate("/my-dinners", { replace: true });
-          }, 50);
+          console.log('Auth页面检测到已有会话，立即重定向');
+          navigate("/my-dinners", { replace: true });
         }
       } catch (error) {
         console.error('检查会话时出错:', error);
@@ -79,6 +73,7 @@ const Auth = () => {
     checkInitialSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       if (redirectTimeout) {
         clearTimeout(redirectTimeout);
