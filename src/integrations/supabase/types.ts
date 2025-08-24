@@ -56,6 +56,95 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_participations: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          participation_data: Json | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          participation_data?: Json | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          participation_data?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_participations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          campaign_type: string
+          click_count: number
+          created_at: string
+          created_by: string
+          description: string
+          display_priority: number
+          end_date: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          rules: Json | null
+          start_date: string
+          target_audience: string
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          campaign_type?: string
+          click_count?: number
+          created_at?: string
+          created_by: string
+          description: string
+          display_priority?: number
+          end_date: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          rules?: Json | null
+          start_date: string
+          target_audience?: string
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          campaign_type?: string
+          click_count?: number
+          created_at?: string
+          created_by?: string
+          description?: string
+          display_priority?: number
+          end_date?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          rules?: Json | null
+          start_date?: string
+          target_audience?: string
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       cancellation_records: {
         Row: {
           cancellation_reason: string | null

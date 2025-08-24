@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from 'react-i18next';
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
+import { CampaignBanner } from "@/components/CampaignBanner";
 import type { User } from '@supabase/supabase-js';
 
 const Index = () => {
@@ -83,19 +84,27 @@ const Index = () => {
   return (
     <>
       <SEO {...seoData} />
-      <div className="min-h-screen flex items-center justify-center bg-background p-5">
-        <div className="text-center space-y-6 max-w-md">
-          <h1 className="text-5xl font-bold text-foreground mb-4">{t('about.title')}</h1>
-          <p className="text-xl text-muted-foreground mb-8">
-            {t('about.subtitle')}
-          </p>
-          <Button 
-            onClick={() => navigate("/auth")} 
-            size="lg" 
-            className="w-48 h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
-          >
-            {t('common.getStarted')}
-          </Button>
+      <div className="min-h-screen bg-background">
+        {/* Campaign Banner */}
+        <div className="container mx-auto px-4 pt-6">
+          <CampaignBanner className="mb-8" />
+        </div>
+        
+        {/* Main Content */}
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)] p-5">
+          <div className="text-center space-y-6 max-w-md">
+            <h1 className="text-5xl font-bold text-foreground mb-4">{t('about.title')}</h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              {t('about.subtitle')}
+            </p>
+            <Button 
+              onClick={() => navigate("/auth")} 
+              size="lg" 
+              className="w-48 h-12 text-lg font-semibold bg-primary text-black hover:bg-primary/90 hover:text-black transition-colors"
+            >
+              {t('common.getStarted')}
+            </Button>
+          </div>
         </div>
       </div>
     </>

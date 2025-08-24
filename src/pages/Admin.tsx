@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
 import { AdminChatInvestigation } from "./AdminChatInvestigation";
+import { CampaignManagement } from "@/components/admin/CampaignManagement";
 
 interface UserStats {
   total_users: number;
@@ -646,6 +647,7 @@ const Admin = () => {
               )}
             </TabsTrigger>
             <TabsTrigger value="management">系统管理</TabsTrigger>
+            <TabsTrigger value="campaigns">活动管理</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -1431,6 +1433,11 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="campaigns" className="space-y-6">
+            <CampaignManagement />
+          </TabsContent>
+          
           {/* 详情弹窗 */}
           <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
             <DialogContent className="sm:max-w-lg">
