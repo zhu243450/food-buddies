@@ -114,12 +114,12 @@ export const CampaignDetail = () => {
   };
 
   const handleGoBack = () => {
-    // 尝试使用浏览器历史记录返回
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      // 如果没有历史记录，默认返回首页
+    console.log('返回按钮被点击');
+    try {
       navigate('/');
+    } catch (error) {
+      console.error('导航失败:', error);
+      window.location.href = '/';
     }
   };
 
