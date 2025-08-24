@@ -30,6 +30,7 @@ export const CampaignDetail = () => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasParticipated, setHasParticipated] = useState(false);
+  const [participantCount, setParticipantCount] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -56,6 +57,13 @@ export const CampaignDetail = () => {
       }
 
       setCampaign(data);
+      
+      // 加载参与人数
+      const { count } = await supabase
+        .from('campaign_participations')
+        .select('*', { count: 'exact', head: true })
+        .eq('campaign_id', campaignId);
+      setParticipantCount(count ?? 0);
       
       // 检查用户是否已参与
       const { data: { user } } = await supabase.auth.getUser();
@@ -105,6 +113,7 @@ export const CampaignDetail = () => {
         }
       } else {
         setHasParticipated(true);
+        setParticipantCount((c) => c + 1);
         toast.success('成功参与活动！');
       }
     } catch (error) {
@@ -268,16 +277,19 @@ export const CampaignDetail = () => {
             )}
 
             {isActive && (
-              <div className="flex gap-3">
-                <Button 
-                  onClick={handleParticipate}
-                  disabled={hasParticipated}
-                  className="flex-1"
-                  size="lg"
-                >
-                  <Gift className="h-4 w-4 mr-2" />
-                  {hasParticipated ? '已参与' : '参与活动'}
-                </Button>
+              <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">已参与人数：{participantCount}</div>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleParticipate}
+                    disabled={hasParticipated}
+                    className="flex-1"
+                    size="lg"
+                  >
+                    <Gift className="h-4 w-4 mr-2" />
+                    {hasParticipated ? '已参与' : '参与活动'}
+                  </Button>
+                </div>
               </div>
             )}
 
