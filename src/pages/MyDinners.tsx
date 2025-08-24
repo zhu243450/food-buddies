@@ -11,6 +11,7 @@ import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2 } from 
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
+import { CampaignBanner } from "@/components/CampaignBanner";
 import type { User } from '@supabase/supabase-js';
 
 interface Dinner {
@@ -447,6 +448,9 @@ const MyDinners = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
+        {/* Campaign Banner */}
+        <CampaignBanner className="mb-6" />
+        
         {/* 简洁的欢迎区域 */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2 mb-2">

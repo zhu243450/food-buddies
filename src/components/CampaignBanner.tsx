@@ -34,6 +34,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
 
   useEffect(() => {
     loadActiveCampaigns();
+    console.log('CampaignBanner: Loading campaigns...');
     
     // 自动轮播
     if (campaigns.length > 1) {
@@ -46,6 +47,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
 
   const loadActiveCampaigns = async () => {
     try {
+      console.log('CampaignBanner: Fetching campaigns from Supabase...');
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -56,7 +58,12 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (error) throw error;
+      if (error) {
+        console.error('CampaignBanner: Error fetching campaigns:', error);
+        throw error;
+      }
+      
+      console.log('CampaignBanner: Campaigns fetched:', data?.length || 0);
       setCampaigns(data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);

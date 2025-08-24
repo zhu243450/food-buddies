@@ -11,6 +11,7 @@ import DinnerFiltersComponent, { DinnerFilters } from "@/components/DinnerFilter
 import ShareDinner from "@/components/ShareDinner";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
+import { CampaignBanner } from "@/components/CampaignBanner";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -351,6 +352,9 @@ const Discover = () => {
       <SEO {...seoData} />
       <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
+        {/* Campaign Banner */}
+        <CampaignBanner className="mb-6" />
+        
         {/* 标题区域 */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2">
