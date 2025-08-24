@@ -82,7 +82,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
       navigate(`/campaign/${campaign.id}`);
     } catch (error) {
       console.error('Failed to track campaign click:', error);
-      toast.error('打开活动详情失败');
+      toast.error(t('campaign.openFailed'));
     }
   };
 
@@ -123,16 +123,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
   };
 
   const getCampaignTypeName = (type: string) => {
-    switch (type) {
-      case 'promotion':
-        return '优惠活动';
-      case 'event':
-        return '活动公告';
-      case 'announcement':
-        return '系统通知';
-      default:
-        return '活动';
-    }
+    return t(`campaign.types.${type}`, t('campaign.types.default'));
   };
 
   if (!isVisible || campaigns.length === 0) {
@@ -173,7 +164,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
                   size="sm"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
-                  查看详情
+                  {t('campaign.viewDetails')}
                 </Button>
                 
                 {campaigns.length > 1 && (

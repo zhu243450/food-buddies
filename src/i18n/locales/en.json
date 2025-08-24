@@ -298,6 +298,16 @@
     "inputPlaceholder": "Type a message...",
     "sendFailed": "Send failed"
   },
+  "campaign": {
+    "types": {
+      "promotion": "Promotion",
+      "event": "Event",
+      "announcement": "Announcement",
+      "default": "Activity"
+    },
+    "viewDetails": "View Details",
+    "openFailed": "Failed to open campaign details"
+  },
   "footer": {
     "about": "About Us",
     "contact": "Contact Us",

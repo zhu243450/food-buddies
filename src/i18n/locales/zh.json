@@ -649,6 +649,16 @@
     "noChats": "还没有聊天",
     "noChatsDesc": "参与饭局后就可以和其他成员聊天了"
   },
+  "campaign": {
+    "types": {
+      "promotion": "优惠活动",
+      "event": "活动公告",
+      "announcement": "系统通知",
+      "default": "活动"
+    },
+    "viewDetails": "查看详情",
+    "openFailed": "打开活动详情失败"
+  },
   "myDinners": {
     "participantsJoined": "🔥 {{count}}人已参与",
     "people": "人",
