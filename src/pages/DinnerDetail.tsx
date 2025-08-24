@@ -62,11 +62,17 @@ const DinnerDetail = () => {
         .from("dinners")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (dinnerError) {
         console.error("Error fetching dinner:", dinnerError);
-        navigate("/discover");
+        setLoading(false);
+        return;
+      }
+
+      if (!dinnerData) {
+        console.log("Dinner not found");
+        setLoading(false);
         return;
       }
 
