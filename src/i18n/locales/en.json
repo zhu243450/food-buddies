@@ -913,6 +913,7 @@
     "discoverDinners": "Discover Dinners",
     "summary": "You've joined {{joined}} dinners and created {{created}} dinners",
     "welcomeMsg": "Start your culinary social journey!",
+    "joinNow": "Join DineMate now and start your culinary social journey",
     "joinedTab": "Dinners I Joined",
     "createdTab": "Dinners I Created",
     "noJoinedDinners": "You haven't joined any dinners yet",

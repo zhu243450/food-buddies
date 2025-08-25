@@ -120,7 +120,7 @@ const Index = () => {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                立即加入饭约社，开始你的美食社交之旅
+                {t('myDinners.joinNow')}
               </p>
             </div>
           </div>
