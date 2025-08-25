@@ -12,6 +12,8 @@ interface Campaign {
   id: string;
   title: string;
   description: string;
+  title_en?: string;
+  description_en?: string;
   image_url?: string;
   start_date: string;
   end_date: string;
@@ -30,7 +32,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     loadActiveCampaigns();
@@ -151,11 +153,11 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
               </div>
               
               <h3 className="font-bold text-lg mb-2 text-foreground">
-                {currentCampaign.title}
+                {i18n.language === 'en' && currentCampaign.title_en ? currentCampaign.title_en : currentCampaign.title}
               </h3>
               
               <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                {currentCampaign.description}
+                {i18n.language === 'en' && currentCampaign.description_en ? currentCampaign.description_en : currentCampaign.description}
               </p>
               
               <div className="flex items-center justify-between">

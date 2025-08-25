@@ -95,6 +95,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string
+          description_en: string | null
           display_priority: number
           end_date: string
           id: string
@@ -105,6 +106,7 @@ export type Database = {
           start_date: string
           target_audience: string
           title: string
+          title_en: string | null
           updated_at: string
           view_count: number
         }
@@ -114,6 +116,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description: string
+          description_en?: string | null
           display_priority?: number
           end_date: string
           id?: string
@@ -124,6 +127,7 @@ export type Database = {
           start_date: string
           target_audience?: string
           title: string
+          title_en?: string | null
           updated_at?: string
           view_count?: number
         }
@@ -133,6 +137,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string
+          description_en?: string | null
           display_priority?: number
           end_date?: string
           id?: string
@@ -143,6 +148,7 @@ export type Database = {
           start_date?: string
           target_audience?: string
           title?: string
+          title_en?: string | null
           updated_at?: string
           view_count?: number
         }
