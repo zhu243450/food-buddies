@@ -34,7 +34,8 @@
     "getStarted": "Get Started",
     "pleaseLogin": "Please login first",
     "login": "Login",
-    "locale": "en-US"
+    "locale": "en-US",
+    "backToHome": "Back to Home"
   },
   "nav": {
     "discover": "Discover",
@@ -306,7 +307,24 @@
       "default": "Activity"
     },
     "viewDetails": "View Details",
-    "openFailed": "Failed to open campaign details"
+    "openFailed": "Failed to open campaign details",
+    "notFound": "Campaign not found",
+    "loadFailed": "Failed to load campaign details",
+    "alreadyParticipated": "You have already participated in this campaign",
+    "participateSuccess": "Successfully participated in the campaign!",
+    "participateFailed": "Failed to participate in campaign",
+    "active": "Active",
+    "ended": "Ended",
+    "startTime": "Start",
+    "endTime": "End",
+    "views": "Views",
+    "clicks": "Clicks", 
+    "details": "Campaign Details",
+    "rules": "Campaign Rules",
+    "participantCount": "Participants",
+    "participated": "Participated",
+    "participate": "Participate",
+    "keywords": "campaign,promotion,dinemate,social dining"
   },
   "footer": {
     "about": "About Us",

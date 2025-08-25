@@ -13,6 +13,8 @@ interface Campaign {
   id: string;
   title: string;
   description: string;
+  title_en?: string;
+  description_en?: string;
   image_url?: string;
   start_date: string;
   end_date: string;
@@ -26,7 +28,7 @@ interface Campaign {
 export const CampaignDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasParticipated, setHasParticipated] = useState(false);
@@ -51,7 +53,7 @@ export const CampaignDetail = () => {
       if (error) throw error;
       
       if (!data) {
-        toast.error('活动不存在');
+        toast.error(t('campaign.notFound', '活动不存在'));
         navigate('/');
         return;
       }
@@ -75,7 +77,7 @@ export const CampaignDetail = () => {
       }
     } catch (error) {
       console.error('Failed to load campaign:', error);
-      toast.error('加载活动详情失败');
+      toast.error(t('campaign.loadFailed', '加载活动详情失败'));
       navigate('/');
     } finally {
       setLoading(false);
@@ -86,7 +88,7 @@ export const CampaignDetail = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error('请先登录');
+        toast.error(t('auth.pleaseLogin', '请先登录'));
         navigate('/auth');
         return;
       }
@@ -103,18 +105,18 @@ export const CampaignDetail = () => {
 
       if (error) {
         if (error.code === '23505') { // 唯一约束违反
-          toast.error('您已经参与过此活动');
+          toast.error(t('campaign.alreadyParticipated', '您已经参与过此活动'));
         } else {
           throw error;
         }
       } else {
         setHasParticipated(true);
         setParticipantCount((c) => c + 1);
-        toast.success('成功参与活动！');
+        toast.success(t('campaign.participateSuccess', '成功参与活动！'));
       }
     } catch (error) {
       console.error('Failed to participate:', error);
-      toast.error('参与活动失败');
+      toast.error(t('campaign.participateFailed', '参与活动失败'));
     }
   };
 
@@ -129,7 +131,8 @@ export const CampaignDetail = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN', {
+    const locale = i18n.language === 'en' ? 'en-US' : 'zh-CN';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -138,17 +141,18 @@ export const CampaignDetail = () => {
     });
   };
 
+  const getDisplayTitle = () => {
+    if (!campaign) return '';
+    return i18n.language === 'en' && campaign.title_en ? campaign.title_en : campaign.title;
+  };
+
+  const getDisplayDescription = () => {
+    if (!campaign) return '';
+    return i18n.language === 'en' && campaign.description_en ? campaign.description_en : campaign.description;
+  };
+
   const getCampaignTypeName = (type: string) => {
-    switch (type) {
-      case 'promotion':
-        return '优惠活动';
-      case 'event':
-        return '活动公告';
-      case 'announcement':
-        return '系统通知';
-      default:
-        return '活动';
-    }
+    return t(`campaign.types.${type}`, t('campaign.types.default'));
   };
 
   const isActive = campaign ? 
@@ -157,7 +161,7 @@ export const CampaignDetail = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">加载中...</div>
+        <div className="text-lg">{t('common.loading')}</div>
       </div>
     );
   }
@@ -166,8 +170,8 @@ export const CampaignDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg mb-4">活动不存在</div>
-          <Button onClick={() => navigate('/')}>返回首页</Button>
+          <div className="text-lg mb-4">{t('campaign.notFound', '活动不存在')}</div>
+          <Button onClick={() => navigate('/')}>{t('common.backToHome', '返回首页')}</Button>
         </div>
       </div>
     );
@@ -176,9 +180,9 @@ export const CampaignDetail = () => {
   return (
     <>
       <SEO 
-        title={campaign.title}
-        description={campaign.description}
-        keywords="活动,优惠,饭约社,美食社交"
+        title={getDisplayTitle()}
+        description={getDisplayDescription()}
+        keywords={t('campaign.keywords', '活动,优惠,饭约社,美食社交')}
       />
       
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -188,7 +192,7 @@ export const CampaignDetail = () => {
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          返回
+          {t('common.back')}
         </Button>
 
         <Card className="overflow-hidden">
@@ -196,7 +200,7 @@ export const CampaignDetail = () => {
             <div className="relative h-64 bg-gradient-to-r from-primary/10 to-accent/10">
               <img 
                 src={campaign.image_url} 
-                alt={campaign.title}
+                alt={getDisplayTitle()}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/20" />
@@ -209,40 +213,40 @@ export const CampaignDetail = () => {
                 {getCampaignTypeName(campaign.campaign_type)}
               </Badge>
               <Badge variant={isActive ? "default" : "outline"}>
-                {isActive ? '进行中' : '已结束'}
+                {isActive ? t('campaign.active', '进行中') : t('campaign.ended', '已结束')}
               </Badge>
             </div>
             
-            <CardTitle className="text-2xl mb-2">{campaign.title}</CardTitle>
+            <CardTitle className="text-2xl mb-2">{getDisplayTitle()}</CardTitle>
             
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                开始：{formatDate(campaign.start_date)}
+                {t('campaign.startTime', '开始')}：{formatDate(campaign.start_date)}
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
-                结束：{formatDate(campaign.end_date)}
+                {t('campaign.endTime', '结束')}：{formatDate(campaign.end_date)}
               </div>
             </div>
             
             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
               <div className="flex items-center gap-1">
                 <Users className="h-4 w-4" />
-                浏览：{campaign.view_count}
+                {t('campaign.views', '浏览')}：{campaign.view_count}
               </div>
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4" />
-                点击：{campaign.click_count}
+                {t('campaign.clicks', '点击')}：{campaign.click_count}
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div>
-              <h3 className="font-semibold text-lg mb-3">活动详情</h3>
+              <h3 className="font-semibold text-lg mb-3">{t('campaign.details', '活动详情')}</h3>
               <div className="prose prose-sm max-w-none text-muted-foreground">
-                {campaign.description.split('\n').map((paragraph, index) => (
+                {getDisplayDescription().split('\n').map((paragraph, index) => (
                   <p key={index} className="mb-2">{paragraph}</p>
                 ))}
               </div>
@@ -250,7 +254,7 @@ export const CampaignDetail = () => {
 
             {campaign.rules && (
               <div>
-                <h3 className="font-semibold text-lg mb-3">活动规则</h3>
+                <h3 className="font-semibold text-lg mb-3">{t('campaign.rules', '活动规则')}</h3>
                 <Card className="bg-muted/50">
                   <CardContent className="p-4">
                     <div className="prose prose-sm max-w-none">
@@ -274,7 +278,9 @@ export const CampaignDetail = () => {
 
             {isActive && (
               <div className="space-y-3">
-                <div className="text-sm text-muted-foreground">已参与人数：{participantCount}</div>
+                <div className="text-sm text-muted-foreground">
+                  {t('campaign.participantCount', '已参与人数')}：{participantCount}
+                </div>
                 <div className="flex gap-3">
                   <Button 
                     onClick={handleParticipate}
@@ -283,7 +289,7 @@ export const CampaignDetail = () => {
                     size="lg"
                   >
                     <Gift className="h-4 w-4 mr-2" />
-                    {hasParticipated ? '已参与' : '参与活动'}
+                    {hasParticipated ? t('campaign.participated', '已参与') : t('campaign.participate', '参与活动')}
                   </Button>
                 </div>
               </div>
@@ -291,7 +297,7 @@ export const CampaignDetail = () => {
 
             {!isActive && (
               <div className="text-center py-4">
-                <p className="text-muted-foreground">此活动已结束</p>
+                <p className="text-muted-foreground">{t('campaign.ended', '此活动已结束')}</p>
               </div>
             )}
           </CardContent>

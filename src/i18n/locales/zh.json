@@ -657,7 +657,24 @@
       "default": "活动"
     },
     "viewDetails": "查看详情",
-    "openFailed": "打开活动详情失败"
+    "openFailed": "打开活动详情失败",
+    "notFound": "活动不存在",
+    "loadFailed": "加载活动详情失败",
+    "alreadyParticipated": "您已经参与过此活动",
+    "participateSuccess": "成功参与活动！",
+    "participateFailed": "参与活动失败",
+    "active": "进行中",
+    "ended": "已结束",
+    "startTime": "开始",
+    "endTime": "结束", 
+    "views": "浏览",
+    "clicks": "点击",
+    "details": "活动详情",
+    "rules": "活动规则",
+    "participantCount": "已参与人数",
+    "participated": "已参与",
+    "participate": "参与活动",
+    "keywords": "活动,优惠,饭约社,美食社交"
   },
   "myDinners": {
     "participantsJoined": "🔥 {{count}}人已参与",
