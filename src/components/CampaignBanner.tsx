@@ -36,7 +36,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
 
   useEffect(() => {
     loadActiveCampaigns();
-    console.log('CampaignBanner: Loading campaigns...');
+    console.log('CampaignBanner: Loading campaigns...', { currentLanguage: i18n.language });
     
     // 自动轮播
     if (campaigns.length > 1) {
@@ -45,11 +45,11 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
       }, 8000);
       return () => clearInterval(interval);
     }
-  }, [campaigns.length]);
+  }, [campaigns.length, i18n.language]);
 
   const loadActiveCampaigns = async () => {
     try {
-      console.log('CampaignBanner: Fetching campaigns from Supabase...');
+      console.log('CampaignBanner: Fetching campaigns from Supabase...', { language: i18n.language });
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -65,7 +65,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
         throw error;
       }
       
-      console.log('CampaignBanner: Campaigns fetched:', data?.length || 0);
+      console.log('CampaignBanner: Campaigns fetched:', data?.length || 0, data);
       setCampaigns(data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
@@ -153,11 +153,23 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
               </div>
               
               <h3 className="font-bold text-lg mb-2 text-foreground">
-                {i18n.language === 'en' && currentCampaign.title_en ? currentCampaign.title_en : currentCampaign.title}
+                {(() => {
+                  const useEnglish = i18n.language === 'en' && currentCampaign.title_en;
+                  console.log('CampaignBanner title display:', {
+                    language: i18n.language,
+                    hasEnglishTitle: !!currentCampaign.title_en,
+                    useEnglish,
+                    title: useEnglish ? currentCampaign.title_en : currentCampaign.title
+                  });
+                  return useEnglish ? currentCampaign.title_en : currentCampaign.title;
+                })()}
               </h3>
               
               <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                {i18n.language === 'en' && currentCampaign.description_en ? currentCampaign.description_en : currentCampaign.description}
+                {(() => {
+                  const useEnglish = i18n.language === 'en' && currentCampaign.description_en;
+                  return useEnglish ? currentCampaign.description_en : currentCampaign.description;
+                })()}
               </p>
               
               <div className="flex items-center justify-between">
