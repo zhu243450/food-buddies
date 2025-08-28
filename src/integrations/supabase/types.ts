@@ -831,8 +831,16 @@ export type Database = {
           restriction_reason: string
         }[]
       }
+      cleanup_all_expired_chats: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       cleanup_resolved_report_data: {
         Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      delete_expired_chats: {
+        Args: { user_id_param: string }
         Returns: number
       }
       get_admin_cancellation_stats: {
@@ -892,6 +900,10 @@ export type Database = {
           message: string
           success: boolean
         }[]
+      }
+      reactivate_chat_session: {
+        Args: { session_id_param: string }
+        Returns: boolean
       }
       send_dinner_cancellation_notifications: {
         Args: {

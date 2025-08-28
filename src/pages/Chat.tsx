@@ -359,13 +359,43 @@ const Chat = () => {
       {/* 输入框 */}
       <Card className="rounded-none border-t">
         <CardContent className="p-4">
-          {isExpired ? (
-            <div className="text-center py-2">
-              <Badge variant="destructive">
-                {t('chat.expiredCannotSend')}
-              </Badge>
-            </div>
-          ) : (
+            {isExpired ? (
+              <div className="text-center py-3 space-y-2">
+                <Badge variant="destructive" className="block mb-2">
+                  {t('chat.expiredCannotSend')}
+                </Badge>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.rpc('reactivate_chat_session', {
+                        session_id_param: sessionId
+                      });
+                      
+                      if (error) throw error;
+                      
+                      if (data) {
+                        toast({
+                          title: t('chat.reactivated'),
+                          description: t('chat.reactivatedDesc'),
+                        });
+                        // 重新获取会话数据
+                        window.location.reload();
+                      }
+                    } catch (error: any) {
+                      toast({
+                        title: t('chat.reactivateFailed'),
+                        description: error.message,
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  size="sm"
+                  variant="outline"
+                >
+                  {t('chat.reactivateChat')}
+                </Button>
+              </div>
+            ) : (
             <div className="space-y-2">
               {/* 待发送媒体预览 */}
               {pendingMediaUrl && (

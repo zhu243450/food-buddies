@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, Clock, MessageSquareOff } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import type { User } from '@supabase/supabase-js';
@@ -30,6 +31,7 @@ const ChatList = () => {
   const [isBanned, setIsBanned] = useState(false);
   const [banInfo, setBanInfo] = useState<{reason?: string; until?: string} | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const getUser = async () => {
@@ -210,9 +212,43 @@ const ChatList = () => {
   return (
     <div className="min-h-screen bg-background p-4 pb-24">
       <div className="max-w-md mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <MessageCircle className="w-6 h-6 text-primary" />
-          <h1 className="text-xl font-bold">{t('nav.chat')}</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <MessageCircle className="w-6 h-6 text-primary" />
+            <h1 className="text-xl font-bold">{t('nav.chat')}</h1>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              if (!user) return;
+              
+              try {
+                const { data, error } = await supabase.rpc('delete_expired_chats', {
+                  user_id_param: user.id
+                });
+                
+                if (error) throw error;
+                
+                toast({
+                  title: t('chat.cleanupComplete'),
+                  description: t('chat.cleanupDesc', { count: data || 0 }),
+                });
+                
+                // 重新加载页面以刷新聊天列表
+                window.location.reload();
+              } catch (error: any) {
+                toast({
+                  title: t('chat.cleanupFailed'),
+                  description: error.message,
+                  variant: "destructive",
+                });
+              }
+            }}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            {t('chat.deleteExpired')}
+          </Button>
         </div>
 
         {/* 禁言提示 */}

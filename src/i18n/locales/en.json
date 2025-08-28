@@ -297,7 +297,15 @@
     "noMessages": "No messages yet, start chatting!",
     "expiredCannotSend": "Chat time has expired, cannot send messages",
     "inputPlaceholder": "Type a message...",
-    "sendFailed": "Send failed"
+    "sendFailed": "Send failed",
+    "reactivateChat": "Reactivate Chat",
+    "reactivated": "Chat Reactivated",
+    "reactivatedDesc": "Chat extended for 7 days, you can continue messaging now",
+    "reactivateFailed": "Failed to reactivate",
+    "deleteExpired": "Clean Expired Chats",
+    "cleanupComplete": "Cleanup Complete",
+    "cleanupDesc": "Deleted {{count}} expired chats",
+    "cleanupFailed": "Cleanup failed"
   },
   "campaign": {
     "types": {
