@@ -233,7 +233,7 @@ const DinnerMediaUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
               点击选择媒体文件或拖拽到此处
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              支持图片（JPG、PNG，10MB内）和视频（MP4、WEBM，无大小限制）
+              支持图片（JPG、PNG，10MB内）和视频（MP4、MOV、AVI、3GP等常见格式，无大小限制）
             </p>
             <Button
               type="button"

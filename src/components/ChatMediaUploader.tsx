@@ -40,9 +40,24 @@ export function ChatMediaUploader({ userId, onMediaUploaded, disabled = false }:
     }
 
     if (isVideo) {
-      const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/avi'];
+      const allowedVideoTypes = [
+        'video/mp4',
+        'video/webm', 
+        'video/mov',
+        'video/avi',
+        'video/quicktime',
+        'video/x-msvideo',
+        'video/3gpp',
+        'video/3gpp2',
+        'video/x-flv',
+        'video/mkv',
+        'video/x-matroska',
+        'video/mp2t',
+        'video/x-ms-wmv',
+        'video/m4v'
+      ];
       if (!allowedVideoTypes.includes(file.type)) {
-        return '只支持 MP4、WEBM、MOV、AVI 格式的视频';
+        return '只支持常见的视频格式（MP4、MOV、AVI、WEBM、3GP、MKV等）';
       }
     }
     
