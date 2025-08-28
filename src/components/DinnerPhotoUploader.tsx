@@ -39,11 +39,11 @@ const DinnerMediaUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
         return false;
       }
       
-      const sizeLimit = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 视频50MB，图片10MB
-      if (file.size > sizeLimit) {
+      // 只限制图片大小，视频无限制
+      if (!isVideo && file.size > 10 * 1024 * 1024) {
         toast({
-          title: "文件过大",
-          description: `${isVideo ? '视频' : '图片'}大小不能超过${isVideo ? '50' : '10'}MB`,
+          title: "文件过大", 
+          description: "图片大小不能超过10MB",
           variant: "destructive",
         });
         return false;
@@ -233,7 +233,7 @@ const DinnerMediaUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
               点击选择媒体文件或拖拽到此处
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              支持图片（JPG、PNG，10MB内）和视频（MP4、WEBM，50MB内）
+              支持图片（JPG、PNG，10MB内）和视频（MP4、WEBM，无大小限制）
             </p>
             <Button
               type="button"

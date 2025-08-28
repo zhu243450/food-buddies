@@ -40,9 +40,6 @@ export function ChatMediaUploader({ userId, onMediaUploaded, disabled = false }:
     }
 
     if (isVideo) {
-      if (file.size > 50 * 1024 * 1024) {
-        return '视频大小不能超过 50MB';
-      }
       const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/avi'];
       if (!allowedVideoTypes.includes(file.type)) {
         return '只支持 MP4、WEBM、MOV、AVI 格式的视频';
