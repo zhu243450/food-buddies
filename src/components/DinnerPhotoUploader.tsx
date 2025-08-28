@@ -3,17 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Upload, X, Image } from "lucide-react";
+import { Camera, Upload, X, Image, Video, Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from 'react-i18next';
 
-interface DinnerPhotoUploaderProps {
-  dinnerId: string | null; // 允许为null，表示个人分享照片
+interface DinnerMediaUploaderProps {
+  dinnerId: string | null; // 允许为null，表示个人分享媒体
   onUploadSuccess?: () => void;
   onPhotoUploaded?: () => void; // 新增回调函数
 }
 
-const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: DinnerPhotoUploaderProps) => {
+const DinnerMediaUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: DinnerMediaUploaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -27,21 +27,23 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
     const files = Array.from(event.target.files || []);
     const validFiles = files.filter(file => {
       const isImage = file.type.startsWith('image/');
-      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB限制
+      const isVideo = file.type.startsWith('video/');
+      const isValidMedia = isImage || isVideo;
       
-      if (!isImage) {
+      if (!isValidMedia) {
         toast({
           title: "无效文件格式",
-          description: "请选择图片文件",
+          description: "请选择图片或视频文件",
           variant: "destructive",
         });
         return false;
       }
       
-      if (!isValidSize) {
+      const sizeLimit = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 视频50MB，图片10MB
+      if (file.size > sizeLimit) {
         toast({
           title: "文件过大",
-          description: "图片大小不能超过10MB",
+          description: `${isVideo ? '视频' : '图片'}大小不能超过${isVideo ? '50' : '10'}MB`,
           variant: "destructive",
         });
         return false;
@@ -108,6 +110,7 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
         // 生成唯一文件名
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const isVideo = file.type.startsWith('video/');
         
         // 上传到Supabase Storage
         const { error: uploadError } = await supabase.storage
@@ -121,13 +124,36 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
           .from('dinner-photos')
           .getPublicUrl(fileName);
 
-        // 获取图片尺寸
-        const img = document.createElement('img');
-        await new Promise((resolve, reject) => {
-          img.onload = () => resolve(void 0);
-          img.onerror = () => reject(new Error('Failed to load image'));
-          img.src = previews[file.name];
-        });
+        let width = null;
+        let height = null;
+        let duration = null;
+
+        if (isVideo) {
+          // 获取视频时长
+          const video = document.createElement('video');
+          await new Promise((resolve, reject) => {
+            video.onloadedmetadata = () => {
+              duration = Math.floor(video.duration);
+              width = video.videoWidth;
+              height = video.videoHeight;
+              resolve(void 0);
+            };
+            video.onerror = () => reject(new Error('Failed to load video'));
+            video.src = previews[file.name];
+          });
+        } else {
+          // 获取图片尺寸
+          const img = document.createElement('img');
+          await new Promise((resolve, reject) => {
+            img.onload = () => {
+              width = img.width;
+              height = img.height;
+              resolve(void 0);
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = previews[file.name];
+          });
+        }
 
         // 保存到数据库
         const { error: dbError } = await supabase
@@ -139,8 +165,10 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
             description: descriptions[file.name] || '',
             file_size: file.size,
             mime_type: file.type,
-            width: img.width,
-            height: img.height,
+            width,
+            height,
+            media_type: isVideo ? 'video' : 'image',
+            duration,
           });
 
         if (dbError) throw dbError;
@@ -150,7 +178,7 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
 
       toast({
         title: "上传成功",
-        description: `成功上传了 ${selectedFiles.length} 张照片`,
+        description: `成功上传了 ${selectedFiles.length} 个文件`,
       });
 
       // 重置状态
@@ -165,7 +193,7 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
       console.error('Upload error:', error);
       toast({
         title: "上传失败",
-        description: "照片上传失败，请重试",
+        description: "媒体文件上传失败，请重试",
         variant: "destructive",
       });
     } finally {
@@ -178,14 +206,14 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
       <DialogTrigger asChild>
         <Button className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white">
           <Camera className="w-4 h-4 mr-2" />
-          {dinnerId ? t('dinnerPhotos.sharePhoto', '分享美食照片') : t('profile.sharePersonalPhoto', '分享照片')}
+          {dinnerId ? '分享美食媒体' : '分享媒体'}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Image className="w-5 h-5 text-primary" />
-            {dinnerId ? t('dinnerPhotos.shareTitle', '分享饭局照片') : t('profile.sharePersonalTitle', '分享照片')}
+            <Camera className="w-5 h-5 text-primary" />
+            {dinnerId ? '分享饭局媒体' : '分享媒体'}
           </DialogTitle>
         </DialogHeader>
         
@@ -195,70 +223,88 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
               onChange={handleFileSelect}
               className="hidden"
             />
             <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-2">
-              点击选择照片或拖拽到此处
+              点击选择媒体文件或拖拽到此处
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              支持 JPG、PNG 格式，单张图片不超过 10MB
+              支持图片（JPG、PNG，10MB内）和视频（MP4、WEBM，50MB内）
             </p>
             <Button
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
             >
-              选择照片
+              选择文件
             </Button>
           </div>
 
           {/* 照片预览区域 */}
           {selectedFiles.length > 0 && (
             <div className="space-y-4">
-              <h4 className="font-medium">待上传照片 ({selectedFiles.length})</h4>
+              <h4 className="font-medium">待上传文件 ({selectedFiles.length})</h4>
               <div className="space-y-3">
-                {selectedFiles.map((file) => (
-                  <div key={file.name} className="border rounded-lg p-3">
-                    <div className="flex items-start gap-3">
-                      {previews[file.name] && (
-                        <img
-                          src={previews[file.name]}
-                          alt="预览"
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm font-medium truncate">{file.name}</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeFile(file.name)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
+                {selectedFiles.map((file) => {
+                  const isVideo = file.type.startsWith('video/');
+                  return (
+                    <div key={file.name} className="border rounded-lg p-3">
+                      <div className="flex items-start gap-3">
+                        {previews[file.name] && (
+                          <div className="relative w-16 h-16 rounded overflow-hidden">
+                            {isVideo ? (
+                              <div className="w-full h-full bg-muted flex items-center justify-center">
+                                <Play className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            ) : (
+                              <img
+                                src={previews[file.name]}
+                                alt="预览"
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              {isVideo ? (
+                                <Video className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <Image className="w-4 h-4 text-muted-foreground" />
+                              )}
+                              <p className="text-sm font-medium truncate">{file.name}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeFile(file.name)}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {isVideo ? '视频' : '图片'} • {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                          <Textarea
+                            placeholder={`为这个${isVideo ? '视频' : '图片'}添加描述...`}
+                            value={descriptions[file.name] || ''}
+                            onChange={(e) => setDescriptions(prev => ({
+                              ...prev,
+                              [file.name]: e.target.value
+                            }))}
+                            className="resize-none text-sm"
+                            rows={2}
+                          />
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                        <Textarea
-                          placeholder="为这张照片添加描述..."
-                          value={descriptions[file.name] || ''}
-                          onChange={(e) => setDescriptions(prev => ({
-                            ...prev,
-                            [file.name]: e.target.value
-                          }))}
-                          className="resize-none text-sm"
-                          rows={2}
-                        />
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -277,7 +323,7 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
               onClick={handleUpload}
               disabled={uploading || selectedFiles.length === 0}
             >
-              {uploading ? "上传中..." : `上传 ${selectedFiles.length} 张照片`}
+              {uploading ? "上传中..." : `上传 ${selectedFiles.length} 个文件`}
             </Button>
           </div>
         </div>
@@ -286,4 +332,4 @@ const DinnerPhotoUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
   );
 };
 
-export default DinnerPhotoUploader;
+export default DinnerMediaUploader;

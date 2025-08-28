@@ -9,7 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, MessageCircle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ChatImageUploader } from "@/components/ChatImageUploader";
+import { ChatMediaUploader } from "@/components/ChatMediaUploader";
 import { ChatMessage } from "@/components/ChatMessage";
 import { EvidenceImageViewer } from "@/components/EvidenceImageViewer";
 import type { User } from '@supabase/supabase-js';
@@ -17,7 +17,7 @@ import type { ChatSession, ChatMessage as ChatMessageType, Profile } from '@/typ
 
 interface MessageWithProfile extends ChatMessageType {
   sender?: Profile;
-  message_type: 'text' | 'image'; // 明确定义消息类型
+  message_type: 'text' | 'image' | 'video'; // 明确定义消息类型
 }
 
 const Chat = () => {
@@ -27,7 +27,8 @@ const Chat = () => {
   const [session, setChatSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+  const [pendingMediaUrl, setPendingMediaUrl] = useState<string | null>(null);
+  const [pendingMediaType, setPendingMediaType] = useState<'image' | 'video' | null>(null);
   const [otherUser, setOtherUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -102,7 +103,7 @@ const Chat = () => {
         // 合并消息和profile数据
         const messagesWithProfiles = messagesData?.map(message => ({
           ...message,
-          message_type: message.message_type as 'text' | 'image',
+          message_type: message.message_type as 'text' | 'image' | 'video',
           sender: profilesData?.find(profile => profile.user_id === message.sender_id) || null
         })) || [];
 
@@ -156,7 +157,7 @@ const Chat = () => {
 
           const messageWithProfile: MessageWithProfile = {
             ...newMessage,
-            message_type: newMessage.message_type as 'text' | 'image',
+            message_type: newMessage.message_type as 'text' | 'image' | 'video',
             sender: senderProfile
           };
 
@@ -183,7 +184,7 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (messageType: 'text' | 'image' = 'text', content?: string) => {
+  const handleSendMessage = async (messageType: 'text' | 'image' | 'video' = 'text', content?: string) => {
     const messageContent = content || newMessage.trim();
     if (!messageContent || !user || !sessionId) return;
 
@@ -222,7 +223,8 @@ const Chat = () => {
       if (messageType === 'text') {
         setNewMessage("");
       } else {
-        setPendingImageUrl(null);
+        setPendingMediaUrl(null);
+        setPendingMediaType(null);
         if (newMessage.trim()) {
           setNewMessage("");
         }
@@ -245,21 +247,22 @@ const Chat = () => {
     }
   };
 
-  const handleImageUploaded = (imageUrl: string) => {
-    setPendingImageUrl(imageUrl);
+  const handleMediaUploaded = (mediaUrl: string, mediaType: 'image' | 'video') => {
+    setPendingMediaUrl(mediaUrl);
+    setPendingMediaType(mediaType);
   };
 
-  const handleSendImage = () => {
-    if (pendingImageUrl) {
-      // 如果有文字说明，将图片URL和文字组合发送
+  const handleSendMedia = () => {
+    if (pendingMediaUrl && pendingMediaType) {
+      // 如果有文字说明，发送媒体和文字作为单独的消息
       if (newMessage.trim()) {
-        handleSendMessage('image', pendingImageUrl);
+        handleSendMessage(pendingMediaType, pendingMediaUrl);
         // 发送文字说明作为单独的消息
         setTimeout(() => {
           handleSendMessage('text', newMessage.trim());
         }, 100);
       } else {
-        handleSendMessage('image', pendingImageUrl);
+        handleSendMessage(pendingMediaType, pendingMediaUrl);
       }
     }
   };
@@ -364,25 +367,38 @@ const Chat = () => {
             </div>
           ) : (
             <div className="space-y-2">
-              {/* 待发送图片预览 */}
-              {pendingImageUrl && (
+              {/* 待发送媒体预览 */}
+              {pendingMediaUrl && (
                 <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
                   <div className="w-12 h-12 rounded overflow-hidden">
-                    <EvidenceImageViewer
-                      url={pendingImageUrl}
-                      alt="待发送图片"
-                      className="w-full h-full"
-                      bucketName="chat-images"
-                    />
+                    {pendingMediaType === 'video' ? (
+                      <video 
+                        src={pendingMediaUrl} 
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                    ) : (
+                      <EvidenceImageViewer
+                        url={pendingMediaUrl}
+                        alt="待发送图片"
+                        className="w-full h-full"
+                        bucketName="chat-images"
+                      />
+                    )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">图片已准备发送</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {pendingMediaType === 'video' ? '视频' : '图片'}已准备发送
+                    </p>
                     <p className="text-xs text-muted-foreground">点击发送按钮或选择取消</p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setPendingImageUrl(null)}
+                    onClick={() => {
+                      setPendingMediaUrl(null);
+                      setPendingMediaType(null);
+                    }}
                     className="text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-4 w-4" />
@@ -392,22 +408,22 @@ const Chat = () => {
               
               {/* 输入框区域 */}
               <div className="flex gap-2">
-                <ChatImageUploader
+                <ChatMediaUploader
                   userId={user.id}
-                  onImageUploaded={handleImageUploaded}
+                  onMediaUploaded={handleMediaUploaded}
                   disabled={sending}
                 />
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={pendingImageUrl ? "添加文字说明（可选）" : t('chat.inputPlaceholder')}
+                  placeholder={pendingMediaUrl ? "添加文字说明（可选）" : t('chat.inputPlaceholder')}
                   className="flex-1"
                   disabled={sending}
                 />
-                {pendingImageUrl ? (
+                {pendingMediaUrl ? (
                   <Button
-                    onClick={handleSendImage}
+                    onClick={handleSendMedia}
                     disabled={sending}
                     size="sm"
                     className="px-4"

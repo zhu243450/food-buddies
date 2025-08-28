@@ -1,11 +1,11 @@
 import React from 'react';
-import { EvidenceImageViewer } from '@/components/EvidenceImageViewer';
+import { MediaViewer } from '@/components/MediaViewer';
 import type { User } from '@supabase/supabase-js';
 
 interface MessageWithProfile {
   id: string;
   content: string;
-  message_type: 'text' | 'image';
+  message_type: 'text' | 'image' | 'video';
   sender_id: string;
   created_at: string;
   sender?: {
@@ -24,15 +24,16 @@ export function ChatMessage({ message, user, formatTime }: ChatMessageProps) {
   const isOwn = message.sender_id === user?.id;
 
   const renderContent = () => {
-    if (message.message_type === 'image') {
+    if (message.message_type === 'image' || message.message_type === 'video') {
+      const bucketName = message.message_type === 'video' ? 'chat-videos' : 'chat-images';
       return (
         <div className="max-w-xs">
-          <EvidenceImageViewer
+          <MediaViewer
             url={message.content}
-            alt="聊天图片"
-            className="rounded-lg overflow-hidden cursor-pointer"
-            onClick={() => window.open(message.content, '_blank')}
-            bucketName="chat-images"
+            mediaType={message.message_type}
+            alt={`聊天${message.message_type === 'video' ? '视频' : '图片'}`}
+            className="rounded-lg overflow-hidden cursor-pointer max-h-48"
+            bucketName={bucketName}
           />
         </div>
       );

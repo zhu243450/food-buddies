@@ -314,9 +314,11 @@ export type Database = {
           created_at: string
           description: string | null
           dinner_id: string | null
+          duration: number | null
           file_size: number | null
           height: number | null
           id: string
+          media_type: string | null
           mime_type: string | null
           photo_url: string
           updated_at: string
@@ -327,9 +329,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           dinner_id?: string | null
+          duration?: number | null
           file_size?: number | null
           height?: number | null
           id?: string
+          media_type?: string | null
           mime_type?: string | null
           photo_url: string
           updated_at?: string
@@ -340,9 +344,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           dinner_id?: string | null
+          duration?: number | null
           file_size?: number | null
           height?: number | null
           id?: string
+          media_type?: string | null
           mime_type?: string | null
           photo_url?: string
           updated_at?: string

@@ -15,7 +15,7 @@ import Navigation from "@/components/Navigation";
 import { User as UserIcon, Camera, Shield, LogOut } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
-import DinnerPhotoUploader from "@/components/DinnerPhotoUploader";
+import DinnerMediaUploader from "@/components/DinnerPhotoUploader";
 import PersonalPhotoGallery from "@/components/PersonalPhotoGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { User } from '@supabase/supabase-js';
@@ -523,9 +523,9 @@ const Profile = () => {
                 <CardContent className="p-4 space-y-4">
                   {/* 通用照片上传区域 */}
                   <div className="mb-6">
-                    <DinnerPhotoUploader 
+                    <DinnerMediaUploader 
                       key={`general-${user.id}`}
-                      dinnerId={null} // 不绑定特定饭局，允许用户随时分享照片
+                      dinnerId={null} // 不绑定特定饭局，允许用户随时分享媒体
                       onPhotoUploaded={fetchUserPhotos}
                     />
                   </div>
