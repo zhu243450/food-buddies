@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Users, Utensils, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 interface CityInfo {
   name: string;
@@ -100,8 +102,28 @@ export const CityPage: React.FC = () => {
   const { city } = useParams<{ city: string }>();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const cityInfo = city ? cityData[city] : null;
+
+  useEffect(() => {
+    // Get initial user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   if (!cityInfo) {
     return (
@@ -227,12 +249,33 @@ export const CityPage: React.FC = () => {
             立即加入饭约社，与志趣相投的朋友一起探索{cityInfo.name}美食
           </p>
           <div className="flex justify-center gap-4">
-            <Link to="/auth">
-              <Button size="lg">立即注册</Button>
-            </Link>
-            <Link to="/discover">
-              <Button variant="outline" size="lg">浏览饭局</Button>
-            </Link>
+            {!loading && (
+              user ? (
+                <>
+                  <Link to="/my-dinners">
+                    <Button size="lg" className="gap-2">
+                      <Users className="h-5 w-5" />
+                      我的饭局
+                    </Button>
+                  </Link>
+                  <Link to="/create-dinner">
+                    <Button variant="outline" size="lg" className="gap-2">
+                      <Utensils className="h-5 w-5" />
+                      创建饭局
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button size="lg">立即注册</Button>
+                  </Link>
+                  <Link to="/discover">
+                    <Button variant="outline" size="lg">浏览饭局</Button>
+                  </Link>
+                </>
+              )
+            )}
           </div>
         </section>
       </main>
