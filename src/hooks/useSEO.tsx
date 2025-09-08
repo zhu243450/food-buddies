@@ -139,14 +139,25 @@ export const useSEO = () => {
           keywords: t(`seo.cityPages.${cityKey}.keywords`, `${cityName}美食,${cityName}聚餐,${cityName}饭友,社交聚餐`),
           structuredData: {
             "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": t(`seo.cityPages.${cityKey}.title`),
+            "@type": "TouristDestination",
+            "name": `${cityName}美食社交指南`,
             "description": t(`seo.cityPages.${cityKey}.description`),
             "url": currentUrl,
-            "about": {
-              "@type": "Place",
-              "name": cityName,
-              "description": `${cityName}美食社交指南`
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": cityName,
+              "addressCountry": "CN"
+            },
+            "touristType": ["美食爱好者", "社交达人"],
+            "hasMap": currentUrl,
+            "mainEntity": {
+              "@type": "Article",
+              "headline": `${cityName}美食社交指南`,
+              "description": t(`seo.cityPages.${cityKey}.description`),
+              "author": {
+                "@type": "Organization",
+                "name": t('common.appName', '饭约社')
+              }
             }
           }
         };

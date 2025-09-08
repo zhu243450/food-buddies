@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 import { HelmetProvider } from "react-helmet-async";
@@ -24,9 +25,12 @@ import { Help } from "./pages/Help";
 import Notifications from "./pages/Notifications";
 import Feedback from "./pages/Feedback";
 import { CampaignDetail } from "./pages/CampaignDetail";
-import { CityPage } from "./pages/CityPage";
-import { FoodGuide } from "./pages/FoodGuide";
-import { FAQ } from "./pages/FAQ";
+
+// Lazy load less critical pages
+const CityPage = lazy(() => import("./pages/CityPage").then(module => ({ default: module.CityPage })));
+const FoodGuide = lazy(() => import("./pages/FoodGuide").then(module => ({ default: module.FoodGuide })));
+const FAQ = lazy(() => import("./pages/FAQ").then(module => ({ default: module.FAQ })));
+
 import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
 import { useTranslation } from "react-i18next";
@@ -88,9 +92,21 @@ const App = () => (
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/campaign/:id" element={<CampaignDetail />} />
-            <Route path="/city/:city" element={<CityPage />} />
-            <Route path="/food-guide" element={<FoodGuide />} />
-            <Route path="/faq" element={<FAQ />} />
+            <Route path="/city/:city" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
+                <CityPage />
+              </Suspense>
+            } />
+            <Route path="/food-guide" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
+                <FoodGuide />
+              </Suspense>
+            } />
+            <Route path="/faq" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
+                <FAQ />
+              </Suspense>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
