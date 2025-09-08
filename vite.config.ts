@@ -23,40 +23,14 @@ export default defineConfig(({ mode }) => ({
     // 极致性能优化配置
     rollupOptions: {
       output: {
-        // 更精细的手动分包策略
+        // 简化分包策略 - 减少chunk数量
         manualChunks: {
-          // 核心React库 - 最高优先级
-          'react-core': ['react', 'react-dom'],
-          // 路由相关 - 单独分包
-          'router': ['react-router-dom'],
-          // Supabase - 数据库相关
-          'supabase': ['@supabase/supabase-js'],
-          // UI基础库 - 按功能分组
-          'ui-base': [
-            '@radix-ui/react-slot', 
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-separator'
-          ],
-          'ui-forms': [
-            '@radix-ui/react-dialog', 
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-checkbox'
-          ],
-          'ui-layout': [
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-collapsible'
-          ],
-          // 图标和工具
-          'icons': ['lucide-react'],
-          'utils': ['clsx', 'class-variance-authority', 'tailwind-merge'],
-          // 日期和国际化
-          'datetime': ['date-fns'],
-          'i18n': ['react-i18next', 'i18next'],
-          // 第三方重型库
-          'charts': ['recharts'],
-          'maps': ['leaflet']
+          // 核心库
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          // UI库
+          'ui': ['@radix-ui/react-slot', '@radix-ui/react-tooltip', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          // 工具库
+          'utils': ['clsx', 'class-variance-authority', 'tailwind-merge', 'lucide-react']
         },
         // 优化文件名和哈希
         entryFileNames: 'js/[name]-[hash].js',
