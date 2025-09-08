@@ -1,85 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://your-domain.com/</loc>
+    <loc>https://dinemate.xyz/</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/discover</loc>
+    <loc>https://dinemate.xyz/discover</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/create-dinner</loc>
+    <loc>https://dinemate.xyz/create-dinner</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/food-guide</loc>
+    <loc>https://dinemate.xyz/food-guide</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/faq</loc>
+    <loc>https://dinemate.xyz/faq</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/city/beijing</loc>
+    <loc>https://dinemate.xyz/city/beijing</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/city/shanghai</loc>
+    <loc>https://dinemate.xyz/city/shanghai</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/city/guangzhou</loc>
+    <loc>https://dinemate.xyz/city/guangzhou</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/city/shenzhen</loc>
+    <loc>https://dinemate.xyz/city/shenzhen</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/about</loc>
+    <loc>https://dinemate.xyz/about</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/privacy</loc>
+    <loc>https://dinemate.xyz/privacy</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/terms</loc>
+    <loc>https://dinemate.xyz/terms</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/help</loc>
+    <loc>https://dinemate.xyz/help</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://your-domain.com/feedback</loc>
+    <loc>https://dinemate.xyz/feedback</loc>
     <lastmod>2024-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
