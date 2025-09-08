@@ -84,6 +84,8 @@ export const CombinedFoodGuide: React.FC = () => {
   } : undefined);
 
   const loadRegionData = useCallback(async (divisionId: string) => {
+    if (loading) return; // Prevent concurrent calls
+    
     try {
       setLoading(true);
       
@@ -155,10 +157,12 @@ export const CombinedFoodGuide: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [translations]);
+  }, [translations, loading]);
 
   // Load default data (Beijing) if no division is selected
-  const loadDefaultData = async () => {
+  const loadDefaultData = useCallback(async () => {
+    if (loading) return; // Prevent concurrent calls
+    
     try {
       // Find Beijing division
       const { data: beijingDivision, error } = await supabase
@@ -178,31 +182,31 @@ export const CombinedFoodGuide: React.FC = () => {
       console.error('Failed to load default data:', error);
       setLoading(false);
     }
-  };
+  }, [loadRegionData, loading]);
 
   useEffect(() => {
     const divisionId = searchParams.get('divisionId');
     
     if (divisionId) {
-      setSelectedDivisionId(divisionId);
-      loadRegionData(divisionId);
+      if (selectedDivisionId !== divisionId) {
+        setSelectedDivisionId(divisionId);
+        loadRegionData(divisionId);
+      }
     } else {
-      loadDefaultData();
+      if (selectedDivisionId !== null) {
+        setSelectedDivisionId(null);
+        loadDefaultData();
+      }
     }
-  }, [searchParams, loadRegionData]);
+  }, [searchParams]);
 
   const handleRegionChange = useCallback((divisionId: string | null, divisionPath: Division[]) => {
-    setSelectedDivisionId(divisionId);
-    
     if (divisionId) {
       navigate(`/food-guide?divisionId=${divisionId}`, { replace: true });
-      loadRegionData(divisionId);
     } else {
       navigate('/food-guide', { replace: true });
-      setRegionInfo(null);
-      loadDefaultData();
     }
-  }, [navigate, loadRegionData]);
+  }, [navigate]);
 
   const handleRestaurantClick = useCallback((restaurant: Restaurant) => {
     setSelectedRestaurant(restaurant);
