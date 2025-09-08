@@ -23,8 +23,8 @@ All colors MUST be HSL.
     --primary-foreground: 0 0% 98%;
 
     /* 次要色：明亮青蓝 */
-    --secondary: 195 100% 85%;
-    --secondary-foreground: 230 15% 15%;
+    --secondary: 195 80% 50%;
+    --secondary-foreground: 0 0% 98%;
 
     /* 静音色：浅紫灰 */
     --muted: 280 20% 92%;
