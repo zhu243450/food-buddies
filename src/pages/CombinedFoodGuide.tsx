@@ -104,18 +104,84 @@ export const CombinedFoodGuide: React.FC = () => {
     try {
       setLoading(true);
       
-      // Get cities
-      const { data: citiesData, error: citiesError } = await supabase
-        .from('cities')
+      // Step 1: Get all city-level administrative divisions
+      const { data: adminCities, error: adminError } = await supabase
+        .from('administrative_divisions')
         .select('*')
+        .eq('level', 'city')
         .eq('is_active', true)
         .order('display_order')
         .order('name');
       
-      if (citiesError) throw citiesError;
+      if (adminError) throw adminError;
       
+      // Step 2: Ensure corresponding city records exist
+      const existingCities = new Map();
+      const { data: existingCitiesData, error: existingError } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('is_active', true);
+      
+      if (existingError) throw existingError;
+      
+      // Map existing cities by their key patterns
+      (existingCitiesData || []).forEach(city => {
+        existingCities.set(city.key, city);
+      });
+      
+      // Step 3: Create missing city records and collect all cities
+      const allCities = [];
+      
+      for (const adminCity of (adminCities || [])) {
+        // Generate city key from admin city
+        const cityKey = adminCity.code ? 
+          (adminCity.code === '440300' ? 'shenzhen' : 
+           adminCity.code === '110100' ? 'beijing' :
+           adminCity.code === '310100' ? 'shanghai' :
+           adminCity.code.includes('4401') ? 'guangzhou' :
+           adminCity.name.toLowerCase().replace(/[市省]/g, '')) :
+          adminCity.name.toLowerCase().replace(/[市省]/g, '');
+        
+        let cityRecord = existingCities.get(cityKey);
+        
+        if (!cityRecord) {
+          // Create new city record
+          const { data: newCity, error: createError } = await supabase
+            .from('cities')
+            .insert({
+              key: cityKey,
+              name: adminCity.name,
+              description: `${adminCity.name}美食指南，发现地道美食，结交志同道合的朋友`,
+              is_active: true,
+              display_order: adminCity.display_order,
+              popular_cuisines: ['粤菜', '川菜', '湘菜', '东北菜', '西餐', '日韩料理'],
+              popular_areas: ['市中心', '商业区', '老城区'],
+              dining_tips: ['推荐提前预约', '注意用餐时间', '建议尝试当地特色菜']
+            })
+            .select()
+            .single();
+          
+          if (createError) {
+            console.warn(`Failed to create city record for ${adminCity.name}:`, createError);
+            continue; // Skip this city if creation fails
+          }
+          
+          cityRecord = newCity;
+        }
+        
+        allCities.push(cityRecord);
+      }
+      
+      // Step 4: Add existing cities that don't have admin division counterparts
+      (existingCitiesData || []).forEach(city => {
+        if (!allCities.find(c => c.key === city.key)) {
+          allCities.push(city);
+        }
+      });
+      
+      // Step 5: Load restaurant and cuisine data for each city
       const citiesWithData: CityInfo[] = await Promise.all(
-        (citiesData || []).map(async (city) => {
+        allCities.map(async (city) => {
           // Get restaurants for this city - support both direct city_id and division-based mapping
           let restaurantsData: any[] = [];
           
@@ -155,7 +221,7 @@ export const CombinedFoodGuide: React.FC = () => {
               'guangzhou': ['广州市']
             };
             
-            const expectedNames = cityDivisionNames[city.key] || [];
+            const expectedNames = cityDivisionNames[city.key] || [city.name];
             return expectedNames.some(name => 
               restaurant.administrative_divisions.name.includes(name) ||
               name.includes(restaurant.administrative_divisions.name)
@@ -219,6 +285,19 @@ export const CombinedFoodGuide: React.FC = () => {
           };
         })
       );
+      
+      // Sort cities by display order and name
+      citiesWithData.sort((a, b) => {
+        if (a.key === 'beijing') return -1;
+        if (b.key === 'beijing') return 1;
+        if (a.key === 'shanghai') return -1;
+        if (b.key === 'shanghai') return 1;
+        if (a.key === 'guangzhou') return -1;
+        if (b.key === 'guangzhou') return 1;
+        if (a.key === 'shenzhen') return -1;
+        if (b.key === 'shenzhen') return 1;
+        return a.name.localeCompare(b.name);
+      });
       
       setCities(citiesWithData);
       
