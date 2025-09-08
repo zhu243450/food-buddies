@@ -27,8 +27,7 @@ import Feedback from "./pages/Feedback";
 import { CampaignDetail } from "./pages/CampaignDetail";
 
 // Lazy load less critical pages
-const CityPage = lazy(() => import("./pages/CityPage").then(module => ({ default: module.CityPage })));
-const FoodGuide = lazy(() => import("./pages/FoodGuide").then(module => ({ default: module.FoodGuide })));
+const CombinedFoodGuide = lazy(() => import("./pages/CombinedFoodGuide").then(module => ({ default: module.CombinedFoodGuide })));
 const FAQ = lazy(() => import("./pages/FAQ").then(module => ({ default: module.FAQ })));
 
 import Analytics from "./components/Analytics";
@@ -94,12 +93,12 @@ const App = () => (
             <Route path="/campaign/:id" element={<CampaignDetail />} />
             <Route path="/city/:city" element={
               <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
-                <CityPage />
+                <CombinedFoodGuide />
               </Suspense>
             } />
             <Route path="/food-guide" element={
               <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
-                <FoodGuide />
+                <CombinedFoodGuide />
               </Suspense>
             } />
             <Route path="/faq" element={
