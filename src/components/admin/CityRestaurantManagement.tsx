@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Plus, Store, Utensils, Trash2, Star, Loader2, Check, X } from 'lucide-react';
+import { MapPin, Plus, Store, Utensils, Trash2, Star, Loader2, Check, X, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface City {
   id: string;
@@ -240,6 +241,82 @@ export const CityRestaurantManagement: React.FC = () => {
     } catch (e: any) { toast.error('删除失败: ' + e.message); }
   };
 
+  // Drag and drop handlers
+  const reorderCities = async (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(cities);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setCities(items);
+    
+    // Update display_order in database
+    try {
+      const updates = items.map((item, index) => ({
+        id: item.id,
+        display_order: index
+      }));
+      
+      for (const update of updates) {
+        await supabase.from('cities').update({ display_order: update.display_order }).eq('id', update.id);
+      }
+      toast.success('城市排序已更新 ');
+    } catch (e: any) {
+      toast.error('排序更新失败: ' + e.message);
+    }
+  };
+
+  const reorderRestaurants = async (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(restaurants);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setRestaurants(items);
+    
+    // Update display_order in database
+    try {
+      const updates = items.map((item, index) => ({
+        id: item.id,
+        display_order: index
+      }));
+      
+      for (const update of updates) {
+        await supabase.from('restaurants').update({ display_order: update.display_order }).eq('id', update.id);
+      }
+      toast.success('餐厅排序已更新');
+    } catch (e: any) {
+      toast.error('排序更新失败: ' + e.message);
+    }
+  };
+
+  const reorderCuisines = async (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(cuisines);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setCuisines(items);
+    
+    // Update display_order in database
+    try {
+      const updates = items.map((item, index) => ({
+        id: item.id,
+        display_order: index
+      }));
+      
+      for (const update of updates) {
+        await supabase.from('cuisine_guides').update({ display_order: update.display_order }).eq('id', update.id);
+      }
+      toast.success('菜系排序已更新');
+    } catch (e: any) {
+      toast.error('排序更新失败: ' + e.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* City selector */}
@@ -305,22 +382,45 @@ export const CityRestaurantManagement: React.FC = () => {
               <CardTitle>餐厅列表 {selectedCity ? `· ${selectedCity.name}` : ''}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {restaurants.map(r => (
-                <div key={r.id} className="grid md:grid-cols-6 gap-2 items-center border rounded-lg p-3">
-                  <div className="md:col-span-2 font-medium">{r.name}
-                    {r.is_featured && <Badge className="ml-2" variant="secondary"><Star className="w-3 h-3 mr-1"/>推荐</Badge>}
-                  </div>
-                  <div>{r.cuisine}</div>
-                  <div>{r.area}</div>
-                  <div className="flex items-center gap-1 text-sm"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400"/>{r.rating}</div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <Button variant="outline" size="sm" onClick={() => updateRestaurant(r, { is_featured: !r.is_featured })}>{r.is_featured ? '取消推荐' : '设为推荐'}</Button>
-                    <Button variant="outline" size="sm" onClick={() => updateRestaurant(r, { is_active: !r.is_active })}>{r.is_active ? '停用' : '启用'}</Button>
-                    <Button variant="destructive" size="sm" onClick={() => deleteRestaurant(r)}><Trash2 className="w-4 h-4"/></Button>
-                  </div>
-                </div>
-              ))}
-              {restaurants.length === 0 && <div className="text-sm text-muted-foreground">暂无餐厅</div>}
+              <DragDropContext onDragEnd={reorderRestaurants}>
+                <Droppable droppableId="restaurants">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                      {restaurants.map((r, index) => (
+                        <Draggable key={r.id} draggableId={r.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`grid md:grid-cols-6 gap-2 items-center border rounded-lg p-3 ${
+                                snapshot.isDragging ? 'shadow-lg bg-card/90' : ''
+                              }`}
+                            >
+                              <div className="md:col-span-2 font-medium flex items-center gap-2">
+                                <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                  <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                                {r.name}
+                                {r.is_featured && <Badge className="ml-2" variant="secondary"><Star className="w-3 h-3 mr-1"/>推荐</Badge>}
+                              </div>
+                              <div>{r.cuisine}</div>
+                              <div>{r.area}</div>
+                              <div className="flex items-center gap-1 text-sm"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400"/>{r.rating}</div>
+                              <div className="flex items-center gap-2 justify-end">
+                                <Button variant="outline" size="sm" onClick={() => updateRestaurant(r, { is_featured: !r.is_featured })}>{r.is_featured ? '取消推荐' : '设为推荐'}</Button>
+                                <Button variant="outline" size="sm" onClick={() => updateRestaurant(r, { is_active: !r.is_active })}>{r.is_active ? '停用' : '启用'}</Button>
+                                <Button variant="destructive" size="sm" onClick={() => deleteRestaurant(r)}><Trash2 className="w-4 h-4"/></Button>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      {restaurants.length === 0 && <div className="text-sm text-muted-foreground">暂无餐厅</div>}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </CardContent>
           </Card>
         </TabsContent>
@@ -348,17 +448,41 @@ export const CityRestaurantManagement: React.FC = () => {
               <CardTitle>菜系列表 {selectedCity ? `· ${selectedCity.name}` : ''}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {cuisines.map(c => (
-                <div key={c.id} className="grid md:grid-cols-5 gap-2 items-center border rounded-lg p-3">
-                  <div className="font-medium">{c.name}</div>
-                  <div className="text-sm text-muted-foreground truncate md:col-span-2">{c.description}</div>
-                  <div className="flex items-center gap-2 justify-end md:col-span-2">
-                    <Button variant="outline" size="sm" onClick={() => updateCuisine(c, { is_active: !c.is_active })}>{c.is_active ? '停用' : '启用'}</Button>
-                    <Button variant="destructive" size="sm" onClick={() => deleteCuisine(c)}><Trash2 className="w-4 h-4"/></Button>
-                  </div>
-                </div>
-              ))}
-              {cuisines.length === 0 && <div className="text-sm text-muted-foreground">暂无菜系指南</div>}
+              <DragDropContext onDragEnd={reorderCuisines}>
+                <Droppable droppableId="cuisines">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                      {cuisines.map((c, index) => (
+                        <Draggable key={c.id} draggableId={c.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`grid md:grid-cols-5 gap-2 items-center border rounded-lg p-3 ${
+                                snapshot.isDragging ? 'shadow-lg bg-card/90' : ''
+                              }`}
+                            >
+                              <div className="font-medium flex items-center gap-2">
+                                <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                  <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                                {c.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground truncate md:col-span-2">{c.description}</div>
+                              <div className="flex items-center gap-2 justify-end md:col-span-2">
+                                <Button variant="outline" size="sm" onClick={() => updateCuisine(c, { is_active: !c.is_active })}>{c.is_active ? '停用' : '启用'}</Button>
+                                <Button variant="destructive" size="sm" onClick={() => deleteCuisine(c)}><Trash2 className="w-4 h-4"/></Button>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      {cuisines.length === 0 && <div className="text-sm text-muted-foreground">暂无菜系指南</div>}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </CardContent>
           </Card>
         </TabsContent>
@@ -388,17 +512,41 @@ export const CityRestaurantManagement: React.FC = () => {
               <CardTitle>城市列表</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {cities.map(c => (
-                <div key={c.id} className="grid md:grid-cols-4 gap-2 items-center border rounded-lg p-3">
-                  <div className="font-medium">{c.name} <span className="text-xs text-muted-foreground">/{c.key}</span></div>
-                  <div className="text-sm text-muted-foreground truncate md:col-span-2">{c.description}</div>
-                  <div className="flex items-center gap-2 justify-end">
-                    <Button variant="outline" size="sm" onClick={() => toggleCityActive(c, !c.is_active)}>{c.is_active ? '停用' : '启用'}</Button>
-                    <Button variant="destructive" size="sm" onClick={() => deleteCity(c)}><Trash2 className="w-4 h-4"/></Button>
-                  </div>
-                </div>
-              ))}
-              {cities.length === 0 && <div className="text-sm text-muted-foreground">暂无城市</div>}
+              <DragDropContext onDragEnd={reorderCities}>
+                <Droppable droppableId="cities">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                      {cities.map((c, index) => (
+                        <Draggable key={c.id} draggableId={c.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`grid md:grid-cols-4 gap-2 items-center border rounded-lg p-3 ${
+                                snapshot.isDragging ? 'shadow-lg bg-card/90' : ''
+                              }`}
+                            >
+                              <div className="font-medium flex items-center gap-2">
+                                <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                  <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                                {c.name} <span className="text-xs text-muted-foreground">/{c.key}</span>
+                              </div>
+                              <div className="text-sm text-muted-foreground truncate md:col-span-2">{c.description}</div>
+                              <div className="flex items-center gap-2 justify-end">
+                                <Button variant="outline" size="sm" onClick={() => toggleCityActive(c, !c.is_active)}>{c.is_active ? '停用' : '启用'}</Button>
+                                <Button variant="destructive" size="sm" onClick={() => deleteCity(c)}><Trash2 className="w-4 h-4"/></Button>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      {cities.length === 0 && <div className="text-sm text-muted-foreground">暂无城市</div>}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </CardContent>
           </Card>
         </TabsContent>
