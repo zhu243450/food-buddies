@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy, useRef, startTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { Skeleton, RestaurantCardSkeleton, HeroSkeleton, TabsSkeleton } from '@/components/SkeletonLoader';
 
 // 拆分的组件 - 懒加载以减少初始包大小
 const RegionHero = lazy(() => import('@/components/FoodGuide/RegionHero').then(m => ({ default: m.RegionHero })));
@@ -95,7 +96,7 @@ export const CombinedFoodGuide: React.FC = () => {
     cityKey: regionInfo.path[regionInfo.path.length - 1]?.name || '' 
   } : undefined);
 
-  // Optimized region data loading with better caching and batching
+  // 优化的数据加载 - 减少不必要的重渲染
   const loadRegionData = useCallback(async (divisionId: string) => {
     // Cancel previous request
     if (abortControllerRef.current) {
@@ -115,23 +116,20 @@ export const CombinedFoodGuide: React.FC = () => {
       setLoading(true);
       markRenderStart();
       
-      // Single optimized batch query for all data
-      const [pathResult, descendantsResult, restaurantsResult] = await Promise.allSettled([
+      // 优化查询 - 获取所有必要字段
+      const [pathResult, restaurantsResult] = await Promise.allSettled([
         supabase.rpc('get_division_path', { division_id_param: divisionId }),
-        supabase.rpc('get_division_descendants', { division_id_param: divisionId }),
-        // Pre-load restaurants in parallel
         supabase
           .from('restaurants')
           .select('*')
           .eq('division_id', divisionId)
           .eq('is_active', true)
           .order('is_featured', { ascending: false })
-          .limit(20) // Limit initial load for performance
+          .limit(12) // 减少初始加载量
       ]);
       
       // Handle results with fallbacks
       const divisionPath = pathResult.status === 'fulfilled' ? pathResult.value.data : null;
-      const descendants = descendantsResult.status === 'fulfilled' ? descendantsResult.value.data : [];
       let restaurantsData = restaurantsResult.status === 'fulfilled' ? restaurantsResult.value.data : [];
       
       const currentDivision = divisionPath?.[0];
@@ -139,41 +137,29 @@ export const CombinedFoodGuide: React.FC = () => {
         throw new Error(translations.divisionNotFound);
       }
 
-      // If we have descendants, load their restaurants too (batch query)
-      if (descendants && descendants.length > 0) {
-        const descendantIds = descendants.map(d => d.id);
-        if (descendantIds.length > 0) {
-          const { data: descendantRestaurants } = await supabase
-            .from('restaurants')
-            .select('*')
-            .in('division_id', descendantIds)
-            .eq('is_active', true)
-            .order('is_featured', { ascending: false })
-            .limit(50);
-            
-          restaurantsData = [...(restaurantsData || []), ...(descendantRestaurants || [])];
-        }
-      }
-
-      // Optimize cuisine guides loading - use simple approach for better performance
+      // 简化cuisine guides处理 - 减少计算复杂度
       let cuisineGuides: CuisineGuide[] = [];
       
       if (restaurantsData && restaurantsData.length > 0) {
-        // Create simple cuisine groups from restaurants (faster than DB lookup)
-        const cuisineMap = new Map<string, Restaurant[]>();
-        restaurantsData.forEach(restaurant => {
-          const existing = cuisineMap.get(restaurant.cuisine) || [];
-          cuisineMap.set(restaurant.cuisine, [...existing, restaurant]);
-        });
+        // 更高效的分组处理
+        const cuisineMap = restaurantsData.reduce((acc, restaurant) => {
+          if (!acc[restaurant.cuisine]) {
+            acc[restaurant.cuisine] = [];
+          }
+          acc[restaurant.cuisine].push(restaurant);
+          return acc;
+        }, {} as Record<string, Restaurant[]>);
         
-        cuisineGuides = Array.from(cuisineMap.entries()).map(([cuisine, restaurants]) => ({
-          id: `cuisine-${cuisine}`,
-          name: cuisine,
-          description: `${cuisine} ${translations.cuisineDescription}`,
-          characteristics: [],
-          must_try_dishes: [],
-          restaurants: restaurants.slice(0, 6) // Limit for performance
-        }));
+        cuisineGuides = Object.entries(cuisineMap)
+          .slice(0, 3) // 限制为3个标签页以减少渲染负担
+          .map(([cuisine, restaurants]) => ({
+            id: `cuisine-${cuisine}`,
+            name: cuisine,
+            description: `${cuisine} ${translations.cuisineDescription}`,
+            characteristics: [],
+            must_try_dishes: [],
+            restaurants: (restaurants as Restaurant[]).slice(0, 4) // 进一步减少数量
+          }));
       }
 
       const pathArray: Division[] = (divisionPath || []).reverse().map(d => ({
@@ -184,17 +170,18 @@ export const CombinedFoodGuide: React.FC = () => {
         parent_id: null
       }));
 
-      const newRegionInfo = {
+      const newRegionInfo: RegionInfo = {
         id: currentDivision.id,
         name: currentDivision.name,
         description: `${currentDivision.name} ${translations.description}`,
         path: pathArray,
-        cuisineGuides: cuisineGuides.slice(0, 4), // Limit tabs for performance
-        featuredRestaurants: (restaurantsData || []).filter(r => r.is_featured).slice(0, 6)
+        cuisineGuides: cuisineGuides,
+        featuredRestaurants: Array.isArray(restaurantsData) ? 
+          restaurantsData.filter(r => r.is_featured).slice(0, 3) : 
+          []
       };
       
       setRegionInfo(newRegionInfo);
-      // Cache region data with TTL simulation
       setRegionCache(prev => ({ ...prev, [divisionId]: newRegionInfo }));
       markRenderEnd();
       
@@ -235,25 +222,33 @@ export const CombinedFoodGuide: React.FC = () => {
 
   useEffect(() => {
     const divisionId = searchParams.get('divisionId');
-    if (divisionId) {
-      setSelectedDivisionId(divisionId);
-      loadRegionData(divisionId);
-    } else {
-      loadDefaultData();
-    }
+    
+    // 使用startTransition包装状态更新
+    startTransition(() => {
+      if (divisionId) {
+        setSelectedDivisionId(divisionId);
+        loadRegionData(divisionId);
+      } else {
+        loadDefaultData();
+      }
+    });
   }, [searchParams, loadRegionData]);
 
+  // 优化的区域变更处理 - 使用startTransition
   const handleRegionChange = useCallback((divisionId: string | null, divisionPath: Division[]) => {
-    setSelectedDivisionId(divisionId);
-    
-    if (divisionId) {
-      navigate(`/food-guide?divisionId=${divisionId}`);
-      loadRegionData(divisionId);
-    } else {
-      navigate('/food-guide');
-      setRegionInfo(null);
-      loadDefaultData();
-    }
+    // 使用React 18的并发特性
+    React.startTransition(() => {
+      setSelectedDivisionId(divisionId);
+      
+      if (divisionId) {
+        navigate(`/food-guide?divisionId=${divisionId}`, { replace: true });
+        loadRegionData(divisionId);
+      } else {
+        navigate('/food-guide', { replace: true });
+        setRegionInfo(null);
+        loadDefaultData();
+      }
+    });
   }, [navigate, loadRegionData]);
 
   const handleRestaurantClick = useCallback((restaurant: Restaurant) => {
@@ -290,14 +285,8 @@ export const CombinedFoodGuide: React.FC = () => {
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Hero Section - 懒加载优化 */}
-        <Suspense fallback={
-          <div className="text-center mb-12 space-y-4">
-            <div className="h-12 bg-muted animate-pulse rounded-md mx-auto w-96" />
-            <div className="h-6 bg-muted animate-pulse rounded-md mx-auto w-64" />
-            <div className="h-10 bg-muted animate-pulse rounded-md mx-auto w-48" />
-          </div>
-        }>
+        {/* Hero Section - 优化骨架屏减少CLS */}
+        <Suspense fallback={<HeroSkeleton />}>
           <RegionHero
             currentRegionName={currentRegionName}
             regionDescription={regionDescription}
@@ -308,39 +297,37 @@ export const CombinedFoodGuide: React.FC = () => {
           />
         </Suspense>
 
-        {/* Featured Restaurants - 懒加载和虚拟滚动优化 */}
-        {regionInfo?.featuredRestaurants && (
-          <Suspense fallback={
-            <div className="mb-12 space-y-4">
-              <div className="h-8 bg-muted animate-pulse rounded-md w-48" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
-                ))}
+        {/* Featured Restaurants - 固定高度减少布局偏移 */}
+        {regionInfo?.featuredRestaurants && regionInfo.featuredRestaurants.length > 0 && (
+          <div style={{ minHeight: '400px' }}>
+            <Suspense fallback={
+              <div className="mb-12 space-y-4">
+                <Skeleton height="32px" width="300px" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <RestaurantCardSkeleton key={i} />
+                  ))}
+                </div>
               </div>
-            </div>
-          }>
-            <FeaturedRestaurants
-              restaurants={regionInfo.featuredRestaurants}
-              onRestaurantClick={handleRestaurantClick}
-            />
-          </Suspense>
+            }>
+              <FeaturedRestaurants
+                restaurants={regionInfo.featuredRestaurants}
+                onRestaurantClick={handleRestaurantClick}
+              />
+            </Suspense>
+          </div>
         )}
 
-        {/* Cuisine Guides - 懒加载优化 */}
+        {/* Cuisine Guides - 固定高度容器 */}
         {regionInfo?.cuisineGuides && regionInfo.cuisineGuides.length > 0 && (
-          <Suspense fallback={
-            <div className="mb-12 space-y-4">
-              <div className="h-8 bg-muted animate-pulse rounded-md w-48" />
-              <div className="h-12 bg-muted animate-pulse rounded-md" />
-              <div className="h-96 bg-muted animate-pulse rounded-md" />
-            </div>
-          }>
-            <CuisineGuides
-              cuisineGuides={regionInfo.cuisineGuides}
-              onRestaurantClick={handleRestaurantClick}
-            />
-          </Suspense>
+          <div style={{ minHeight: '500px' }}>
+            <Suspense fallback={<TabsSkeleton />}>
+              <CuisineGuides
+                cuisineGuides={regionInfo.cuisineGuides}
+                onRestaurantClick={handleRestaurantClick}
+              />
+            </Suspense>
+          </div>
         )}
 
         {/* Dining Tips */}
