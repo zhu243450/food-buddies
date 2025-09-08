@@ -148,8 +148,8 @@ const Navigation = () => {
                 ${isSpecial 
                   ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg scale-110" 
                   : isActive 
-                    ? "text-primary bg-primary/10" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? "text-primary bg-primary/10 font-semibold" 
+                    : "text-foreground hover:text-primary hover:bg-primary/10"
                 }
               `}
             >
@@ -163,7 +163,7 @@ const Navigation = () => {
                 )}
               </div>
               
-              <span className={`text-xs font-medium truncate w-full text-center ${isSpecial ? "font-semibold" : ""}`}>
+              <span className={`text-xs font-medium truncate w-full text-center ${isSpecial ? "font-bold" : isActive ? "font-semibold" : "font-medium"}`}>
                 {item.label}
               </span>
             </Button>
