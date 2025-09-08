@@ -637,7 +637,7 @@ const Admin = () => {
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 pb-20">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">数据概览</TabsTrigger>
             <TabsTrigger value="dinners">饭局管理</TabsTrigger>
             <TabsTrigger value="users">用户管理</TabsTrigger>
@@ -647,6 +647,7 @@ const Admin = () => {
                 <Badge variant="destructive" className="ml-2">{pendingReports}</Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="cities">城市管理</TabsTrigger>
             <TabsTrigger value="management">系统管理</TabsTrigger>
             <TabsTrigger value="campaigns">活动管理</TabsTrigger>
           </TabsList>
@@ -1433,6 +1434,10 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="cities" className="space-y-6">
+            <CityRestaurantManagement />
           </TabsContent>
 
           <TabsContent value="campaigns" className="space-y-6">
