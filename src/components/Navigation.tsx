@@ -143,15 +143,13 @@ const Navigation = () => {
               variant="ghost"
               size="sm"
               onClick={() => { if (location.pathname !== item.path) navigate(item.path); }}
-              className={`
-                flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px]
-                ${isSpecial 
-                  ? "bg-purple-600 text-white hover:bg-purple-700 shadow-lg scale-110" 
+              className={
+                isSpecial 
+                  ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] bg-purple-600 text-white hover:bg-purple-700 shadow-lg scale-110" 
                   : isActive 
-                    ? "text-purple-600 bg-purple-100 font-semibold" 
-                    : "text-black hover:text-purple-600 hover:bg-purple-50"
-                }
-              `}
+                    ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-purple-600 bg-purple-100 font-semibold" 
+                    : "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-black hover:text-purple-600 hover:bg-purple-50"
+              }
             >
               <div className="relative">
                 <item.icon className={`${isSpecial ? "w-6 h-6" : "w-5 h-5"}`} />
