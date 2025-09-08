@@ -21,7 +21,10 @@ import {
   Settings, 
   LogOut, 
   Shield,
-  HelpCircle
+  HelpCircle,
+  ChefHat,
+  MapPin,
+  BookOpen
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -187,6 +190,25 @@ export const UserMenu = () => {
           <DropdownMenuItem onClick={() => navigate('/help')}>
             <HelpCircle className="mr-2 h-4 w-4" />
             <span>{t('userMenu.help')}</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => navigate('/food-guide')}>
+            <ChefHat className="mr-2 h-4 w-4" />
+            <span>{t('userMenu.foodGuide')}</span>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem onClick={() => navigate('/faq')}>
+            <BookOpen className="mr-2 h-4 w-4" />
+            <span>{t('userMenu.faq')}</span>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem onClick={() => navigate('/city/beijing')}>
+            <MapPin className="mr-2 h-4 w-4" />
+            <span>{t('userMenu.cityGuide')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         

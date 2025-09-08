@@ -960,6 +960,9 @@
     "notifications": "Notifications",
     "feedback": "Feedback", 
     "help": "Help Center",
+    "foodGuide": "Food Guide",
+    "faq": "FAQ",
+    "cityGuide": "City Guide",
     "admin": "Admin Panel",
     "logout": "Logout"
   }

@@ -970,6 +970,9 @@
     "notifications": "通知中心",
     "feedback": "意见反馈",
     "help": "帮助中心",
+    "foodGuide": "美食指南",
+    "faq": "常见问题",
+    "cityGuide": "城市指南",
     "admin": "管理后台",
     "logout": "退出登录"
   }
