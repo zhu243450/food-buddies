@@ -145,10 +145,10 @@ const Navigation = () => {
               onClick={() => { if (location.pathname !== item.path) navigate(item.path); }}
               className={
                 isSpecial 
-                  ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] bg-purple-600 text-white hover:bg-purple-700 shadow-lg scale-110" 
+                  ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg scale-110" 
                   : isActive 
-                    ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-purple-600 bg-purple-100 font-semibold" 
-                    : "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-black hover:text-purple-600 hover:bg-purple-50"
+                    ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-primary bg-primary/10 font-semibold" 
+                    : "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-foreground hover:text-primary hover:bg-primary/10"
               }
             >
               <div className="relative">
@@ -163,10 +163,10 @@ const Navigation = () => {
               
               <span className={`text-xs font-medium truncate w-full text-center ${
                 isSpecial 
-                  ? "font-bold text-white" 
+                  ? "font-bold text-primary-foreground" 
                   : isActive 
-                    ? "font-semibold text-purple-600" 
-                    : "font-medium text-black"
+                    ? "font-semibold text-primary" 
+                    : "font-medium text-foreground"
               }`}>
                 {item.label}
               </span>
