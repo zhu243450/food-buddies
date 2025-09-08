@@ -52,6 +52,38 @@ interface CityInfo {
   featuredRestaurants: Restaurant[];
 }
 
+// Helper function to get division IDs for a city
+const getDivisionIdsForCity = async (cityKey: string): Promise<string> => {
+  // Map city keys to their administrative divisions
+  const cityDivisionMap: Record<string, string[]> = {
+    'shenzhen': ['a1677de1-fa6c-47d7-9256-e5919856a0d9'], // 深圳市 ID
+    'beijing': [], // Will be populated if needed
+    'shanghai': [], // Will be populated if needed
+    'guangzhou': [] // Will be populated if needed
+  };
+
+  const divisionIds = cityDivisionMap[cityKey] || [];
+  
+  // If no predefined mapping, try to find dynamically
+  if (divisionIds.length === 0 && cityKey) {
+    try {
+      const { data } = await supabase
+        .from('administrative_divisions')
+        .select('id')
+        .eq('level', 'city')
+        .ilike('name', `${cityKey}%`);
+      
+      if (data && data.length > 0) {
+        divisionIds.push(...data.map(d => d.id));
+      }
+    } catch (error) {
+      console.error('Error fetching division IDs:', error);
+    }
+  }
+  
+  return divisionIds.join(',');
+};
+
 const cityData: Record<string, CityInfo> = {};
 
 export const CombinedFoodGuide: React.FC = () => {
@@ -84,17 +116,66 @@ export const CombinedFoodGuide: React.FC = () => {
       
       const citiesWithData: CityInfo[] = await Promise.all(
         (citiesData || []).map(async (city) => {
-          // Get restaurants for this city
-          const { data: restaurantsData, error: restaurantsError } = await supabase
+          // Get restaurants for this city - support both direct city_id and division-based mapping
+          let restaurantsData: any[] = [];
+          
+          // First, get restaurants directly by city_id
+          const { data: directRestaurants, error: directError } = await supabase
             .from('restaurants')
             .select('*')
             .eq('city_id', city.id)
-            .eq('is_active', true)
-            .order('is_featured', { ascending: false })
-            .order('display_order')
-            .order('name');
+            .eq('is_active', true);
           
-          if (restaurantsError) throw restaurantsError;
+          if (directError) throw directError;
+          restaurantsData = directRestaurants || [];
+          
+          // Then, get restaurants by division_id for this city
+          const { data: divisionRestaurants, error: divisionError } = await supabase
+            .from('restaurants')
+            .select(`
+              *,
+              administrative_divisions!restaurants_division_id_fkey (
+                id, name, level
+              )
+            `)
+            .not('division_id', 'is', null)
+            .eq('is_active', true);
+          
+          if (divisionError) throw divisionError;
+          
+          // Filter division restaurants that belong to this city
+          const cityDivisionRestaurants = (divisionRestaurants || []).filter(restaurant => {
+            if (!restaurant.administrative_divisions) return false;
+            
+            // Map city keys to expected division names
+            const cityDivisionNames: Record<string, string[]> = {
+              'shenzhen': ['深圳市', '罗湖区', '福田区', '南山区', '宝安区', '龙岗区', '盐田区', '龙华区', '坪山区', '光明区'],
+              'beijing': ['北京市'],
+              'shanghai': ['上海市'],
+              'guangzhou': ['广州市']
+            };
+            
+            const expectedNames = cityDivisionNames[city.key] || [];
+            return expectedNames.some(name => 
+              restaurant.administrative_divisions.name.includes(name) ||
+              name.includes(restaurant.administrative_divisions.name)
+            );
+          });
+          
+          // Combine and deduplicate restaurants
+          const allRestaurants = [...restaurantsData, ...cityDivisionRestaurants];
+          const uniqueRestaurants = allRestaurants.filter((restaurant, index, self) => 
+            index === self.findIndex(r => r.id === restaurant.id)
+          );
+          
+          // Sort restaurants
+          const sortedRestaurants = uniqueRestaurants.sort((a, b) => {
+            if (a.is_featured !== b.is_featured) return b.is_featured ? 1 : -1;
+            if (a.display_order !== b.display_order) return a.display_order - b.display_order;
+            return a.name.localeCompare(b.name);
+          });
+          
+          restaurantsData = sortedRestaurants;
           
           // Get cuisine guides for this city
           const { data: cuisinesData, error: cuisinesError } = await supabase

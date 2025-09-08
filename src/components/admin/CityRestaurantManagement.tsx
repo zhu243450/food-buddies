@@ -374,7 +374,11 @@ export const CityRestaurantManagement: React.FC = () => {
                   setSelectedDivisionHierarchy(hierarchy);
                 }}
                 onCityCreated={(cityId) => {
-                  // Refresh cities if needed
+                  // Set the city_id for the restaurant when a city is selected
+                  if (selectedCityId !== cityId) {
+                    setSelectedCityId(cityId);
+                  }
+                  // Refresh cities list
                   const loadCities = async () => {
                     const { data, error } = await supabase.from('cities').select('*').order('display_order').order('name');
                     if (!error) setCities(data || []);

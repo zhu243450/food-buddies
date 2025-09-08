@@ -193,8 +193,8 @@ export function AdministrativeDivisionSelector({
       loadDistricts(cityId);
       updateSelection(cityId);
       
-      // Check if this city exists in cities table and create if needed
-      createCityRecordIfNeeded(cityId);
+      // Ensure we have a city record and update the parent with the correct city_id
+      ensureCityRecord(cityId);
     }
   };
 
@@ -247,35 +247,45 @@ export function AdministrativeDivisionSelector({
     onDivisionSelect(divisionId, buildHierarchy());
   };
 
-  const createCityRecordIfNeeded = async (divisionId: string) => {
+  const ensureCityRecord = async (divisionId: string) => {
     // Get the city ancestor for this division
-    const { data: cityAncestor } = await supabase
+    const { data: cityAncestorId } = await supabase
       .rpc('get_city_ancestor', { _division_id: divisionId });
 
-    if (cityAncestor && onCityCreated) {
-      // Check if city record exists
-      const { data: existingCity } = await supabase
-        .from('cities')
-        .select('id')
-        .eq('key', divisionId)
+    if (cityAncestorId) {
+      // Get division details for the city ancestor
+      const { data: cityDivision } = await supabase
+        .from('administrative_divisions')
+        .select('name, code')
+        .eq('id', cityAncestorId)
         .single();
 
-      if (!existingCity) {
-        // Get division details
-        const { data: divisionData } = await supabase
-          .from('administrative_divisions')
-          .select('name')
-          .eq('id', cityAncestor)
+      if (cityDivision) {
+        // Generate city key from division code or name
+        const cityKey = cityDivision.code ? 
+          (cityDivision.code === '440300' ? 'shenzhen' : 
+           cityDivision.code === '110100' ? 'beijing' :
+           cityDivision.code === '310100' ? 'shanghai' :
+           cityDivision.code.substring(0, 4)) :
+          cityDivision.name.toLowerCase().replace(/[市省]/g, '');
+
+        // Check if city record exists
+        const { data: existingCity } = await supabase
+          .from('cities')
+          .select('id')
+          .eq('key', cityKey)
           .single();
 
-        if (divisionData) {
+        if (existingCity && onCityCreated) {
+          onCityCreated(existingCity.id);
+        } else if (!existingCity) {
           // Create city record
           const { data: newCity } = await supabase
             .from('cities')
             .insert({
-              key: divisionId,
-              name: divisionData.name,
-              description: `${divisionData.name}美食指南`,
+              key: cityKey,
+              name: cityDivision.name,
+              description: `${cityDivision.name}美食指南`,
               is_active: true,
               display_order: 0,
               popular_cuisines: [],
@@ -285,7 +295,7 @@ export function AdministrativeDivisionSelector({
             .select()
             .single();
 
-          if (newCity) {
+          if (newCity && onCityCreated) {
             onCityCreated(newCity.id);
           }
         }
