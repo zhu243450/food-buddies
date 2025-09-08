@@ -129,6 +129,82 @@ export const useSEO = () => {
             "url": currentUrl
           }
         };
+
+      case 'city':
+        const cityName = data?.city || '城市';
+        const cityKey = data?.cityKey || 'city';
+        return {
+          title: t(`seo.cityPages.${cityKey}.title`, `${cityName}美食社交指南`),
+          description: t(`seo.cityPages.${cityKey}.description`, `发现${cityName}最佳美食聚会地点，与志趣相投的朋友一起探索${cityName}美食文化。`),
+          keywords: t(`seo.cityPages.${cityKey}.keywords`, `${cityName}美食,${cityName}聚餐,${cityName}饭友,社交聚餐`),
+          structuredData: {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": t(`seo.cityPages.${cityKey}.title`),
+            "description": t(`seo.cityPages.${cityKey}.description`),
+            "url": currentUrl,
+            "about": {
+              "@type": "Place",
+              "name": cityName,
+              "description": `${cityName}美食社交指南`
+            }
+          }
+        };
+
+      case 'foodGuide':
+        return {
+          title: t('seo.foodGuide.title', '美食指南 - 各大菜系特色餐厅推荐'),
+          description: t('seo.foodGuide.description', '探索川菜、粤菜、日料等各大菜系特色，发现最佳用餐地点，获取专业美食社交建议。'),
+          keywords: t('seo.foodGuide.keywords', '美食指南,菜系介绍,餐厅推荐,川菜,粤菜,日料,聚餐攻略'),
+          structuredData: {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": t('seo.foodGuide.title'),
+            "description": t('seo.foodGuide.description'),
+            "url": currentUrl,
+            "mainEntity": {
+              "@type": "Article",
+              "headline": t('seo.foodGuide.title'),
+              "description": t('seo.foodGuide.description'),
+              "author": {
+                "@type": "Organization",
+                "name": t('common.appName', '饭约社')
+              }
+            }
+          }
+        };
+
+      case 'faq':
+        return {
+          title: t('seo.faq.title', '常见问题 - 饭约社使用指南'),
+          description: t('seo.faq.description', '饭约社常见问题解答，包括注册使用、创建饭局、安全须知、聊天功能等详细说明。'),
+          keywords: t('seo.faq.keywords', '常见问题,使用帮助,FAQ,饭约社教程,安全须知,聊天功能'),
+          structuredData: {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "name": t('seo.faq.title'),
+            "description": t('seo.faq.description'),
+            "url": currentUrl,
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "如何开始使用饭约社？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "首先注册账号并完善个人资料，包括饮食偏好、个性标签等。然后可以浏览附近的饭局或创建自己的饭局邀请其他用户参加。"
+                }
+              },
+              {
+                "@type": "Question", 
+                "name": "如何确保聚餐安全？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "选择公共场所聚餐，提前告知朋友行程，保护个人隐私信息，如遇不适立即离开。饭约社提供举报功能，维护社区安全。"
+                }
+              }
+            ]
+          }
+        };
         
       default:
         return {

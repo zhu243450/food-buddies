@@ -29,6 +29,38 @@
       "title": "About Us",
       "description": "Learn about FanYueShe's mission and vision. We are committed to creating the highest quality social dining platform.",
       "keywords": "about FanYueShe,company introduction,social dining platform"
+    },
+    "foodGuide": {
+      "title": "Food Guide - Cuisine Features and Restaurant Recommendations",
+      "description": "Explore Sichuan, Cantonese, Japanese cuisine features, discover the best dining locations, get professional social dining advice.",
+      "keywords": "food guide,cuisine introduction,restaurant recommendations,Sichuan cuisine,Cantonese cuisine,Japanese cuisine,dining strategy"
+    },
+    "faq": {
+      "title": "FAQ - FanYueShe Usage Guide",
+      "description": "FanYueShe frequently asked questions, including registration, creating dinners, safety guidelines, chat features and detailed instructions.",
+      "keywords": "FAQ,usage help,FanYueShe tutorial,safety guidelines,chat features"
+    },
+    "cityPages": {
+      "beijing": {
+        "title": "Beijing Food Social Guide - Find Beijing Dining Companions",
+        "description": "Discover the best dining gathering places in Beijing, explore Beijing food culture with like-minded friends.",
+        "keywords": "Beijing food,Beijing dining,Beijing dining companions,social dining"
+      },
+      "shanghai": {
+        "title": "Shanghai Food Social Guide - Find Shanghai Dining Companions", 
+        "description": "Discover the best dining gathering places in Shanghai, explore Shanghai food culture with like-minded friends.",
+        "keywords": "Shanghai food,Shanghai dining,Shanghai dining companions,social dining"
+      },
+      "guangzhou": {
+        "title": "Guangzhou Food Social Guide - Find Guangzhou Dining Companions",
+        "description": "Discover the best dining gathering places in Guangzhou, explore Guangzhou food culture with like-minded friends.",
+        "keywords": "Guangzhou food,Guangzhou dining,Guangzhou dining companions,social dining"
+      },
+      "shenzhen": {
+        "title": "Shenzhen Food Social Guide - Find Shenzhen Dining Companions",
+        "description": "Discover the best dining gathering places in Shenzhen, explore Shenzhen food culture with like-minded friends.",
+        "keywords": "Shenzhen food,Shenzhen dining,Shenzhen dining companions,social dining"
+      }
     }
   }
 }

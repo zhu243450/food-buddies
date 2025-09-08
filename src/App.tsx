@@ -24,6 +24,9 @@ import { Help } from "./pages/Help";
 import Notifications from "./pages/Notifications";
 import Feedback from "./pages/Feedback";
 import { CampaignDetail } from "./pages/CampaignDetail";
+import { CityPage } from "./pages/CityPage";
+import { FoodGuide } from "./pages/FoodGuide";
+import { FAQ } from "./pages/FAQ";
 import { Footer } from "./components/Footer";
 import { useTranslation } from "react-i18next";
 import "./i18n";
@@ -83,6 +86,9 @@ const App = () => (
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/campaign/:id" element={<CampaignDetail />} />
+            <Route path="/city/:city" element={<CityPage />} />
+            <Route path="/food-guide" element={<FoodGuide />} />
+            <Route path="/faq" element={<FAQ />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
