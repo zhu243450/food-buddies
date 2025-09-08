@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense, lazy, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
@@ -13,11 +13,14 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
-import { RestaurantDetailDialog } from '@/components/RestaurantDetailDialog';
-import { RegionSelector } from '@/components/RegionSelector';
-import { RestaurantCard } from '@/components/RestaurantCard';
 import { SmallRestaurantCard } from '@/components/SmallRestaurantCard';
 import { useAuth } from '@/hooks/useAuth';
+import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
+import { OptimizedRestaurantCard } from '@/components/OptimizedRestaurantCard';
+
+// Lazy load heavy components
+const RestaurantDetailDialog = lazy(() => import('@/components/RestaurantDetailDialog').then(m => ({ default: m.RestaurantDetailDialog })));
+const RegionSelector = lazy(() => import('@/components/RegionSelector').then(m => ({ default: m.RegionSelector })));
 
 interface Restaurant {
   id: string;
@@ -66,6 +69,7 @@ export const CombinedFoodGuide: React.FC = () => {
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
   const { user } = useAuth();
+  const { markRenderStart, markRenderEnd } = usePerformanceMonitor('CombinedFoodGuide');
   const [loading, setLoading] = useState(true);
   const [regionInfo, setRegionInfo] = useState<RegionInfo | null>(null);
   const [selectedDivisionId, setSelectedDivisionId] = useState<string | null>(
@@ -74,8 +78,11 @@ export const CombinedFoodGuide: React.FC = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   
-  // Cache region data
+  // Cache region data with performance optimization
   const [regionCache, setRegionCache] = useState<Record<string, RegionInfo>>({});
+  
+  // Memoized abort controller for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
   
   // Get translations for async functions
   const translations = {
@@ -91,9 +98,16 @@ export const CombinedFoodGuide: React.FC = () => {
     cityKey: regionInfo.path[regionInfo.path.length - 1]?.name || '' 
   } : undefined);
 
-  // Load region data from database with caching
+  // Load region data from database with caching and performance optimization
   const loadRegionData = useCallback(async (divisionId: string) => {
-    // Check cache
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    abortControllerRef.current = new AbortController();
+    
+    // Check cache first
     if (regionCache[divisionId]) {
       setRegionInfo(regionCache[divisionId]);
       setLoading(false);
@@ -102,12 +116,19 @@ export const CombinedFoodGuide: React.FC = () => {
 
     try {
       setLoading(true);
+      markRenderStart();
       
-      // Get division info and path
-      const { data: divisionPath, error: pathError } = await supabase
-        .rpc('get_division_path', { division_id_param: divisionId });
+      // Parallel data fetching for better performance
+      const [divisionPathResult, descendantsResult] = await Promise.all([
+        supabase.rpc('get_division_path', { division_id_param: divisionId }),
+        supabase.rpc('get_division_descendants', { division_id_param: divisionId })
+      ]);
+      
+      const { data: divisionPath, error: pathError } = divisionPathResult;
+      const { data: descendants, error: descendantsError } = descendantsResult;
       
       if (pathError) throw pathError;
+      if (descendantsError) throw descendantsError;
       
       const currentDivision = divisionPath?.[0];
       if (!currentDivision) {
@@ -115,11 +136,6 @@ export const CombinedFoodGuide: React.FC = () => {
       }
 
       // Get all descendant divisions for restaurant filtering
-      const { data: descendants, error: descendantsError } = await supabase
-        .rpc('get_division_descendants', { division_id_param: divisionId });
-      
-      if (descendantsError) throw descendantsError;
-      
       const descendantIds = [divisionId, ...(descendants || []).map(d => d.id)];
 
       // Get restaurants for this region and all its sub-regions
@@ -208,6 +224,7 @@ export const CombinedFoodGuide: React.FC = () => {
       setRegionInfo(newRegionInfo);
       // Cache region data
       setRegionCache(prev => ({ ...prev, [divisionId]: newRegionInfo }));
+      markRenderEnd();
       
     } catch (error: any) {
       console.error('Failed to load region data:', error);
@@ -328,13 +345,15 @@ export const CombinedFoodGuide: React.FC = () => {
             </div>
           )}
           
-          {/* Region Selector */}
+          {/* Region Selector with lazy loading */}
           <div className="mb-8">
-            <RegionSelector
-              selectedDivisionId={selectedDivisionId || undefined}
-              onSelectionChange={handleRegionChange}
-              placeholder={t('foodGuide.selectRegion')}
-            />
+            <Suspense fallback={<div className="h-10 bg-muted animate-pulse rounded-md" />}>
+              <RegionSelector
+                selectedDivisionId={selectedDivisionId || undefined}
+                onSelectionChange={handleRegionChange}
+                placeholder={t('foodGuide.selectRegion')}
+              />
+            </Suspense>
           </div>
 
           <div className="flex justify-center gap-4">
@@ -366,13 +385,15 @@ export const CombinedFoodGuide: React.FC = () => {
           </div>
         </section>
 
-        {/* Featured Restaurants */}
+        {/* Featured Restaurants with performance optimization */}
         {regionInfo && regionInfo.featuredRestaurants.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">{t('foodGuide.featuredRestaurants')}</h2>
+          <section className="mb-12" aria-labelledby="featured-restaurants">
+            <h2 id="featured-restaurants" className="text-2xl font-bold text-foreground mb-6">
+              {t('foodGuide.featuredRestaurants')}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {regionInfo.featuredRestaurants.map((restaurant) => (
-                <RestaurantCard
+                <OptimizedRestaurantCard
                   key={restaurant.id}
                   restaurant={restaurant}
                   onClick={handleRestaurantClick}
@@ -491,11 +512,13 @@ export const CombinedFoodGuide: React.FC = () => {
         )}
       </main>
 
-      <RestaurantDetailDialog
-        restaurant={selectedRestaurant}
-        open={isRestaurantDialogOpen}
-        onOpenChange={setIsRestaurantDialogOpen}
-      />
+      <Suspense fallback={<div className="fixed inset-0 bg-background/80 backdrop-blur-sm" />}>
+        <RestaurantDetailDialog
+          restaurant={selectedRestaurant}
+          open={isRestaurantDialogOpen}
+          onOpenChange={setIsRestaurantDialogOpen}
+        />
+      </Suspense>
     </div>
   );
 };
