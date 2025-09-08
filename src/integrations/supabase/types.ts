@@ -56,6 +56,56 @@ export type Database = {
         }
         Relationships: []
       }
+      administrative_divisions: {
+        Row: {
+          code: string | null
+          created_at: string
+          created_by: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          level: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          level: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          level?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "administrative_divisions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "administrative_divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_participations: {
         Row: {
           campaign_id: string
@@ -822,6 +872,7 @@ export type Database = {
           cuisine: string
           description: string
           display_order: number
+          division_id: string | null
           group_size: string
           id: string
           is_active: boolean
@@ -842,6 +893,7 @@ export type Database = {
           cuisine: string
           description: string
           display_order?: number
+          division_id?: string | null
           group_size: string
           id?: string
           is_active?: boolean
@@ -862,6 +914,7 @@ export type Database = {
           cuisine?: string
           description?: string
           display_order?: number
+          division_id?: string | null
           group_size?: string
           id?: string
           is_active?: boolean
@@ -879,6 +932,13 @@ export type Database = {
             columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurants_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "administrative_divisions"
             referencedColumns: ["id"]
           },
         ]
@@ -1039,6 +1099,10 @@ export type Database = {
           new_users_this_month: number
           total_users: number
         }[]
+      }
+      get_city_ancestor: {
+        Args: { _division_id: string }
+        Returns: string
       }
       get_user_roles: {
         Args: { _user_id: string }

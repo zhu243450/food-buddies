@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Plus, Store, Utensils, Trash2, Star, Loader2, Check, X, GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { AdministrativeDivisionSelector } from './AdministrativeDivisionSelector';
 
 interface City {
   id: string;
@@ -39,6 +40,7 @@ interface Restaurant {
   is_featured: boolean;
   is_active: boolean;
   display_order: number;
+  division_id?: string;
 }
 
 interface CuisineGuide {
@@ -69,8 +71,10 @@ export const CityRestaurantManagement: React.FC = () => {
   });
 
   const [restaurantForm, setRestaurantForm] = useState({
-    name: '', cuisine: '', area: '', rating: 4.5, price_range: '', special_dishes: '', best_time: '', group_size: '', description: '', is_featured: true, is_active: true,
+    name: '', cuisine: '', area: '', rating: 4.5, price_range: '', special_dishes: '', best_time: '', group_size: '', description: '', is_featured: true, is_active: true, division_id: '',
   });
+
+  const [selectedDivisionHierarchy, setSelectedDivisionHierarchy] = useState('');
 
   const [cuisineForm, setCuisineForm] = useState({
     name: '', description: '', characteristics: '', must_try_dishes: '', is_active: true,
@@ -176,10 +180,12 @@ export const CityRestaurantManagement: React.FC = () => {
         description: restaurantForm.description.trim(),
         is_featured: restaurantForm.is_featured,
         is_active: restaurantForm.is_active,
+        division_id: restaurantForm.division_id || null,
       });
       if (error) throw error;
       toast.success('已添加餐厅');
-      setRestaurantForm({ name: '', cuisine: '', area: '', rating: 4.5, price_range: '', special_dishes: '', best_time: '', group_size: '', description: '', is_featured: true, is_active: true });
+      setRestaurantForm({ name: '', cuisine: '', area: '', rating: 4.5, price_range: '', special_dishes: '', best_time: '', group_size: '', description: '', is_featured: true, is_active: true, division_id: '' });
+      setSelectedDivisionHierarchy('');
       const { data } = await supabase.from('restaurants').select('*').eq('city_id', selectedCityId).order('is_featured', { ascending: false }).order('display_order').order('name');
       setRestaurants(data || []);
     } catch (e: any) { toast.error('添加失败: ' + e.message); }
@@ -359,16 +365,42 @@ export const CityRestaurantManagement: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Store className="w-5 h-5 text-primary"/>添加餐厅</CardTitle>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-3">
-              <Input placeholder="餐厅名称*" value={restaurantForm.name} onChange={e => setRestaurantForm(s => ({...s, name: e.target.value}))} />
-              <Input placeholder="菜系* (如: 川菜)" value={restaurantForm.cuisine} onChange={e => setRestaurantForm(s => ({...s, cuisine: e.target.value}))} />
-              <Input placeholder="区域* (如: 三里屯)" value={restaurantForm.area} onChange={e => setRestaurantForm(s => ({...s, area: e.target.value}))} />
-              <Input placeholder="价格区间* (如: ￥80-120/人)" value={restaurantForm.price_range} onChange={e => setRestaurantForm(s => ({...s, price_range: e.target.value}))} />
-              <Input type="number" step="0.1" min="1" max="5" placeholder="评分(1-5)" value={restaurantForm.rating} onChange={e => setRestaurantForm(s => ({...s, rating: parseFloat(e.target.value)}))} />
-              <Input placeholder="最佳时间 (如: 晚餐)" value={restaurantForm.best_time} onChange={e => setRestaurantForm(s => ({...s, best_time: e.target.value}))} />
-              <Input placeholder="适合人数 (如: 2-6人)" value={restaurantForm.group_size} onChange={e => setRestaurantForm(s => ({...s, group_size: e.target.value}))} />
-              <Input placeholder="招牌菜(逗号分隔)" value={restaurantForm.special_dishes} onChange={e => setRestaurantForm(s => ({...s, special_dishes: e.target.value}))} />
-              <Textarea className="md:col-span-2" placeholder="餐厅描述" value={restaurantForm.description} onChange={e => setRestaurantForm(s => ({...s, description: e.target.value}))} />
+            <CardContent className="space-y-4">
+              {/* Administrative Division Selector */}
+              <AdministrativeDivisionSelector
+                selectedDivisionId={restaurantForm.division_id}
+                onDivisionSelect={(divisionId, hierarchy) => {
+                  setRestaurantForm({ ...restaurantForm, division_id: divisionId });
+                  setSelectedDivisionHierarchy(hierarchy);
+                }}
+                onCityCreated={(cityId) => {
+                  // Refresh cities if needed
+                  const loadCities = async () => {
+                    const { data, error } = await supabase.from('cities').select('*').order('display_order').order('name');
+                    if (!error) setCities(data || []);
+                  };
+                  loadCities();
+                }}
+              />
+              
+              {selectedDivisionHierarchy && (
+                <div className="p-3 bg-muted rounded-lg">
+                  <span className="text-sm text-muted-foreground">已选择位置：</span>
+                  <span className="font-medium">{selectedDivisionHierarchy}</span>
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <Input placeholder="餐厅名称*" value={restaurantForm.name} onChange={e => setRestaurantForm(s => ({...s, name: e.target.value}))} />
+                <Input placeholder="菜系* (如: 川菜)" value={restaurantForm.cuisine} onChange={e => setRestaurantForm(s => ({...s, cuisine: e.target.value}))} />
+                <Input placeholder="区域* (如: 三里屯)" value={restaurantForm.area} onChange={e => setRestaurantForm(s => ({...s, area: e.target.value}))} />
+                <Input placeholder="价格区间* (如: ￥80-120/人)" value={restaurantForm.price_range} onChange={e => setRestaurantForm(s => ({...s, price_range: e.target.value}))} />
+                <Input type="number" step="0.1" min="1" max="5" placeholder="评分(1-5)" value={restaurantForm.rating} onChange={e => setRestaurantForm(s => ({...s, rating: parseFloat(e.target.value)}))} />
+                <Input placeholder="最佳时间 (如: 晚餐)" value={restaurantForm.best_time} onChange={e => setRestaurantForm(s => ({...s, best_time: e.target.value}))} />
+                <Input placeholder="适合人数 (如: 2-6人)" value={restaurantForm.group_size} onChange={e => setRestaurantForm(s => ({...s, group_size: e.target.value}))} />
+                <Input placeholder="招牌菜(逗号分隔)" value={restaurantForm.special_dishes} onChange={e => setRestaurantForm(s => ({...s, special_dishes: e.target.value}))} />
+                <Textarea className="md:col-span-2" placeholder="餐厅描述" value={restaurantForm.description} onChange={e => setRestaurantForm(s => ({...s, description: e.target.value}))} />
+              </div>
               <div className="flex items-center gap-4 md:col-span-2">
                 <div className="flex items-center gap-2"><Switch checked={restaurantForm.is_featured} onCheckedChange={v => setRestaurantForm(s => ({...s, is_featured: v}))}/><span>设为推荐</span></div>
                 <div className="flex items-center gap-2"><Switch checked={restaurantForm.is_active} onCheckedChange={v => setRestaurantForm(s => ({...s, is_active: v}))}/><span>启用</span></div>
