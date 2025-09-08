@@ -1104,6 +1104,26 @@ export type Database = {
         Args: { _division_id: string }
         Returns: string
       }
+      get_division_descendants: {
+        Args: { division_id_param: string }
+        Returns: {
+          code: string
+          full_path: string
+          id: string
+          level: string
+          name: string
+          parent_id: string
+        }[]
+      }
+      get_division_path: {
+        Args: { division_id_param: string }
+        Returns: {
+          depth: number
+          id: string
+          level: string
+          name: string
+        }[]
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: {

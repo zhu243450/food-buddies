@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { SEO } from '@/components/SEO';
@@ -8,13 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChefHat, MapPin, Clock, Users, Star, Utensils, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
 import { RestaurantDetailDialog } from '@/components/RestaurantDetailDialog';
+import { RegionSelector } from '@/components/RegionSelector';
 
 interface Restaurant {
   id: string;
@@ -40,225 +40,102 @@ interface CuisineGuide {
   restaurants: Restaurant[];
 }
 
-interface CityInfo {
+interface Division {
   id: string;
-  key: string;
+  name: string;
+  code: string;
+  level: 'province' | 'city' | 'county' | 'town';
+  parent_id: string | null;
+}
+
+interface RegionInfo {
+  id: string;
   name: string;
   description: string;
-  popular_cuisines: string[];
-  popular_areas: string[];
-  dining_tips: string[];
-  is_active: boolean;
+  path: Division[];
   cuisineGuides: CuisineGuide[];
   featuredRestaurants: Restaurant[];
 }
 
-// Helper function to get division IDs for a city
-const getDivisionIdsForCity = async (cityKey: string): Promise<string> => {
-  // Map city keys to their administrative divisions
-  const cityDivisionMap: Record<string, string[]> = {
-    'shenzhen': ['a1677de1-fa6c-47d7-9256-e5919856a0d9'], // 深圳市 ID
-    'beijing': [], // Will be populated if needed
-    'shanghai': [], // Will be populated if needed
-    'guangzhou': [] // Will be populated if needed
-  };
-
-  const divisionIds = cityDivisionMap[cityKey] || [];
-  
-  // If no predefined mapping, try to find dynamically
-  if (divisionIds.length === 0 && cityKey) {
-    try {
-      const { data } = await supabase
-        .from('administrative_divisions')
-        .select('id')
-        .eq('level', 'city')
-        .ilike('name', `${cityKey}%`);
-      
-      if (data && data.length > 0) {
-        divisionIds.push(...data.map(d => d.id));
-      }
-    } catch (error) {
-      console.error('Error fetching division IDs:', error);
-    }
-  }
-  
-  return divisionIds.join(',');
-};
-
-const cityData: Record<string, CityInfo> = {};
-
 export const CombinedFoodGuide: React.FC = () => {
-  const { city: urlCity } = useParams<{ city?: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [cities, setCities] = useState<CityInfo[]>([]);
-  const [selectedCity, setSelectedCity] = useState(urlCity || 'beijing');
+  const [regionInfo, setRegionInfo] = useState<RegionInfo | null>(null);
+  const [selectedDivisionId, setSelectedDivisionId] = useState<string | null>(
+    searchParams.get('divisionId')
+  );
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   
-  const currentCityData = cities.find(c => c.key === selectedCity);
-  const seoData = getPageSEO(urlCity ? 'city' : 'foodGuide', urlCity && currentCityData ? { city: currentCityData.name, cityKey: selectedCity } : undefined);
+  const seoData = getPageSEO('foodGuide', regionInfo ? { 
+    city: regionInfo.name, 
+    cityKey: regionInfo.path[regionInfo.path.length - 1]?.name || '' 
+  } : undefined);
 
-  // Load cities data from database
-  const loadCitiesData = async () => {
+  // Load region data from database
+  const loadRegionData = async (divisionId: string) => {
     try {
       setLoading(true);
       
-      // Step 1: Get all city-level administrative divisions
-      const { data: adminCities, error: adminError } = await supabase
-        .from('administrative_divisions')
+      // Get division info and path
+      const { data: divisionPath, error: pathError } = await supabase
+        .rpc('get_division_path', { division_id_param: divisionId });
+      
+      if (pathError) throw pathError;
+      
+      const currentDivision = divisionPath?.[0];
+      if (!currentDivision) {
+        throw new Error('Division not found');
+      }
+
+      // Get all descendant divisions for restaurant filtering
+      const { data: descendants, error: descendantsError } = await supabase
+        .rpc('get_division_descendants', { division_id_param: divisionId });
+      
+      if (descendantsError) throw descendantsError;
+      
+      const descendantIds = [divisionId, ...(descendants || []).map(d => d.id)];
+
+      // Get restaurants for this region and all its sub-regions
+      const { data: restaurantsData, error: restaurantsError } = await supabase
+        .from('restaurants')
         .select('*')
-        .eq('level', 'city')
+        .in('division_id', descendantIds)
         .eq('is_active', true)
+        .order('is_featured', { ascending: false })
         .order('display_order')
         .order('name');
       
-      if (adminError) throw adminError;
+      if (restaurantsError) throw restaurantsError;
+
+      // Get cuisine guides (use city-level guides or create default ones)
+      let cuisineGuides: CuisineGuide[] = [];
       
-      // Step 2: Ensure corresponding city records exist
-      const existingCities = new Map();
-      const { data: existingCitiesData, error: existingError } = await supabase
-        .from('cities')
-        .select('*')
-        .eq('is_active', true);
-      
-      if (existingError) throw existingError;
-      
-      // Map existing cities by their key patterns
-      (existingCitiesData || []).forEach(city => {
-        existingCities.set(city.key, city);
-      });
-      
-      // Step 3: Create missing city records and collect all cities
-      const allCities = [];
-      
-      for (const adminCity of (adminCities || [])) {
-        // Generate city key from admin city
-        const cityKey = adminCity.code ? 
-          (adminCity.code === '440300' ? 'shenzhen' : 
-           adminCity.code === '110100' ? 'beijing' :
-           adminCity.code === '310100' ? 'shanghai' :
-           adminCity.code.includes('4401') ? 'guangzhou' :
-           adminCity.name.toLowerCase().replace(/[市省]/g, '')) :
-          adminCity.name.toLowerCase().replace(/[市省]/g, '');
-        
-        let cityRecord = existingCities.get(cityKey);
-        
-        if (!cityRecord) {
-          // Create new city record
-          const { data: newCity, error: createError } = await supabase
-            .from('cities')
-            .insert({
-              key: cityKey,
-              name: adminCity.name,
-              description: `${adminCity.name}美食指南，发现地道美食，结交志同道合的朋友`,
-              is_active: true,
-              display_order: adminCity.display_order,
-              popular_cuisines: ['粤菜', '川菜', '湘菜', '东北菜', '西餐', '日韩料理'],
-              popular_areas: ['市中心', '商业区', '老城区'],
-              dining_tips: ['推荐提前预约', '注意用餐时间', '建议尝试当地特色菜']
-            })
-            .select()
-            .single();
-          
-          if (createError) {
-            console.warn(`Failed to create city record for ${adminCity.name}:`, createError);
-            continue; // Skip this city if creation fails
-          }
-          
-          cityRecord = newCity;
-        }
-        
-        allCities.push(cityRecord);
-      }
-      
-      // Step 4: Add existing cities that don't have admin division counterparts
-      (existingCitiesData || []).forEach(city => {
-        if (!allCities.find(c => c.key === city.key)) {
-          allCities.push(city);
-        }
-      });
-      
-      // Step 5: Load restaurant and cuisine data for each city
-      const citiesWithData: CityInfo[] = await Promise.all(
-        allCities.map(async (city) => {
-          // Get restaurants for this city - support both direct city_id and division-based mapping
-          let restaurantsData: any[] = [];
-          
-          // First, get restaurants directly by city_id
-          const { data: directRestaurants, error: directError } = await supabase
-            .from('restaurants')
-            .select('*')
-            .eq('city_id', city.id)
-            .eq('is_active', true);
-          
-          if (directError) throw directError;
-          restaurantsData = directRestaurants || [];
-          
-          // Then, get restaurants by division_id for this city
-          const { data: divisionRestaurants, error: divisionError } = await supabase
-            .from('restaurants')
-            .select(`
-              *,
-              administrative_divisions!restaurants_division_id_fkey (
-                id, name, level
-              )
-            `)
-            .not('division_id', 'is', null)
-            .eq('is_active', true);
-          
-          if (divisionError) throw divisionError;
-          
-          // Filter division restaurants that belong to this city
-          const cityDivisionRestaurants = (divisionRestaurants || []).filter(restaurant => {
-            if (!restaurant.administrative_divisions) return false;
-            
-            // Map city keys to expected division names
-            const cityDivisionNames: Record<string, string[]> = {
-              'shenzhen': ['深圳市', '罗湖区', '福田区', '南山区', '宝安区', '龙岗区', '盐田区', '龙华区', '坪山区', '光明区'],
-              'beijing': ['北京市'],
-              'shanghai': ['上海市'],
-              'guangzhou': ['广州市']
-            };
-            
-            const expectedNames = cityDivisionNames[city.key] || [city.name];
-            return expectedNames.some(name => 
-              restaurant.administrative_divisions.name.includes(name) ||
-              name.includes(restaurant.administrative_divisions.name)
-            );
-          });
-          
-          // Combine and deduplicate restaurants
-          const allRestaurants = [...restaurantsData, ...cityDivisionRestaurants];
-          const uniqueRestaurants = allRestaurants.filter((restaurant, index, self) => 
-            index === self.findIndex(r => r.id === restaurant.id)
-          );
-          
-          // Sort restaurants
-          const sortedRestaurants = uniqueRestaurants.sort((a, b) => {
-            if (a.is_featured !== b.is_featured) return b.is_featured ? 1 : -1;
-            if (a.display_order !== b.display_order) return a.display_order - b.display_order;
-            return a.name.localeCompare(b.name);
-          });
-          
-          restaurantsData = sortedRestaurants;
-          
-          // Get cuisine guides for this city
-          const { data: cuisinesData, error: cuisinesError } = await supabase
+      // Try to find a city-level division in the path for cuisine guides
+      const cityDivision = divisionPath?.find(d => d.level === 'city');
+      if (cityDivision) {
+        const { data: existingCity } = await supabase
+          .from('cities')
+          .select('*')
+          .ilike('name', `%${cityDivision.name}%`)
+          .eq('is_active', true)
+          .limit(1)
+          .single();
+
+        if (existingCity) {
+          const { data: cuisinesData } = await supabase
             .from('cuisine_guides')
             .select('*')
-            .eq('city_id', city.id)
+            .eq('city_id', existingCity.id)
             .eq('is_active', true)
             .order('display_order')
             .order('name');
-          
-          if (cuisinesError) throw cuisinesError;
-          
-          // Group restaurants by cuisine for cuisine guides
-          const cuisineGuides: CuisineGuide[] = (cuisinesData || []).map(cuisine => {
+
+          cuisineGuides = (cuisinesData || []).map(cuisine => {
             const cuisineRestaurants = (restaurantsData || []).filter(r => 
               r.cuisine.toLowerCase().includes(cuisine.name.toLowerCase()) ||
               cuisine.name.toLowerCase().includes(r.cuisine.toLowerCase())
@@ -273,47 +150,44 @@ export const CombinedFoodGuide: React.FC = () => {
               restaurants: cuisineRestaurants
             };
           });
-          
-          return {
-            id: city.id,
-            key: city.key,
-            name: city.name,
-            description: city.description,
-            popular_cuisines: city.popular_cuisines || [],
-            popular_areas: city.popular_areas || [],
-            dining_tips: city.dining_tips || [],
-            is_active: city.is_active,
-            cuisineGuides,
-            featuredRestaurants: (restaurantsData || []).filter(r => r.is_featured)
-          };
-        })
-      );
-      
-      // Sort cities by display order and name
-      citiesWithData.sort((a, b) => {
-        if (a.key === 'beijing') return -1;
-        if (b.key === 'beijing') return 1;
-        if (a.key === 'shanghai') return -1;
-        if (b.key === 'shanghai') return 1;
-        if (a.key === 'guangzhou') return -1;
-        if (b.key === 'guangzhou') return 1;
-        if (a.key === 'shenzhen') return -1;
-        if (b.key === 'shenzhen') return 1;
-        return a.name.localeCompare(b.name);
+        }
+      }
+
+      // If no cuisine guides found, create default ones based on restaurants
+      if (cuisineGuides.length === 0 && restaurantsData) {
+        const uniqueCuisines = [...new Set(restaurantsData.map(r => r.cuisine))];
+        cuisineGuides = uniqueCuisines.map(cuisine => ({
+          id: `default-${cuisine}`,
+          name: cuisine,
+          description: `${cuisine}餐厅推荐`,
+          characteristics: [],
+          must_try_dishes: [],
+          restaurants: restaurantsData.filter(r => r.cuisine === cuisine)
+        }));
+      }
+
+      const pathArray: Division[] = (divisionPath || []).reverse().map(d => ({
+        id: d.id,
+        name: d.name,
+        code: '',
+        level: d.level as Division['level'],
+        parent_id: null
+      }));
+
+      setRegionInfo({
+        id: currentDivision.id,
+        name: currentDivision.name,
+        description: `${currentDivision.name}美食指南，发现地道美食，结交志同道合的朋友`,
+        path: pathArray,
+        cuisineGuides,
+        featuredRestaurants: (restaurantsData || []).filter(r => r.is_featured)
       });
       
-      setCities(citiesWithData);
-      
-      // Set default city if URL doesn't specify one
-      if (!urlCity && citiesWithData.length > 0) {
-        setSelectedCity(citiesWithData[0].key);
-      }
-      
     } catch (error: any) {
-      console.error('Failed to load cities data:', error);
+      console.error('Failed to load region data:', error);
       toast({
         title: "加载失败",
-        description: "无法加载城市数据，请刷新页面重试",
+        description: "无法加载区域数据，请刷新页面重试",
         variant: "destructive"
       });
     } finally {
@@ -321,9 +195,38 @@ export const CombinedFoodGuide: React.FC = () => {
     }
   };
 
+  // Load default data (Beijing) if no division is selected
+  const loadDefaultData = async () => {
+    try {
+      // Find Beijing division
+      const { data: beijingDivision, error } = await supabase
+        .from('administrative_divisions')
+        .select('id')
+        .eq('name', '北京市')
+        .eq('level', 'city')
+        .single();
+
+      if (error) throw error;
+
+      if (beijingDivision) {
+        setSelectedDivisionId(beijingDivision.id);
+        await loadRegionData(beijingDivision.id);
+      }
+    } catch (error) {
+      console.error('Failed to load default data:', error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadCitiesData();
-  }, []);
+    const divisionId = searchParams.get('divisionId');
+    if (divisionId) {
+      setSelectedDivisionId(divisionId);
+      loadRegionData(divisionId);
+    } else {
+      loadDefaultData();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Get initial user
@@ -341,19 +244,16 @@ export const CombinedFoodGuide: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Update URL when city changes
-  useEffect(() => {
-    if (urlCity && urlCity !== selectedCity) {
-      setSelectedCity(urlCity);
-    }
-  }, [urlCity]);
-
-  const handleCityChange = (newCity: string) => {
-    setSelectedCity(newCity);
-    if (urlCity) {
-      navigate(`/city/${newCity}`);
+  const handleRegionChange = (divisionId: string | null, divisionPath: Division[]) => {
+    setSelectedDivisionId(divisionId);
+    
+    if (divisionId) {
+      navigate(`/food-guide?divisionId=${divisionId}`);
+      loadRegionData(divisionId);
     } else {
-      navigate(`/food-guide?city=${newCity}`);
+      navigate('/food-guide');
+      setRegionInfo(null);
+      loadDefaultData();
     }
   };
 
@@ -362,6 +262,11 @@ export const CombinedFoodGuide: React.FC = () => {
     setIsRestaurantDialogOpen(true);
   };
 
+  const currentRegionName = regionInfo ? 
+    (regionInfo.path.length > 0 ? regionInfo.path[regionInfo.path.length - 1].name : regionInfo.name) : 
+    '全国';
+  const regionDescription = regionInfo?.description || '发现全国各地美食，结交志同道合的朋友';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -369,20 +274,6 @@ export const CombinedFoodGuide: React.FC = () => {
         <div className="container mx-auto px-4 py-16 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">加载中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!currentCityData) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">城市页面未找到</h1>
-          <Link to="/discover">
-            <Button>返回发现页面</Button>
-          </Link>
         </div>
       </div>
     );
@@ -398,27 +289,36 @@ export const CombinedFoodGuide: React.FC = () => {
         <section className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
             <ChefHat className="inline-block h-10 w-10 mr-3 text-primary" />
-            {urlCity ? `${currentCityData.name}美食社交指南` : '美食指南'}
+            {currentRegionName}美食社交指南
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-            {currentCityData.description}
+            {regionDescription}
           </p>
           
-          {/* City Selector */}
-          <div className="flex justify-center mb-8">
-            <Select value={selectedCity} onValueChange={handleCityChange}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {cities.map((city) => (
-                  <SelectItem key={city.key} value={city.key}>
-                    <MapPin className="h-4 w-4 inline mr-2" />
-                    {city.name}
-                  </SelectItem>
+          {/* Region Path Breadcrumb */}
+          {regionInfo && regionInfo.path.length > 0 && (
+            <div className="flex items-center justify-center gap-2 mb-8">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {regionInfo.path.map((division, index) => (
+                  <React.Fragment key={division.id}>
+                    <span>{division.name}</span>
+                    {index < regionInfo.path.length - 1 && (
+                      <span className="text-xs">→</span>
+                    )}
+                  </React.Fragment>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            </div>
+          )}
+          
+          {/* Region Selector */}
+          <div className="mb-8">
+            <RegionSelector
+              selectedDivisionId={selectedDivisionId || undefined}
+              onSelectionChange={handleRegionChange}
+              placeholder="选择区域"
+            />
           </div>
 
           <div className="flex justify-center gap-4">
@@ -450,306 +350,188 @@ export const CombinedFoodGuide: React.FC = () => {
           </div>
         </section>
 
-        {/* Popular Cuisines */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">热门菜系</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {currentCityData.popular_cuisines.map((cuisine) => (
-              <Card key={cuisine} className="text-center hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-4">
-                  <Utensils className="h-8 w-8 mx-auto mb-2 text-primary" />
-                  <p className="font-medium text-foreground">{cuisine}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Popular Areas */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">热门区域</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {currentCityData.popular_areas.map((area) => (
-              <Badge key={area} variant="secondary" className="p-3 text-center justify-center">
-                <MapPin className="h-4 w-4 mr-1" />
-                {area}
-              </Badge>
-            ))}
-          </div>
-        </section>
+        {/* Featured Restaurants */}
+        {regionInfo && regionInfo.featuredRestaurants.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">精选餐厅</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {regionInfo.featuredRestaurants.map((restaurant) => (
+                <Card 
+                  key={restaurant.id} 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => handleRestaurantClick(restaurant)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg text-foreground">{restaurant.name}</h3>
+                        <p className="text-muted-foreground">{restaurant.area}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">{restaurant.rating}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Badge variant="secondary">{restaurant.cuisine}</Badge>
+                      <Badge variant="outline" className="text-primary font-semibold">
+                        {restaurant.price_range}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {restaurant.description}
+                    </p>
+                    {restaurant.special_dishes.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {restaurant.special_dishes.slice(0, 3).map((dish, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {dish}
+                          </Badge>
+                        ))}
+                        {restaurant.special_dishes.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{restaurant.special_dishes.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Cuisine Guide Tabs */}
-        {currentCityData.cuisineGuides && currentCityData.cuisineGuides.length > 0 && (
+        {regionInfo && regionInfo.cuisineGuides && regionInfo.cuisineGuides.length > 0 && (
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-foreground mb-6">菜系详解</h2>
-            <Tabs defaultValue={currentCityData.cuisineGuides[0]?.name} className="w-full">
-              <TabsList className={`grid w-full ${currentCityData.cuisineGuides.length <= 3 ? 'grid-cols-' + currentCityData.cuisineGuides.length : 'grid-cols-3'} mb-8`}>
-                {currentCityData.cuisineGuides.map((guide) => (
-                  <TabsTrigger key={guide.name} value={guide.name}>
+            <Tabs defaultValue={regionInfo.cuisineGuides[0]?.id} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+                {regionInfo.cuisineGuides.slice(0, 4).map((guide) => (
+                  <TabsTrigger key={guide.id} value={guide.id}>
                     {guide.name}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              
-              {currentCityData.cuisineGuides.map((guide) => (
-                <TabsContent key={guide.name} value={guide.name} className="space-y-8">
-                  {/* Cuisine Overview */}
+
+              {regionInfo.cuisineGuides.map((guide) => (
+                <TabsContent key={guide.id} value={guide.id} className="mt-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-2xl">{guide.name}特色</CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+                        <Utensils className="h-6 w-6 text-primary" />
+                        {guide.name}
+                      </CardTitle>
+                      <p className="text-muted-foreground">{guide.description}</p>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground mb-6">{guide.description}</p>
-                      
-                      <div className="grid md:grid-cols-2 gap-6">
+                    <CardContent className="space-y-6">
+                      {guide.characteristics.length > 0 && (
                         <div>
-                          <h4 className="font-semibold text-foreground mb-3">菜系特点</h4>
+                          <h4 className="font-semibold mb-3">菜系特色</h4>
                           <div className="flex flex-wrap gap-2">
-                            {guide.characteristics.map((char) => (
-                              <Badge key={char} variant="secondary">{char}</Badge>
+                            {guide.characteristics.map((char, index) => (
+                              <Badge key={index} variant="outline">
+                                {char}
+                              </Badge>
                             ))}
                           </div>
                         </div>
-                        
+                      )}
+
+                      {guide.must_try_dishes.length > 0 && (
                         <div>
-                          <h4 className="font-semibold text-foreground mb-3">必尝菜品</h4>
+                          <h4 className="font-semibold mb-3">必尝菜品</h4>
                           <div className="flex flex-wrap gap-2">
-                            {guide.must_try_dishes.map((dish) => (
-                              <Badge key={dish} variant="outline">{dish}</Badge>
+                            {guide.must_try_dishes.map((dish, index) => (
+                              <Badge key={index} variant="secondary">
+                                {dish}
+                              </Badge>
                             ))}
                           </div>
                         </div>
-                      </div>
+                      )}
+
+                      {guide.restaurants.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-3">推荐餐厅</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {guide.restaurants.slice(0, 4).map((restaurant) => (
+                              <Card 
+                                key={restaurant.id} 
+                                className="cursor-pointer hover:shadow-md transition-shadow"
+                                onClick={() => handleRestaurantClick(restaurant)}
+                              >
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <h5 className="font-medium text-foreground">{restaurant.name}</h5>
+                                    <div className="flex items-center gap-1">
+                                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                      <span className="text-xs">{restaurant.rating}</span>
+                                    </div>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground mb-2">{restaurant.area}</p>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {restaurant.price_range}
+                                    </Badge>
+                                    {restaurant.is_featured && (
+                                      <Badge variant="default" className="text-xs">
+                                        推荐
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                          {guide.restaurants.length > 4 && (
+                            <p className="text-sm text-muted-foreground text-center mt-4">
+                              还有 {guide.restaurants.length - 4} 家餐厅...
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
-
-                  {/* Recommended Restaurants */}
-                  {guide.restaurants && guide.restaurants.length > 0 && (
-                    <div>
-                      <h3 className="text-xl font-bold text-foreground mb-6">推荐餐厅</h3>
-                       <div className="grid md:grid-cols-2 gap-6">
-                         {guide.restaurants.map((restaurant) => (
-                           <Card 
-                             key={restaurant.id} 
-                             className="hover:shadow-lg transition-shadow cursor-pointer"
-                             onClick={() => handleRestaurantClick(restaurant)}
-                           >
-                             <CardHeader>
-                               <CardTitle className="flex items-center justify-between">
-                                 <span>{restaurant.name}</span>
-                                 <div className="flex items-center gap-1">
-                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                   <span className="text-sm font-medium">{restaurant.rating}</span>
-                                 </div>
-                               </CardTitle>
-                               <Badge variant="outline" className="w-fit">{restaurant.cuisine}</Badge>
-                             </CardHeader>
-                             <CardContent className="space-y-4">
-                               <p className="text-muted-foreground">{restaurant.description}</p>
-                               
-                               <div className="grid grid-cols-2 gap-4 text-sm">
-                                 <div className="flex items-center gap-2">
-                                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                                   <span>{restaurant.area}</span>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                   <Clock className="h-4 w-4 text-muted-foreground" />
-                                   <span>{restaurant.best_time}</span>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                   <Users className="h-4 w-4 text-muted-foreground" />
-                                   <span>{restaurant.group_size}</span>
-                                 </div>
-                                 <div className="font-medium text-primary">
-                                   {restaurant.price_range}
-                                 </div>
-                               </div>
-                               
-                               <div>
-                                 <h5 className="font-medium text-foreground mb-2">招牌菜品</h5>
-                                 <div className="flex flex-wrap gap-1">
-                                   {restaurant.special_dishes.map((dish) => (
-                                     <Badge key={dish} variant="secondary" className="text-xs">
-                                       {dish}
-                                     </Badge>
-                                   ))}
-                                 </div>
-                               </div>
-                             </CardContent>
-                           </Card>
-                         ))}
-                       </div>
-                    </div>
-                  )}
                 </TabsContent>
               ))}
             </Tabs>
           </section>
         )}
 
-        {/* Featured Restaurants */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">推荐餐厅</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentCityData.featuredRestaurants.map((restaurant) => (
-              <Card 
-                key={restaurant.id} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleRestaurantClick(restaurant)}
-              >
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>{restaurant.name}</span>
-                    <Badge variant="outline">{restaurant.cuisine}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-2">
-                    <MapPin className="h-4 w-4 inline mr-1" />
-                    {restaurant.area}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                      <span className="font-medium">{restaurant.rating}</span>
-                    </div>
-                    <span className="text-sm font-medium text-primary">{restaurant.price_range}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {restaurant.description}
-                  </p>
-                  <div className="mt-3">
-                    <div className="flex flex-wrap gap-1">
-                      {restaurant.special_dishes.slice(0, 3).map((dish) => (
-                        <Badge key={dish} variant="secondary" className="text-xs">
-                          {dish}
-                        </Badge>
-                      ))}
-                      {restaurant.special_dishes.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{restaurant.special_dishes.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
         {/* Dining Tips */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6">
-            {urlCity ? '美食贴士' : '聚餐小贴士'}
-          </h2>
-          {urlCity ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {currentCityData.dining_tips.map((tip, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <p className="text-foreground">{tip}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-primary" />
-                    人数选择
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm">
-                    <li>• 2-3人：适合精致餐厅，深度交流</li>
-                    <li>• 4-6人：适合火锅、烧烤等互动性强的</li>
-                    <li>• 6人以上：建议选择包间或大桌</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-primary" />
-                    时间安排
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm">
-                    <li>• 工作日午餐：12:00-13:30</li>
-                    <li>• 周末早茶：10:00-14:00</li>
-                    <li>• 晚餐聚会：18:00-21:00</li>
-                    <li>• 夜宵时间：21:00-23:00</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ChefHat className="h-5 w-5 text-primary" />
-                    点餐建议
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm">
-                    <li>• 提前了解餐厅特色菜</li>
-                    <li>• 考虑食客饮食偏好和禁忌</li>
-                    <li>• 荤素搭配，营养均衡</li>
-                    <li>• 预算透明，AA制说明</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </section>
-
-        {/* CTA Section */}
-        <section className="text-center bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-12">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            开启你的{urlCity ? currentCityData.name : ''}美食社交之旅
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            {urlCity 
-              ? `立即加入饭约社，与志趣相投的朋友一起探索${currentCityData.name}美食`
-              : '加入饭约社，与志趣相投的朋友一起探索美食世界'
-            }
-          </p>
-          <div className="flex justify-center gap-4">
-            {user ? (
-              <>
-                <Link to="/my-dinners">
-                  <Button size="lg" className="gap-2">
-                    <Users className="h-5 w-5" />
-                    我的饭局
-                  </Button>
-                </Link>
-                <Link to="/create-dinner">
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <Utensils className="h-5 w-5" />
-                    创建饭局
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button size="lg">立即注册</Button>
-                </Link>
-                <Link to="/discover">
-                  <Button variant="outline" size="lg">浏览饭局</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </section>
+        {regionInfo && regionInfo.path.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">用餐贴士</h2>
+            <Card>
+              <CardContent className="p-6">
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-primary/10 rounded-full p-2 mt-1">
+                      <Utensils className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-foreground">推荐提前预约热门餐厅</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-primary/10 rounded-full p-2 mt-1">
+                      <Clock className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-foreground">避开用餐高峰期</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-primary/10 rounded-full p-2 mt-1">
+                      <Users className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-foreground">适合社交聚餐</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
       </main>
-      
-      {/* Restaurant Detail Dialog */}
+
       <RestaurantDetailDialog
         restaurant={selectedRestaurant}
         open={isRestaurantDialogOpen}
