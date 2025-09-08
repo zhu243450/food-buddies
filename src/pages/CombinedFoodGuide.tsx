@@ -74,8 +74,17 @@ export const CombinedFoodGuide: React.FC = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   
-  // 缓存区域数据
+  // Cache region data
   const [regionCache, setRegionCache] = useState<Record<string, RegionInfo>>({});
+  
+  // Get translations for async functions
+  const translations = {
+    divisionNotFound: t('foodGuide.divisionNotFound'),
+    description: t('foodGuide.description'), 
+    cuisineDescription: t('foodGuide.cuisineDescription'),
+    loadError: t('foodGuide.loadError'),
+    loadErrorDescription: t('foodGuide.loadErrorDescription')
+  };
   
   const seoData = getPageSEO('foodGuide', regionInfo ? { 
     city: regionInfo.name, 
@@ -84,7 +93,7 @@ export const CombinedFoodGuide: React.FC = () => {
 
   // Load region data from database with caching
   const loadRegionData = useCallback(async (divisionId: string) => {
-    // 检查缓存
+    // Check cache
     if (regionCache[divisionId]) {
       setRegionInfo(regionCache[divisionId]);
       setLoading(false);
@@ -102,7 +111,7 @@ export const CombinedFoodGuide: React.FC = () => {
       
       const currentDivision = divisionPath?.[0];
       if (!currentDivision) {
-        throw new Error(t('foodGuide.divisionNotFound'));
+        throw new Error(translations.divisionNotFound);
       }
 
       // Get all descendant divisions for restaurant filtering
@@ -172,7 +181,7 @@ export const CombinedFoodGuide: React.FC = () => {
         cuisineGuides = uniqueCuisines.map(cuisine => ({
           id: `default-${cuisine}`,
           name: cuisine,
-          description: `${cuisine}${t('foodGuide.cuisineDescription')}`,
+          description: `${cuisine} ${translations.cuisineDescription}`,
           characteristics: [],
           must_try_dishes: [],
           restaurants: restaurantsData.filter(r => r.cuisine === cuisine)
@@ -190,27 +199,27 @@ export const CombinedFoodGuide: React.FC = () => {
       const newRegionInfo = {
         id: currentDivision.id,
         name: currentDivision.name,
-        description: `${currentDivision.name}${t('foodGuide.description')}`,
+        description: `${currentDivision.name} ${translations.description}`,
         path: pathArray,
         cuisineGuides,
         featuredRestaurants: (restaurantsData || []).filter(r => r.is_featured)
       };
       
       setRegionInfo(newRegionInfo);
-      // 缓存区域数据
+      // Cache region data
       setRegionCache(prev => ({ ...prev, [divisionId]: newRegionInfo }));
       
     } catch (error: any) {
       console.error('Failed to load region data:', error);
       toast({
-        title: t('foodGuide.loadError'),
-        description: t('foodGuide.loadErrorDescription'),
+        title: translations.loadError,
+        description: translations.loadErrorDescription,
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
-  }, [regionCache]);
+  }, [regionCache, translations]);
 
   // Load default data (Beijing) if no division is selected
   const loadDefaultData = async () => {
@@ -263,7 +272,7 @@ export const CombinedFoodGuide: React.FC = () => {
     setIsRestaurantDialogOpen(true);
   }, []);
 
-  // 使用 useMemo 优化计算
+  // Optimize calculations with useMemo
   const currentRegionName = useMemo(() => 
     regionInfo ? 
       (regionInfo.path.length > 0 ? regionInfo.path[regionInfo.path.length - 1].name : regionInfo.name) : 
@@ -296,7 +305,7 @@ export const CombinedFoodGuide: React.FC = () => {
         <section className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
             <ChefHat className="inline-block h-10 w-10 mr-3 text-primary" />
-            {currentRegionName}{t('foodGuide.title')}
+            {currentRegionName} {t('foodGuide.title')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
             {regionDescription}
@@ -435,11 +444,11 @@ export const CombinedFoodGuide: React.FC = () => {
                               />
                             ))}
                           </div>
-                          {guide.restaurants.length > 4 && (
-                            <p className="text-sm text-muted-foreground text-center mt-4">
-                              {t('common.more')} {guide.restaurants.length - 4} {t('foodGuide.moreRestaurants')}
-                            </p>
-                          )}
+                           {guide.restaurants.length > 4 && (
+                             <p className="text-sm text-muted-foreground text-center mt-4">
+                               {t('common.more')} {guide.restaurants.length - 4} {t('foodGuide.moreRestaurants')}
+                             </p>
+                           )}
                         </div>
                       )}
                     </CardContent>
@@ -473,7 +482,7 @@ export const CombinedFoodGuide: React.FC = () => {
                     <div className="bg-primary/10 rounded-full p-2 mt-1">
                       <Users className="h-4 w-4 text-primary" />
                     </div>
-                    <p className="text-foreground">适合社交聚餐</p>
+                    <p className="text-foreground">{t('foodGuide.socialDiningTip')}</p>
                   </div>
                 </div>
               </CardContent>
