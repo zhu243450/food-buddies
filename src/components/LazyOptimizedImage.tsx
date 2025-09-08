@@ -1,0 +1,90 @@
+import React, { useState, useRef, useCallback } from 'react';
+import { useInView } from '@/hooks/useInView';
+import { createOptimizedImageProps } from '@/lib/imageOptimization';
+
+interface LazyOptimizedImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+  sizes?: number[];
+  aspectRatio?: string;
+  onLoad?: () => void;
+  onError?: () => void;
+}
+
+export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
+  src,
+  alt,
+  className = '',
+  priority = false,
+  sizes,
+  aspectRatio,
+  onLoad,
+  onError
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  
+  const { ref: containerRef, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: true,
+    rootMargin: '50px' // 提前50px开始加载
+  });
+
+  const handleLoad = useCallback(() => {
+    setIsLoaded(true);
+    onLoad?.();
+  }, [onLoad]);
+
+  const handleError = useCallback(() => {
+    setHasError(true);
+    onError?.();
+  }, [onError]);
+
+  // 只有在视窗内或高优先级时才加载图片
+  const shouldLoad = priority || inView;
+  
+  const optimizedProps = shouldLoad ? 
+    createOptimizedImageProps(src, alt, { priority, sizes, aspectRatio }) :
+    { src: '', alt: '' };
+
+  return (
+    <div 
+      ref={containerRef as React.RefObject<HTMLDivElement>}
+      className={`relative overflow-hidden ${className}`}
+      style={{ aspectRatio: aspectRatio || 'auto' }}
+    >
+      {/* 占位符 */}
+      {!isLoaded && !hasError && (
+        <div 
+          className="absolute inset-0 bg-muted lazy-placeholder"
+          style={{ aspectRatio: aspectRatio || 'auto' }}
+        />
+      )}
+      
+      {/* 错误占位符 */}
+      {hasError && (
+        <div className="absolute inset-0 bg-muted flex items-center justify-center text-muted-foreground text-sm">
+          图片加载失败
+        </div>
+      )}
+      
+      {/* 实际图片 */}
+      {shouldLoad && !hasError && (
+        <img
+          ref={imgRef}
+          {...optimizedProps}
+          className={`transition-opacity duration-300 ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          } object-cover w-full h-full`}
+          onLoad={handleLoad}
+          onError={handleError}
+          // 性能优化属性
+          decoding="async"
+        />
+      )}
+    </div>
+  );
+};

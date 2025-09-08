@@ -64,12 +64,9 @@ export const createOptimizedImageProps = (src: string, alt: string, options?: {
     srcSet: generateImageSrcSet(src, sizes),
     sizes: generateImageSizes(breakpoints),
     style: { 
-      contentVisibility: 'auto',
       aspectRatio: aspectRatio || 'auto',
       objectFit: 'cover' as const
-    },
-    // 添加性能提示
-    fetchPriority: priority ? 'high' as const : 'auto' as const
+    } as React.CSSProperties
   };
 };
 

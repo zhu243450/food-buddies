@@ -2,13 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 性能优化的设计系统 - 减少CSS体积和重绘 */
 
 @layer base {
   :root {
-    /* 年轻活泼的渐变配色系统 - TikTok/Instagram风格 */
+    /* 年轻活泼的渐变配色系统 - 优化版本 */
     --background: 280 15% 97%;
     --foreground: 230 15% 15%;
 
@@ -43,7 +41,7 @@ All colors MUST be HSL.
 
     --radius: 1rem;
 
-    /* 年轻化渐变和阴影 */
+    /* 性能优化的渐变和阴影 */
     --gradient-primary: linear-gradient(135deg, hsl(315, 85%, 60%), hsl(25, 95%, 65%));
     --gradient-secondary: linear-gradient(135deg, hsl(195, 100%, 85%), hsl(280, 70%, 85%));
     --gradient-accent: linear-gradient(135deg, hsl(25, 95%, 65%), hsl(315, 85%, 60%));
@@ -121,5 +119,101 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    /* 性能优化 - 硬件加速和优化渲染 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* 提升滚动性能 */
+    -webkit-overflow-scrolling: touch;
+    /* 优化文本渲染 */
+    text-rendering: optimizeLegibility;
+    /* 减少重绘 */
+    transform: translateZ(0);
+    /* 启用硬件加速 */
+    will-change: scroll-position;
+  }
+
+  /* 优化图片加载 */
+  img {
+    /* 防止图片闪烁 */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    /* 懒加载占位 */
+    background-color: hsl(var(--muted));
+    /* 避免布局偏移 */
+    display: block;
+  }
+
+  /* 优化动画性能 */
+  .animate-spin,
+  .animate-pulse,
+  .animate-bounce {
+    /* 使用transform而不是改变layout属性 */
+    will-change: transform;
+    /* 启用硬件加速 */
+    transform: translateZ(0);
+  }
+
+  /* 优化滚动性能 */
+  .scroll-area {
+    /* 启用滚动优化 */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    /* 减少重绘 */
+    contain: layout style paint;
+  }
+
+  /* 性能优化的按钮 */
+  button,
+  .btn {
+    /* 避免不必要的重绘 */
+    contain: layout style paint;
+    /* 优化点击响应 */
+    touch-action: manipulation;
+  }
+
+  /* 优化表格性能 */
+  table {
+    /* 固定表格布局以提升性能 */
+    table-layout: fixed;
+  }
+
+  /* Critical CSS内联 - 关键样式 */
+  .critical-above-fold {
+    /* 首屏关键内容样式 */
+    contain: layout style paint;
+    will-change: auto;
+  }
+}
+
+/* 性能优化的工具类 */
+@layer utilities {
+  /* GPU加速 */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* 避免重绘的容器 */
+  .contain-paint {
+    contain: layout style paint;
+  }
+
+  /* 优化的懒加载占位 */
+  .lazy-placeholder {
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, transparent 37%, hsl(var(--muted)) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* 优化的阴影 */
+  .shadow-performance {
+    box-shadow: 0 1px 3px 0 hsl(var(--primary) / 0.1);
+    /* 避免阴影重绘 */
+    will-change: box-shadow;
   }
 }

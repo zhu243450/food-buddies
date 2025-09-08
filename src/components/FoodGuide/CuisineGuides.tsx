@@ -2,10 +2,10 @@ import React, { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Utensils } from 'lucide-react';
 import { SmallRestaurantCard } from '@/components/SmallRestaurantCard';
 import { useInView } from '@/hooks/useInView';
+import { PerformantTabs } from '@/components/PerformantTabs';
 
 interface Restaurant {
   id: string;
@@ -46,12 +46,12 @@ export const CuisineGuides = memo<CuisineGuidesProps>(({
     triggerOnce: true
   });
 
-  // 只在可见时渲染内容
-  const tabsContent = useMemo(() => {
-    if (!inView) return null;
-
-    return cuisineGuides.map((guide) => (
-      <TabsContent key={guide.id} value={guide.id} className="mt-6">
+  // 转换为PerformantTabs所需格式
+  const tabItems = useMemo(() => 
+    cuisineGuides.map((guide) => ({
+      id: guide.id,
+      label: guide.name,
+      content: (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -108,9 +108,10 @@ export const CuisineGuides = memo<CuisineGuidesProps>(({
             )}
           </CardContent>
         </Card>
-      </TabsContent>
-    ));
-  }, [cuisineGuides, onRestaurantClick, inView, t]);
+      )
+    })), 
+    [cuisineGuides, onRestaurantClick, t]
+  );
 
   if (cuisineGuides.length === 0) {
     return null;
@@ -123,16 +124,11 @@ export const CuisineGuides = memo<CuisineGuidesProps>(({
       </h2>
       
       {inView ? (
-        <Tabs defaultValue={cuisineGuides[0]?.id} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-            {cuisineGuides.slice(0, 4).map((guide) => (
-              <TabsTrigger key={guide.id} value={guide.id}>
-                {guide.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {tabsContent}
-        </Tabs>
+        <PerformantTabs 
+          items={tabItems}
+          defaultValue={cuisineGuides[0]?.id}
+          lazyLoad={true}
+        />
       ) : (
         // 占位符
         <div className="space-y-4">
