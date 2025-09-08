@@ -963,6 +963,32 @@
       ]
     }
   },
+  "foodGuide": {
+    "title": "美食社交指南",
+    "loading": "加载中...",
+    "selectRegion": "选择区域",
+    "myDinners": "我的饭局",
+    "createDinner": "创建饭局",
+    "registerNow": "立即注册",
+    "browseDinners": "浏览饭局",
+    "featuredRestaurants": "精选餐厅",
+    "cuisineGuide": "菜系详解",
+    "cuisineCharacteristics": "菜系特色",
+    "mustTryDishes": "必尝菜品",
+    "recommendedRestaurants": "推荐餐厅",
+    "moreRestaurants": "家餐厅...",
+    "diningTips": "用餐贴士",
+    "bookingTip": "推荐提前预约热门餐厅",
+    "avoidPeakTip": "避开用餐高峰期",
+    "socialDiningTip": "通过社交用餐结识新朋友",
+    "description": "美食指南，发现地道美食，结交志同道合的朋友",
+    "defaultDescription": "发现全国各地美食，结交志同道合的朋友",
+    "cuisineDescription": "餐厅推荐",
+    "nationalGuide": "全国",
+    "loadError": "加载失败",
+    "loadErrorDescription": "无法加载区域数据，请刷新页面重试",
+    "divisionNotFound": "未找到区域"
+  },
   "userMenu": {
     "mine": "我的",
     "user": "用户",

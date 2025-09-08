@@ -102,7 +102,7 @@ export const CombinedFoodGuide: React.FC = () => {
       
       const currentDivision = divisionPath?.[0];
       if (!currentDivision) {
-        throw new Error('Division not found');
+        throw new Error(t('foodGuide.divisionNotFound'));
       }
 
       // Get all descendant divisions for restaurant filtering
@@ -172,7 +172,7 @@ export const CombinedFoodGuide: React.FC = () => {
         cuisineGuides = uniqueCuisines.map(cuisine => ({
           id: `default-${cuisine}`,
           name: cuisine,
-          description: `${cuisine}餐厅推荐`,
+          description: `${cuisine}${t('foodGuide.cuisineDescription')}`,
           characteristics: [],
           must_try_dishes: [],
           restaurants: restaurantsData.filter(r => r.cuisine === cuisine)
@@ -190,7 +190,7 @@ export const CombinedFoodGuide: React.FC = () => {
       const newRegionInfo = {
         id: currentDivision.id,
         name: currentDivision.name,
-        description: `${currentDivision.name}美食指南，发现地道美食，结交志同道合的朋友`,
+        description: `${currentDivision.name}${t('foodGuide.description')}`,
         path: pathArray,
         cuisineGuides,
         featuredRestaurants: (restaurantsData || []).filter(r => r.is_featured)
@@ -203,8 +203,8 @@ export const CombinedFoodGuide: React.FC = () => {
     } catch (error: any) {
       console.error('Failed to load region data:', error);
       toast({
-        title: "加载失败",
-        description: "无法加载区域数据，请刷新页面重试",
+        title: t('foodGuide.loadError'),
+        description: t('foodGuide.loadErrorDescription'),
         variant: "destructive"
       });
     } finally {
@@ -267,12 +267,12 @@ export const CombinedFoodGuide: React.FC = () => {
   const currentRegionName = useMemo(() => 
     regionInfo ? 
       (regionInfo.path.length > 0 ? regionInfo.path[regionInfo.path.length - 1].name : regionInfo.name) : 
-      '全国'
-  , [regionInfo]);
+      t('foodGuide.nationalGuide')
+  , [regionInfo, t]);
   
   const regionDescription = useMemo(() => 
-    regionInfo?.description || '发现全国各地美食，结交志同道合的朋友'
-  , [regionInfo]);
+    regionInfo?.description || t('foodGuide.defaultDescription')
+  , [regionInfo, t]);
 
   if (loading) {
     return (
@@ -280,7 +280,7 @@ export const CombinedFoodGuide: React.FC = () => {
         <Navigation />
         <div className="container mx-auto px-4 py-16 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">加载中...</p>
+          <p className="text-muted-foreground">{t('foodGuide.loading')}</p>
         </div>
       </div>
     );
@@ -296,7 +296,7 @@ export const CombinedFoodGuide: React.FC = () => {
         <section className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
             <ChefHat className="inline-block h-10 w-10 mr-3 text-primary" />
-            {currentRegionName}美食社交指南
+            {currentRegionName}{t('foodGuide.title')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
             {regionDescription}
@@ -324,7 +324,7 @@ export const CombinedFoodGuide: React.FC = () => {
             <RegionSelector
               selectedDivisionId={selectedDivisionId || undefined}
               onSelectionChange={handleRegionChange}
-              placeholder="选择区域"
+              placeholder={t('foodGuide.selectRegion')}
             />
           </div>
 
@@ -334,23 +334,23 @@ export const CombinedFoodGuide: React.FC = () => {
                 <Link to="/my-dinners">
                   <Button size="lg" className="gap-2">
                     <Users className="h-5 w-5" />
-                    我的饭局
+                    {t('foodGuide.myDinners')}
                   </Button>
                 </Link>
                 <Link to="/create-dinner">
                   <Button variant="outline" size="lg" className="gap-2">
                     <Utensils className="h-5 w-5" />
-                    创建饭局
+                    {t('foodGuide.createDinner')}
                   </Button>
                 </Link>
               </>
             ) : (
               <>
                 <Link to="/auth">
-                  <Button size="lg">立即注册</Button>
+                  <Button size="lg">{t('foodGuide.registerNow')}</Button>
                 </Link>
                 <Link to="/discover">
-                  <Button variant="outline" size="lg">浏览饭局</Button>
+                  <Button variant="outline" size="lg">{t('foodGuide.browseDinners')}</Button>
                 </Link>
               </>
             )}
@@ -360,7 +360,7 @@ export const CombinedFoodGuide: React.FC = () => {
         {/* Featured Restaurants */}
         {regionInfo && regionInfo.featuredRestaurants.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">精选餐厅</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{t('foodGuide.featuredRestaurants')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {regionInfo.featuredRestaurants.map((restaurant) => (
                 <RestaurantCard
@@ -376,7 +376,7 @@ export const CombinedFoodGuide: React.FC = () => {
         {/* Cuisine Guide Tabs */}
         {regionInfo && regionInfo.cuisineGuides && regionInfo.cuisineGuides.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">菜系详解</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{t('foodGuide.cuisineGuide')}</h2>
             <Tabs defaultValue={regionInfo.cuisineGuides[0]?.id} className="w-full">
               <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
                 {regionInfo.cuisineGuides.slice(0, 4).map((guide) => (
@@ -399,7 +399,7 @@ export const CombinedFoodGuide: React.FC = () => {
                     <CardContent className="space-y-6">
                       {guide.characteristics.length > 0 && (
                         <div>
-                          <h4 className="font-semibold mb-3">菜系特色</h4>
+                          <h4 className="font-semibold mb-3">{t('foodGuide.cuisineCharacteristics')}</h4>
                           <div className="flex flex-wrap gap-2">
                             {guide.characteristics.map((char, index) => (
                               <Badge key={index} variant="outline">
@@ -412,7 +412,7 @@ export const CombinedFoodGuide: React.FC = () => {
 
                       {guide.must_try_dishes.length > 0 && (
                         <div>
-                          <h4 className="font-semibold mb-3">必尝菜品</h4>
+                          <h4 className="font-semibold mb-3">{t('foodGuide.mustTryDishes')}</h4>
                           <div className="flex flex-wrap gap-2">
                             {guide.must_try_dishes.map((dish, index) => (
                               <Badge key={index} variant="secondary">
@@ -425,7 +425,7 @@ export const CombinedFoodGuide: React.FC = () => {
 
                       {guide.restaurants.length > 0 && (
                         <div>
-                          <h4 className="font-semibold mb-3">推荐餐厅</h4>
+                          <h4 className="font-semibold mb-3">{t('foodGuide.recommendedRestaurants')}</h4>
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {guide.restaurants.slice(0, 4).map((restaurant) => (
                               <SmallRestaurantCard
@@ -437,7 +437,7 @@ export const CombinedFoodGuide: React.FC = () => {
                           </div>
                           {guide.restaurants.length > 4 && (
                             <p className="text-sm text-muted-foreground text-center mt-4">
-                              还有 {guide.restaurants.length - 4} 家餐厅...
+                              {t('common.more')} {guide.restaurants.length - 4} {t('foodGuide.moreRestaurants')}
                             </p>
                           )}
                         </div>
@@ -453,7 +453,7 @@ export const CombinedFoodGuide: React.FC = () => {
         {/* Dining Tips */}
         {regionInfo && regionInfo.path.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">用餐贴士</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{t('foodGuide.diningTips')}</h2>
             <Card>
               <CardContent className="p-6">
                 <div className="grid md:grid-cols-3 gap-4">
@@ -461,13 +461,13 @@ export const CombinedFoodGuide: React.FC = () => {
                     <div className="bg-primary/10 rounded-full p-2 mt-1">
                       <Utensils className="h-4 w-4 text-primary" />
                     </div>
-                    <p className="text-foreground">推荐提前预约热门餐厅</p>
+                    <p className="text-foreground">{t('foodGuide.bookingTip')}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="bg-primary/10 rounded-full p-2 mt-1">
                       <Clock className="h-4 w-4 text-primary" />
                     </div>
-                    <p className="text-foreground">避开用餐高峰期</p>
+                    <p className="text-foreground">{t('foodGuide.avoidPeakTip')}</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="bg-primary/10 rounded-full p-2 mt-1">
