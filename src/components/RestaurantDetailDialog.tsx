@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Star, MapPin, Clock, Users, Utensils, Phone, Navigation } from "lucide-react";
+import { toast } from "sonner";
 
 interface Restaurant {
   id: string;
@@ -27,7 +29,27 @@ interface RestaurantDetailDialogProps {
 }
 
 export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: RestaurantDetailDialogProps) {
+  const navigate = useNavigate();
+  
   if (!restaurant) return null;
+
+  const handleNavigation = () => {
+    const searchQuery = encodeURIComponent(`${restaurant.name} ${restaurant.area}`);
+    const mapUrl = `https://maps.google.com/maps?q=${searchQuery}`;
+    window.open(mapUrl, '_blank');
+    toast.success('正在打开地图导航');
+  };
+
+  const handleCreateDinner = () => {
+    onOpenChange(false);
+    navigate('/create-dinner', { 
+      state: { 
+        selectedRestaurant: restaurant.name,
+        location: restaurant.area 
+      }
+    });
+    toast.success('正在跳转到创建饭局页面');
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -116,11 +138,11 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
               喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleNavigation}>
                 <Navigation className="h-4 w-4 mr-2" />
                 导航
               </Button>
-              <Button size="sm">
+              <Button size="sm" onClick={handleCreateDinner}>
                 <Utensils className="h-4 w-4 mr-2" />
                 创建饭局
               </Button>
