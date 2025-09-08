@@ -4,23 +4,20 @@ import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { SEO } from '@/components/SEO';
 import { useSEO } from '@/hooks/useSEO';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChefHat, MapPin, Clock, Users, Star, Utensils, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Clock, Users, Utensils, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import type { User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
-import { SmallRestaurantCard } from '@/components/SmallRestaurantCard';
 import { useAuth } from '@/hooks/useAuth';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
-import { OptimizedRestaurantCard } from '@/components/OptimizedRestaurantCard';
 
-// Lazy load heavy components
+// 拆分的组件 - 懒加载以减少初始包大小
+const RegionHero = lazy(() => import('@/components/FoodGuide/RegionHero').then(m => ({ default: m.RegionHero })));
+const FeaturedRestaurants = lazy(() => import('@/components/FoodGuide/FeaturedRestaurants').then(m => ({ default: m.FeaturedRestaurants })));
+const CuisineGuides = lazy(() => import('@/components/FoodGuide/CuisineGuides').then(m => ({ default: m.CuisineGuides })));
+
+// 按需加载重型组件
 const RestaurantDetailDialog = lazy(() => import('@/components/RestaurantDetailDialog').then(m => ({ default: m.RestaurantDetailDialog })));
-const RegionSelector = lazy(() => import('@/components/RegionSelector').then(m => ({ default: m.RegionSelector })));
 
 interface Restaurant {
   id: string;
@@ -293,166 +290,57 @@ export const CombinedFoodGuide: React.FC = () => {
       <Navigation />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Hero Section */}
-        <section className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            <ChefHat className="inline-block h-10 w-10 mr-3 text-primary" />
-            {currentRegionName} {t('foodGuide.title')}
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-            {regionDescription}
-          </p>
-          
-          {/* Region Path Breadcrumb */}
-          {regionInfo && regionInfo.path.length > 0 && (
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                {regionInfo.path.map((division, index) => (
-                  <React.Fragment key={division.id}>
-                    <span>{division.name}</span>
-                    {index < regionInfo.path.length - 1 && (
-                      <span className="text-xs">→</span>
-                    )}
-                  </React.Fragment>
+        {/* Hero Section - 懒加载优化 */}
+        <Suspense fallback={
+          <div className="text-center mb-12 space-y-4">
+            <div className="h-12 bg-muted animate-pulse rounded-md mx-auto w-96" />
+            <div className="h-6 bg-muted animate-pulse rounded-md mx-auto w-64" />
+            <div className="h-10 bg-muted animate-pulse rounded-md mx-auto w-48" />
+          </div>
+        }>
+          <RegionHero
+            currentRegionName={currentRegionName}
+            regionDescription={regionDescription}
+            regionPath={regionInfo?.path || []}
+            selectedDivisionId={selectedDivisionId || undefined}
+            user={user}
+            onRegionChange={handleRegionChange}
+          />
+        </Suspense>
+
+        {/* Featured Restaurants - 懒加载和虚拟滚动优化 */}
+        {regionInfo?.featuredRestaurants && (
+          <Suspense fallback={
+            <div className="mb-12 space-y-4">
+              <div className="h-8 bg-muted animate-pulse rounded-md w-48" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
                 ))}
               </div>
             </div>
-          )}
-          
-          {/* Region Selector with lazy loading */}
-          <div className="mb-8">
-            <Suspense fallback={<div className="h-10 bg-muted animate-pulse rounded-md" />}>
-              <RegionSelector
-                selectedDivisionId={selectedDivisionId || undefined}
-                onSelectionChange={handleRegionChange}
-                placeholder={t('foodGuide.selectRegion')}
-              />
-            </Suspense>
-          </div>
-
-          <div className="flex justify-center gap-4">
-            {user ? (
-              <>
-                <Link to="/my-dinners">
-                  <Button size="lg" className="gap-2">
-                    <Users className="h-5 w-5" />
-                    {t('foodGuide.myDinners')}
-                  </Button>
-                </Link>
-                <Link to="/create-dinner">
-                  <Button variant="outline" size="lg" className="gap-2">
-                    <Utensils className="h-5 w-5" />
-                    {t('foodGuide.createDinner')}
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button size="lg">{t('foodGuide.registerNow')}</Button>
-                </Link>
-                <Link to="/discover">
-                  <Button variant="outline" size="lg">{t('foodGuide.browseDinners')}</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </section>
-
-        {/* Featured Restaurants with performance optimization */}
-        {regionInfo && regionInfo.featuredRestaurants.length > 0 && (
-          <section className="mb-12" aria-labelledby="featured-restaurants">
-            <h2 id="featured-restaurants" className="text-2xl font-bold text-foreground mb-6">
-              {t('foodGuide.featuredRestaurants')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {regionInfo.featuredRestaurants.map((restaurant) => (
-                <OptimizedRestaurantCard
-                  key={restaurant.id}
-                  restaurant={restaurant}
-                  onClick={handleRestaurantClick}
-                />
-              ))}
-            </div>
-          </section>
+          }>
+            <FeaturedRestaurants
+              restaurants={regionInfo.featuredRestaurants}
+              onRestaurantClick={handleRestaurantClick}
+            />
+          </Suspense>
         )}
 
-        {/* Cuisine Guide Tabs */}
-        {regionInfo && regionInfo.cuisineGuides && regionInfo.cuisineGuides.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold text-foreground mb-6">{t('foodGuide.cuisineGuide')}</h2>
-            <Tabs defaultValue={regionInfo.cuisineGuides[0]?.id} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-                {regionInfo.cuisineGuides.slice(0, 4).map((guide) => (
-                  <TabsTrigger key={guide.id} value={guide.id}>
-                    {guide.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
-              {regionInfo.cuisineGuides.map((guide) => (
-                <TabsContent key={guide.id} value={guide.id} className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Utensils className="h-6 w-6 text-primary" />
-                        {guide.name}
-                      </CardTitle>
-                      <p className="text-muted-foreground">{guide.description}</p>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {guide.characteristics.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold mb-3">{t('foodGuide.cuisineCharacteristics')}</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {guide.characteristics.map((char, index) => (
-                              <Badge key={index} variant="outline">
-                                {char}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {guide.must_try_dishes.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold mb-3">{t('foodGuide.mustTryDishes')}</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {guide.must_try_dishes.map((dish, index) => (
-                              <Badge key={index} variant="secondary">
-                                {dish}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {guide.restaurants.length > 0 && (
-                        <div>
-                          <h4 className="font-semibold mb-3">{t('foodGuide.recommendedRestaurants')}</h4>
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {guide.restaurants.slice(0, 4).map((restaurant) => (
-                              <SmallRestaurantCard
-                                key={restaurant.id}
-                                restaurant={restaurant}
-                                onClick={handleRestaurantClick}
-                              />
-                            ))}
-                          </div>
-                           {guide.restaurants.length > 4 && (
-                             <p className="text-sm text-muted-foreground text-center mt-4">
-                               {t('common.more')} {guide.restaurants.length - 4} {t('foodGuide.moreRestaurants')}
-                             </p>
-                           )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </section>
+        {/* Cuisine Guides - 懒加载优化 */}
+        {regionInfo?.cuisineGuides && regionInfo.cuisineGuides.length > 0 && (
+          <Suspense fallback={
+            <div className="mb-12 space-y-4">
+              <div className="h-8 bg-muted animate-pulse rounded-md w-48" />
+              <div className="h-12 bg-muted animate-pulse rounded-md" />
+              <div className="h-96 bg-muted animate-pulse rounded-md" />
+            </div>
+          }>
+            <CuisineGuides
+              cuisineGuides={regionInfo.cuisineGuides}
+              onRestaurantClick={handleRestaurantClick}
+            />
+          </Suspense>
         )}
 
         {/* Dining Tips */}
