@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,9 @@ import { toast } from "sonner";
 interface Division {
   id: string;
   name: string;
-  code: string;
+  code?: string;
   level: 'province' | 'city' | 'county' | 'town';
-  parent_id: string | null;
+  parent_id?: string | null;
 }
 
 interface RegionSelectorProps {
@@ -21,7 +21,8 @@ interface RegionSelectorProps {
   placeholder?: string;
 }
 
-export function RegionSelector({ selectedDivisionId, onSelectionChange, placeholder }: RegionSelectorProps) {
+// Memoized component for better performance
+export const RegionSelector = memo<RegionSelectorProps>(({ selectedDivisionId, onSelectionChange, placeholder }) => {
   const { t } = useTranslation();
   const [provinces, setProvinces] = useState<Division[]>([]);
   const [cities, setCities] = useState<Division[]>([]);
@@ -38,15 +39,16 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
   const [searchResults, setSearchResults] = useState<Division[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Cache loaded data
-  const [dataCache, setDataCache] = useState<Record<string, Division[]>>({});
+  // Enhanced cache with expiry
+  const [dataCache, setDataCache] = useState<Record<string, { data: Division[], timestamp: number }>>({});
+  const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
-  // Load provinces
+  // Load provinces on mount
   useEffect(() => {
     loadProvinces();
   }, []);
 
-  // If there's a pre-selected value, load the complete path
+  // Load division path if pre-selected
   useEffect(() => {
     if (selectedDivisionId && provinces.length > 0) {
       loadDivisionPath(selectedDivisionId);
@@ -54,17 +56,32 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
   }, [selectedDivisionId, provinces]);
 
   const loadProvinces = async () => {
+    const cacheKey = 'provinces';
+    const cached = dataCache[cacheKey];
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
+      setProvinces(cached.data);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
-        .select('*')
+        .select('id, name, code, level, parent_id')
         .eq('level', 'province')
         .eq('is_active', true)
         .order('display_order')
         .order('name');
 
       if (error) throw error;
-      setProvinces(data || []);
+      const provinces = data || [];
+      setProvinces(provinces);
+      
+      // Cache with timestamp
+      setDataCache(prev => ({ 
+        ...prev, 
+        [cacheKey]: { data: provinces, timestamp: Date.now() }
+      }));
     } catch (error) {
       console.error('Failed to load provinces:', error);
       toast.error(t('regionSelector.loadProvincesFailed'));
@@ -73,8 +90,10 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
 
   const loadCities = useCallback(async (provinceId: string) => {
     const cacheKey = `cities-${provinceId}`;
-    if (dataCache[cacheKey]) {
-      setCities(dataCache[cacheKey]);
+    const cached = dataCache[cacheKey];
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
+      setCities(cached.data);
       setCounties([]);
       setTowns([]);
       return;
@@ -83,7 +102,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
-        .select('*')
+        .select('id, name, code, level, parent_id')
         .eq('parent_id', provinceId)
         .eq('level', 'city')
         .eq('is_active', true)
@@ -96,8 +115,11 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       setCounties([]);
       setTowns([]);
       
-      // Cache data
-      setDataCache(prev => ({ ...prev, [cacheKey]: cities }));
+      // Cache with timestamp
+      setDataCache(prev => ({ 
+        ...prev, 
+        [cacheKey]: { data: cities, timestamp: Date.now() }
+      }));
     } catch (error) {
       console.error('Failed to load cities:', error);
       toast.error(t('regionSelector.loadCitiesFailed'));
@@ -106,8 +128,10 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
 
   const loadCounties = useCallback(async (cityId: string) => {
     const cacheKey = `counties-${cityId}`;
-    if (dataCache[cacheKey]) {
-      setCounties(dataCache[cacheKey]);
+    const cached = dataCache[cacheKey];
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
+      setCounties(cached.data);
       setTowns([]);
       return;
     }
@@ -115,7 +139,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
-        .select('*')
+        .select('id, name, code, level, parent_id')
         .eq('parent_id', cityId)
         .eq('level', 'county')
         .eq('is_active', true)
@@ -127,8 +151,11 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       setCounties(counties);
       setTowns([]);
       
-      // Cache data
-      setDataCache(prev => ({ ...prev, [cacheKey]: counties }));
+      // Cache with timestamp
+      setDataCache(prev => ({ 
+        ...prev, 
+        [cacheKey]: { data: counties, timestamp: Date.now() }
+      }));
     } catch (error) {
       console.error('Failed to load counties:', error);
       toast.error(t('regionSelector.loadCountiesFailed'));
@@ -137,15 +164,17 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
 
   const loadTowns = useCallback(async (countyId: string) => {
     const cacheKey = `towns-${countyId}`;
-    if (dataCache[cacheKey]) {
-      setTowns(dataCache[cacheKey]);
+    const cached = dataCache[cacheKey];
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
+      setTowns(cached.data);
       return;
     }
 
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
-        .select('*')
+        .select('id, name, code, level, parent_id')
         .eq('parent_id', countyId)
         .eq('level', 'town')
         .eq('is_active', true)
@@ -156,8 +185,11 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       const towns = data || [];
       setTowns(towns);
       
-      // Cache data
-      setDataCache(prev => ({ ...prev, [cacheKey]: towns }));
+      // Cache with timestamp
+      setDataCache(prev => ({ 
+        ...prev, 
+        [cacheKey]: { data: towns, timestamp: Date.now() }
+      }));
     } catch (error) {
       console.error('Failed to load towns:', error);
       toast.error(t('regionSelector.loadTownsFailed'));
@@ -171,7 +203,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
 
       if (error) throw error;
 
-      const path = (data || []).reverse(); // 从省到镇的顺序
+      const path = (data || []).reverse();
       
       for (const division of path) {
         switch (division.level) {
@@ -197,7 +229,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     }
   };
 
-  const handleProvinceChange = (provinceId: string) => {
+  const handleProvinceChange = useCallback((provinceId: string) => {
     setSelectedProvince(provinceId);
     setSelectedCity('');
     setSelectedCounty('');
@@ -212,9 +244,9 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     if (province) {
       onSelectionChange(provinceId, [province]);
     }
-  };
+  }, [provinces, onSelectionChange, loadCities]);
 
-  const handleCityChange = (cityId: string) => {
+  const handleCityChange = useCallback((cityId: string) => {
     setSelectedCity(cityId);
     setSelectedCounty('');
     setSelectedTown('');
@@ -228,9 +260,9 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     if (province && city) {
       onSelectionChange(cityId, [province, city]);
     }
-  };
+  }, [provinces, cities, selectedProvince, onSelectionChange, loadCounties]);
 
-  const handleCountyChange = (countyId: string) => {
+  const handleCountyChange = useCallback((countyId: string) => {
     setSelectedCounty(countyId);
     setSelectedTown('');
     setTowns([]);
@@ -243,9 +275,9 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     if (province && city && county) {
       onSelectionChange(countyId, [province, city, county]);
     }
-  };
+  }, [provinces, cities, counties, selectedProvince, selectedCity, onSelectionChange, loadTowns]);
 
-  const handleTownChange = (townId: string) => {
+  const handleTownChange = useCallback((townId: string) => {
     setSelectedTown(townId);
     
     const province = provinces.find(p => p.id === selectedProvince);
@@ -255,9 +287,9 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     if (province && city && county && town) {
       onSelectionChange(townId, [province, city, county, town]);
     }
-  };
+  }, [provinces, cities, counties, towns, selectedProvince, selectedCity, selectedCounty, onSelectionChange]);
 
-  // 防抖搜索
+  // Enhanced debounced search with better performance
   const debouncedSearch = useCallback(
     useMemo(() => {
       let timeoutId: NodeJS.Timeout;
@@ -273,12 +305,12 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           try {
             const { data, error } = await supabase
               .from('administrative_divisions')
-              .select('*')
+              .select('id, name, level')  // Only select needed fields
               .ilike('name', `%${query}%`)
               .eq('is_active', true)
               .order('level')
               .order('name')
-              .limit(20);
+              .limit(10);  // Reduce limit for faster loading
 
             if (error) throw error;
             setSearchResults(data || []);
@@ -288,7 +320,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           } finally {
             setLoading(false);
           }
-        }, 300);
+        }, 200);  // Reduce debounce time for faster response
       };
     }, [t]),
     [t]
@@ -299,17 +331,15 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     setSearchQuery('');
     setSearchResults([]);
     
-    // 加载完整路径并设置选择状态
-    await loadDivisionPath(division.id);
-    
-    // 获取完整路径用于回调
+    // Optimized: Get path only once and use it for both UI update and callback
     try {
       const { data, error } = await supabase
         .rpc('get_division_path', { division_id_param: division.id });
 
       if (error) throw error;
 
-      const path = (data || []).reverse().map(d => ({
+      const pathData = (data || []).reverse();
+      const path = pathData.map(d => ({
         id: d.id,
         name: d.name,
         code: '',
@@ -317,13 +347,36 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
         parent_id: null
       }));
       
+      // Update UI state based on path
+      for (const div of pathData) {
+        switch (div.level) {
+          case 'province':
+            setSelectedProvince(div.id);
+            await loadCities(div.id);
+            break;
+          case 'city':
+            setSelectedCity(div.id);
+            await loadCounties(div.id);
+            break;
+          case 'county':
+            setSelectedCounty(div.id);
+            await loadTowns(div.id);
+            break;
+          case 'town':
+            setSelectedTown(div.id);
+            break;
+        }
+      }
+      
+      // Single callback with complete path
       onSelectionChange(division.id, path);
     } catch (error) {
       console.error('Failed to get division path:', error);
+      toast.error(t('regionSelector.loadFailed'));
     }
   };
 
-  const clearSelection = () => {
+  const clearSelection = useCallback(() => {
     setSelectedProvince('');
     setSelectedCity('');
     setSelectedCounty('');
@@ -332,9 +385,9 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     setCounties([]);
     setTowns([]);
     onSelectionChange(null, []);
-  };
+  }, [onSelectionChange]);
 
-  const getLevelLabel = (level: string) => {
+  const getLevelLabel = useCallback((level: string) => {
     const labels = {
       province: t('regionSelector.province'),
       city: t('regionSelector.city'),
@@ -342,7 +395,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       town: t('regionSelector.town')
     };
     return labels[level as keyof typeof labels] || level;
-  };
+  }, [t]);
 
   if (searchMode) {
     return (
@@ -383,7 +436,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
             {searchResults.map((result) => (
               <div
                 key={result.id}
-                className="p-3 border rounded-lg cursor-pointer hover:bg-accent"
+                className="p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors"
                 onClick={() => handleSearchResultSelect(result)}
               >
                 <div className="flex items-center justify-between">
@@ -502,4 +555,8 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       </div>
     </div>
   );
-}
+});
+
+RegionSelector.displayName = 'RegionSelector';
+
+export default RegionSelector;
