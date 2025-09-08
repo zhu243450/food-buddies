@@ -146,10 +146,10 @@ const Navigation = () => {
               className={`
                 flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px]
                 ${isSpecial 
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg scale-110" 
+                  ? "bg-primary text-white hover:bg-primary/90 shadow-lg scale-110" 
                   : isActive 
                     ? "text-primary bg-primary/10 font-semibold" 
-                    : "text-foreground hover:text-primary hover:bg-primary/10"
+                    : "text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/10"
                 }
               `}
             >
@@ -163,7 +163,13 @@ const Navigation = () => {
                 )}
               </div>
               
-              <span className={`text-xs font-medium truncate w-full text-center ${isSpecial ? "font-bold" : isActive ? "font-semibold" : "font-medium"}`}>
+              <span className={`text-xs font-medium truncate w-full text-center ${
+                isSpecial 
+                  ? "font-bold text-white" 
+                  : isActive 
+                    ? "font-semibold text-primary" 
+                    : "font-medium text-gray-700 dark:text-gray-200"
+              }`}>
                 {item.label}
               </span>
             </Button>
