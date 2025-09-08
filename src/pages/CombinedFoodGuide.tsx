@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
@@ -15,6 +15,9 @@ import type { User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
 import { RestaurantDetailDialog } from '@/components/RestaurantDetailDialog';
 import { RegionSelector } from '@/components/RegionSelector';
+import { RestaurantCard } from '@/components/RestaurantCard';
+import { SmallRestaurantCard } from '@/components/SmallRestaurantCard';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Restaurant {
   id: string;
@@ -62,7 +65,7 @@ export const CombinedFoodGuide: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [regionInfo, setRegionInfo] = useState<RegionInfo | null>(null);
   const [selectedDivisionId, setSelectedDivisionId] = useState<string | null>(
@@ -71,13 +74,23 @@ export const CombinedFoodGuide: React.FC = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   
+  // 缓存区域数据
+  const [regionCache, setRegionCache] = useState<Record<string, RegionInfo>>({});
+  
   const seoData = getPageSEO('foodGuide', regionInfo ? { 
     city: regionInfo.name, 
     cityKey: regionInfo.path[regionInfo.path.length - 1]?.name || '' 
   } : undefined);
 
-  // Load region data from database
-  const loadRegionData = async (divisionId: string) => {
+  // Load region data from database with caching
+  const loadRegionData = useCallback(async (divisionId: string) => {
+    // 检查缓存
+    if (regionCache[divisionId]) {
+      setRegionInfo(regionCache[divisionId]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -174,14 +187,18 @@ export const CombinedFoodGuide: React.FC = () => {
         parent_id: null
       }));
 
-      setRegionInfo({
+      const newRegionInfo = {
         id: currentDivision.id,
         name: currentDivision.name,
         description: `${currentDivision.name}美食指南，发现地道美食，结交志同道合的朋友`,
         path: pathArray,
         cuisineGuides,
         featuredRestaurants: (restaurantsData || []).filter(r => r.is_featured)
-      });
+      };
+      
+      setRegionInfo(newRegionInfo);
+      // 缓存区域数据
+      setRegionCache(prev => ({ ...prev, [divisionId]: newRegionInfo }));
       
     } catch (error: any) {
       console.error('Failed to load region data:', error);
@@ -193,7 +210,7 @@ export const CombinedFoodGuide: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [regionCache]);
 
   // Load default data (Beijing) if no division is selected
   const loadDefaultData = async () => {
@@ -226,25 +243,9 @@ export const CombinedFoodGuide: React.FC = () => {
     } else {
       loadDefaultData();
     }
-  }, [searchParams]);
+  }, [searchParams, loadRegionData]);
 
-  useEffect(() => {
-    // Get initial user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleRegionChange = (divisionId: string | null, divisionPath: Division[]) => {
+  const handleRegionChange = useCallback((divisionId: string | null, divisionPath: Division[]) => {
     setSelectedDivisionId(divisionId);
     
     if (divisionId) {
@@ -255,17 +256,23 @@ export const CombinedFoodGuide: React.FC = () => {
       setRegionInfo(null);
       loadDefaultData();
     }
-  };
+  }, [navigate, loadRegionData]);
 
-  const handleRestaurantClick = (restaurant: Restaurant) => {
+  const handleRestaurantClick = useCallback((restaurant: Restaurant) => {
     setSelectedRestaurant(restaurant);
     setIsRestaurantDialogOpen(true);
-  };
+  }, []);
 
-  const currentRegionName = regionInfo ? 
-    (regionInfo.path.length > 0 ? regionInfo.path[regionInfo.path.length - 1].name : regionInfo.name) : 
-    '全国';
-  const regionDescription = regionInfo?.description || '发现全国各地美食，结交志同道合的朋友';
+  // 使用 useMemo 优化计算
+  const currentRegionName = useMemo(() => 
+    regionInfo ? 
+      (regionInfo.path.length > 0 ? regionInfo.path[regionInfo.path.length - 1].name : regionInfo.name) : 
+      '全国'
+  , [regionInfo]);
+  
+  const regionDescription = useMemo(() => 
+    regionInfo?.description || '发现全国各地美食，结交志同道合的朋友'
+  , [regionInfo]);
 
   if (loading) {
     return (
@@ -356,47 +363,11 @@ export const CombinedFoodGuide: React.FC = () => {
             <h2 className="text-2xl font-bold text-foreground mb-6">精选餐厅</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {regionInfo.featuredRestaurants.map((restaurant) => (
-                <Card 
-                  key={restaurant.id} 
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleRestaurantClick(restaurant)}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg text-foreground">{restaurant.name}</h3>
-                        <p className="text-muted-foreground">{restaurant.area}</p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{restaurant.rating}</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge variant="secondary">{restaurant.cuisine}</Badge>
-                      <Badge variant="outline" className="text-primary font-semibold">
-                        {restaurant.price_range}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {restaurant.description}
-                    </p>
-                    {restaurant.special_dishes.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {restaurant.special_dishes.slice(0, 3).map((dish, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {dish}
-                          </Badge>
-                        ))}
-                        {restaurant.special_dishes.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{restaurant.special_dishes.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <RestaurantCard
+                  key={restaurant.id}
+                  restaurant={restaurant}
+                  onClick={handleRestaurantClick}
+                />
               ))}
             </div>
           </section>
@@ -455,34 +426,13 @@ export const CombinedFoodGuide: React.FC = () => {
                       {guide.restaurants.length > 0 && (
                         <div>
                           <h4 className="font-semibold mb-3">推荐餐厅</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {guide.restaurants.slice(0, 4).map((restaurant) => (
-                              <Card 
-                                key={restaurant.id} 
-                                className="cursor-pointer hover:shadow-md transition-shadow"
-                                onClick={() => handleRestaurantClick(restaurant)}
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-start justify-between mb-2">
-                                    <h5 className="font-medium text-foreground">{restaurant.name}</h5>
-                                    <div className="flex items-center gap-1">
-                                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                      <span className="text-xs">{restaurant.rating}</span>
-                                    </div>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground mb-2">{restaurant.area}</p>
-                                  <div className="flex gap-2">
-                                    <Badge variant="outline" className="text-xs">
-                                      {restaurant.price_range}
-                                    </Badge>
-                                    {restaurant.is_featured && (
-                                      <Badge variant="default" className="text-xs">
-                                        推荐
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </CardContent>
-                              </Card>
+                              <SmallRestaurantCard
+                                key={restaurant.id}
+                                restaurant={restaurant}
+                                onClick={handleRestaurantClick}
+                              />
                             ))}
                           </div>
                           {guide.restaurants.length > 4 && (

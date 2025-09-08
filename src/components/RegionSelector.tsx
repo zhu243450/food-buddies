@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,9 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Division[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 缓存已加载的数据
+  const [dataCache, setDataCache] = useState<Record<string, Division[]>>({});
 
   // 加载省份
   useEffect(() => {
@@ -66,7 +69,15 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     }
   };
 
-  const loadCities = async (provinceId: string) => {
+  const loadCities = useCallback(async (provinceId: string) => {
+    const cacheKey = `cities-${provinceId}`;
+    if (dataCache[cacheKey]) {
+      setCities(dataCache[cacheKey]);
+      setCounties([]);
+      setTowns([]);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
@@ -78,16 +89,27 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
         .order('name');
 
       if (error) throw error;
-      setCities(data || []);
+      const cities = data || [];
+      setCities(cities);
       setCounties([]);
       setTowns([]);
+      
+      // 缓存数据
+      setDataCache(prev => ({ ...prev, [cacheKey]: cities }));
     } catch (error) {
       console.error('Failed to load cities:', error);
       toast.error('加载城市数据失败');
     }
-  };
+  }, [dataCache]);
 
-  const loadCounties = async (cityId: string) => {
+  const loadCounties = useCallback(async (cityId: string) => {
+    const cacheKey = `counties-${cityId}`;
+    if (dataCache[cacheKey]) {
+      setCounties(dataCache[cacheKey]);
+      setTowns([]);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
@@ -99,15 +121,25 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
         .order('name');
 
       if (error) throw error;
-      setCounties(data || []);
+      const counties = data || [];
+      setCounties(counties);
       setTowns([]);
+      
+      // 缓存数据
+      setDataCache(prev => ({ ...prev, [cacheKey]: counties }));
     } catch (error) {
       console.error('Failed to load counties:', error);
       toast.error('加载区县数据失败');
     }
-  };
+  }, [dataCache]);
 
-  const loadTowns = async (countyId: string) => {
+  const loadTowns = useCallback(async (countyId: string) => {
+    const cacheKey = `towns-${countyId}`;
+    if (dataCache[cacheKey]) {
+      setTowns(dataCache[cacheKey]);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('administrative_divisions')
@@ -119,12 +151,16 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
         .order('name');
 
       if (error) throw error;
-      setTowns(data || []);
+      const towns = data || [];
+      setTowns(towns);
+      
+      // 缓存数据
+      setDataCache(prev => ({ ...prev, [cacheKey]: towns }));
     } catch (error) {
       console.error('Failed to load towns:', error);
       toast.error('加载乡镇数据失败');
     }
-  };
+  }, [dataCache]);
 
   const loadDivisionPath = async (divisionId: string) => {
     try {
@@ -219,32 +255,42 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     }
   };
 
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
+  // 防抖搜索
+  const debouncedSearch = useCallback(
+    useMemo(() => {
+      let timeoutId: NodeJS.Timeout;
+      return (query: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(async () => {
+          if (!query.trim()) {
+            setSearchResults([]);
+            return;
+          }
 
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('administrative_divisions')
-        .select('*')
-        .ilike('name', `%${query}%`)
-        .eq('is_active', true)
-        .order('level')
-        .order('name')
-        .limit(20);
+          setLoading(true);
+          try {
+            const { data, error } = await supabase
+              .from('administrative_divisions')
+              .select('*')
+              .ilike('name', `%${query}%`)
+              .eq('is_active', true)
+              .order('level')
+              .order('name')
+              .limit(20);
 
-      if (error) throw error;
-      setSearchResults(data || []);
-    } catch (error) {
-      console.error('Search failed:', error);
-      toast.error('搜索失败');
-    } finally {
-      setLoading(false);
-    }
-  };
+            if (error) throw error;
+            setSearchResults(data || []);
+          } catch (error) {
+            console.error('Search failed:', error);
+            toast.error('搜索失败');
+          } finally {
+            setLoading(false);
+          }
+        }, 300);
+      };
+    }, []),
+    []
+  );
 
   const handleSearchResultSelect = async (division: Division) => {
     setSearchMode(false);
@@ -307,7 +353,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                handleSearch(e.target.value);
+                debouncedSearch(e.target.value);
               }}
               className="pl-10"
               autoFocus
