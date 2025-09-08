@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
+import { RestaurantDetailDialog } from '@/components/RestaurantDetailDialog';
 
 interface Restaurant {
   id: string;
@@ -95,6 +96,8 @@ export const CombinedFoodGuide: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [cities, setCities] = useState<CityInfo[]>([]);
   const [selectedCity, setSelectedCity] = useState(urlCity || 'beijing');
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   
   const currentCityData = cities.find(c => c.key === selectedCity);
   const seoData = getPageSEO(urlCity ? 'city' : 'foodGuide', urlCity && currentCityData ? { city: currentCityData.name, cityKey: selectedCity } : undefined);
@@ -354,6 +357,11 @@ export const CombinedFoodGuide: React.FC = () => {
     }
   };
 
+  const handleRestaurantClick = (restaurant: Restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setIsRestaurantDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -519,54 +527,58 @@ export const CombinedFoodGuide: React.FC = () => {
                   {guide.restaurants && guide.restaurants.length > 0 && (
                     <div>
                       <h3 className="text-xl font-bold text-foreground mb-6">推荐餐厅</h3>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {guide.restaurants.map((restaurant) => (
-                          <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                              <CardTitle className="flex items-center justify-between">
-                                <span>{restaurant.name}</span>
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-sm font-medium">{restaurant.rating}</span>
-                                </div>
-                              </CardTitle>
-                              <Badge variant="outline" className="w-fit">{restaurant.cuisine}</Badge>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              <p className="text-muted-foreground">{restaurant.description}</p>
-                              
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                                  <span>{restaurant.area}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Clock className="h-4 w-4 text-muted-foreground" />
-                                  <span>{restaurant.best_time}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-muted-foreground" />
-                                  <span>{restaurant.group_size}</span>
-                                </div>
-                                <div className="font-medium text-primary">
-                                  {restaurant.price_range}
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <h5 className="font-medium text-foreground mb-2">招牌菜品</h5>
-                                <div className="flex flex-wrap gap-1">
-                                  {restaurant.special_dishes.map((dish) => (
-                                    <Badge key={dish} variant="secondary" className="text-xs">
-                                      {dish}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
+                       <div className="grid md:grid-cols-2 gap-6">
+                         {guide.restaurants.map((restaurant) => (
+                           <Card 
+                             key={restaurant.id} 
+                             className="hover:shadow-lg transition-shadow cursor-pointer"
+                             onClick={() => handleRestaurantClick(restaurant)}
+                           >
+                             <CardHeader>
+                               <CardTitle className="flex items-center justify-between">
+                                 <span>{restaurant.name}</span>
+                                 <div className="flex items-center gap-1">
+                                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                   <span className="text-sm font-medium">{restaurant.rating}</span>
+                                 </div>
+                               </CardTitle>
+                               <Badge variant="outline" className="w-fit">{restaurant.cuisine}</Badge>
+                             </CardHeader>
+                             <CardContent className="space-y-4">
+                               <p className="text-muted-foreground">{restaurant.description}</p>
+                               
+                               <div className="grid grid-cols-2 gap-4 text-sm">
+                                 <div className="flex items-center gap-2">
+                                   <MapPin className="h-4 w-4 text-muted-foreground" />
+                                   <span>{restaurant.area}</span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                   <Clock className="h-4 w-4 text-muted-foreground" />
+                                   <span>{restaurant.best_time}</span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                   <Users className="h-4 w-4 text-muted-foreground" />
+                                   <span>{restaurant.group_size}</span>
+                                 </div>
+                                 <div className="font-medium text-primary">
+                                   {restaurant.price_range}
+                                 </div>
+                               </div>
+                               
+                               <div>
+                                 <h5 className="font-medium text-foreground mb-2">招牌菜品</h5>
+                                 <div className="flex flex-wrap gap-1">
+                                   {restaurant.special_dishes.map((dish) => (
+                                     <Badge key={dish} variant="secondary" className="text-xs">
+                                       {dish}
+                                     </Badge>
+                                   ))}
+                                 </div>
+                               </div>
+                             </CardContent>
+                           </Card>
+                         ))}
+                       </div>
                     </div>
                   )}
                 </TabsContent>
@@ -580,7 +592,11 @@ export const CombinedFoodGuide: React.FC = () => {
           <h2 className="text-2xl font-bold text-foreground mb-6">推荐餐厅</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {currentCityData.featuredRestaurants.map((restaurant) => (
-              <Card key={restaurant.id} className="hover:shadow-lg transition-shadow">
+              <Card 
+                key={restaurant.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => handleRestaurantClick(restaurant)}
+              >
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{restaurant.name}</span>
@@ -592,9 +608,29 @@ export const CombinedFoodGuide: React.FC = () => {
                     <MapPin className="h-4 w-4 inline mr-1" />
                     {restaurant.area}
                   </p>
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                    <span className="font-medium">{restaurant.rating}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                      <span className="font-medium">{restaurant.rating}</span>
+                    </div>
+                    <span className="text-sm font-medium text-primary">{restaurant.price_range}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                    {restaurant.description}
+                  </p>
+                  <div className="mt-3">
+                    <div className="flex flex-wrap gap-1">
+                      {restaurant.special_dishes.slice(0, 3).map((dish) => (
+                        <Badge key={dish} variant="secondary" className="text-xs">
+                          {dish}
+                        </Badge>
+                      ))}
+                      {restaurant.special_dishes.length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{restaurant.special_dishes.length - 3}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -712,6 +748,13 @@ export const CombinedFoodGuide: React.FC = () => {
           </div>
         </section>
       </main>
+      
+      {/* Restaurant Detail Dialog */}
+      <RestaurantDetailDialog
+        restaurant={selectedRestaurant}
+        open={isRestaurantDialogOpen}
+        onOpenChange={setIsRestaurantDialogOpen}
+      />
     </div>
   );
 };

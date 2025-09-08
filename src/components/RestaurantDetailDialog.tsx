@@ -1,0 +1,133 @@
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Star, MapPin, Clock, Users, Utensils, Phone, Navigation } from "lucide-react";
+
+interface Restaurant {
+  id: string;
+  name: string;
+  cuisine: string;
+  area: string;
+  rating: number;
+  price_range: string;
+  special_dishes: string[];
+  best_time: string;
+  group_size: string;
+  description: string;
+  is_featured: boolean;
+}
+
+interface RestaurantDetailDialogProps {
+  restaurant: Restaurant | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: RestaurantDetailDialogProps) {
+  if (!restaurant) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between text-xl">
+            <span>{restaurant.name}</span>
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <span className="text-lg font-semibold">{restaurant.rating}</span>
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          {/* 基本信息 */}
+          <div className="flex flex-wrap gap-3">
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              <Utensils className="h-4 w-4 mr-2" />
+              {restaurant.cuisine}
+            </Badge>
+            <Badge variant="outline" className="text-sm px-3 py-1">
+              <MapPin className="h-4 w-4 mr-2" />
+              {restaurant.area}
+            </Badge>
+            <Badge variant="outline" className="text-sm px-3 py-1 font-semibold text-primary">
+              {restaurant.price_range}
+            </Badge>
+            {restaurant.is_featured && (
+              <Badge className="text-sm px-3 py-1">
+                推荐
+              </Badge>
+            )}
+          </div>
+
+          {/* 餐厅描述 */}
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-foreground leading-relaxed">{restaurant.description}</p>
+            </CardContent>
+          </Card>
+
+          {/* 详细信息 */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <h4 className="font-semibold text-foreground">推荐时间</h4>
+                </div>
+                <p className="text-muted-foreground">{restaurant.best_time}</p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <h4 className="font-semibold text-foreground">适合人数</h4>
+                </div>
+                <p className="text-muted-foreground">{restaurant.group_size}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 招牌菜品 */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Utensils className="h-5 w-5 text-primary" />
+              招牌菜品
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {restaurant.special_dishes.map((dish, index) => (
+                <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
+                  {dish}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* 操作按钮 */}
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" size="sm">
+                <Navigation className="h-4 w-4 mr-2" />
+                导航
+              </Button>
+              <Button size="sm">
+                <Utensils className="h-4 w-4 mr-2" />
+                创建饭局
+              </Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
