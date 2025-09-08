@@ -280,6 +280,107 @@ export type Database = {
           },
         ]
       }
+      cities: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          dining_tips: string[]
+          display_order: number
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          popular_areas: string[]
+          popular_cuisines: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          dining_tips?: string[]
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          popular_areas?: string[]
+          popular_cuisines?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          dining_tips?: string[]
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          popular_areas?: string[]
+          popular_cuisines?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      cuisine_guides: {
+        Row: {
+          characteristics: string[]
+          city_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          display_order: number
+          id: string
+          is_active: boolean
+          must_try_dishes: string[]
+          name: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          characteristics?: string[]
+          city_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          must_try_dishes?: string[]
+          name: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          characteristics?: string[]
+          city_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          must_try_dishes?: string[]
+          name?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuisine_guides_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dinner_participants: {
         Row: {
           dinner_id: string
@@ -707,6 +808,77 @@ export type Database = {
             columns: ["related_dinner_id"]
             isOneToOne: false
             referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurants: {
+        Row: {
+          area: string
+          best_time: string
+          city_id: string
+          created_at: string
+          created_by: string | null
+          cuisine: string
+          description: string
+          display_order: number
+          group_size: string
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          name: string
+          price_range: string
+          rating: number
+          special_dishes: string[]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          area: string
+          best_time: string
+          city_id: string
+          created_at?: string
+          created_by?: string | null
+          cuisine: string
+          description: string
+          display_order?: number
+          group_size: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name: string
+          price_range: string
+          rating?: number
+          special_dishes?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          area?: string
+          best_time?: string
+          city_id?: string
+          created_at?: string
+          created_by?: string | null
+          cuisine?: string
+          description?: string
+          display_order?: number
+          group_size?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          name?: string
+          price_range?: string
+          rating?: number
+          special_dishes?: string[]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurants_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
             referencedColumns: ["id"]
           },
         ]

@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
 import { AdminChatInvestigation } from "./AdminChatInvestigation";
 import { CampaignManagement } from "@/components/admin/CampaignManagement";
+import CityRestaurantManagement from "@/components/admin/CityRestaurantManagement";
 
 interface UserStats {
   total_users: number;
