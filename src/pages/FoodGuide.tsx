@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Navigation from '@/components/Navigation';
 import { SEO } from '@/components/SEO';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChefHat, MapPin, Clock, Users, Star, Utensils } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 interface Restaurant {
   id: string;
@@ -133,8 +135,28 @@ const cuisineGuides: CuisineGuide[] = [
 export const FoodGuide: React.FC = () => {
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const seoData = getPageSEO('foodGuide');
+
+  useEffect(() => {
+    // Get initial user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   return (
     <div className="min-h-screen bg-background">
@@ -332,12 +354,33 @@ export const FoodGuide: React.FC = () => {
             加入饭约社，与志趣相投的朋友一起探索美食世界
           </p>
           <div className="flex justify-center gap-4">
-            <Link to="/auth">
-              <Button size="lg">立即注册</Button>
-            </Link>
-            <Link to="/discover">
-              <Button variant="outline" size="lg">浏览饭局</Button>
-            </Link>
+            {!loading && (
+              user ? (
+                <>
+                  <Link to="/my-dinners">
+                    <Button size="lg" className="gap-2">
+                      <Users className="h-5 w-5" />
+                      我的饭局
+                    </Button>
+                  </Link>
+                  <Link to="/create-dinner">
+                    <Button variant="outline" size="lg" className="gap-2">
+                      <Utensils className="h-5 w-5" />
+                      创建饭局
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button size="lg">立即注册</Button>
+                  </Link>
+                  <Link to="/discover">
+                    <Button variant="outline" size="lg">浏览饭局</Button>
+                  </Link>
+                </>
+              )
+            )}
           </div>
         </section>
       </main>
