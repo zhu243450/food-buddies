@@ -22,6 +22,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="饭约社" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-74YHWHZ5ZT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // SPA: we'll send page_view on route changes via Analytics component
+      gtag('config', 'G-74YHWHZ5ZT', { send_page_view: false });
+    </script>
   </head>
 
   <body>

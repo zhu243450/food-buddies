@@ -27,6 +27,7 @@ import { CampaignDetail } from "./pages/CampaignDetail";
 import { CityPage } from "./pages/CityPage";
 import { FoodGuide } from "./pages/FoodGuide";
 import { FAQ } from "./pages/FAQ";
+import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
 import { useTranslation } from "react-i18next";
 import "./i18n";
@@ -67,7 +68,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
+            <Analytics />
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
