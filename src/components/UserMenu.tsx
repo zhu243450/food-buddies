@@ -198,17 +198,12 @@ export const UserMenu = () => {
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => navigate('/food-guide')}>
             <ChefHat className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.foodGuide')}</span>
+            <span>美食城市指南</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem onClick={() => navigate('/faq')}>
             <BookOpen className="mr-2 h-4 w-4" />
             <span>{t('userMenu.faq')}</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem onClick={() => navigate('/city/beijing')}>
-            <MapPin className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.cityGuide')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         
