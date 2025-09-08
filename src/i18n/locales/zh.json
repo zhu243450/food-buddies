@@ -963,6 +963,25 @@
       ]
     }
   },
+  "regionSelector": {
+    "selectRegion": "选择区域",
+    "search": "搜索",
+    "searchPlaceholder": "搜索省市县镇...",
+    "searching": "搜索中...",
+    "province": "省份",
+    "city": "城市",
+    "county": "区县", 
+    "town": "乡镇",
+    "selectProvince": "选择省份",
+    "selectCity": "选择城市",
+    "selectCounty": "选择区县",
+    "selectTown": "选择乡镇",
+    "loadProvincesFailed": "加载省份数据失败",
+    "loadCitiesFailed": "加载城市数据失败",
+    "loadCountiesFailed": "加载区县数据失败", 
+    "loadTownsFailed": "加载乡镇数据失败",
+    "searchFailed": "搜索失败"
+  },
   "foodGuide": {
     "title": "美食社交指南",
     "loading": "加载中...",

@@ -953,6 +953,25 @@
     "joinDinnersToShare": "Join dinners to share photos",
     "noPhotosShared": "No photos shared yet"
   },
+  "regionSelector": {
+    "selectRegion": "Select Region",
+    "search": "Search",
+    "searchPlaceholder": "Search provinces, cities, counties, towns...",
+    "searching": "Searching...",
+    "province": "Province",
+    "city": "City", 
+    "county": "County/District",
+    "town": "Township/Street",
+    "selectProvince": "Select Province",
+    "selectCity": "Select City",
+    "selectCounty": "Select County",
+    "selectTown": "Select Township",
+    "loadProvincesFailed": "Failed to load provinces data",
+    "loadCitiesFailed": "Failed to load cities data", 
+    "loadCountiesFailed": "Failed to load counties data",
+    "loadTownsFailed": "Failed to load townships data",
+    "searchFailed": "Search failed"
+  },
   "foodGuide": {
     "title": "Food Social Guide",
     "loading": "Loading...",

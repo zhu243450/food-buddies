@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,8 @@ interface RegionSelectorProps {
   placeholder?: string;
 }
 
-export function RegionSelector({ selectedDivisionId, onSelectionChange, placeholder = "选择区域" }: RegionSelectorProps) {
+export function RegionSelector({ selectedDivisionId, onSelectionChange, placeholder }: RegionSelectorProps) {
+  const { t } = useTranslation();
   const [provinces, setProvinces] = useState<Division[]>([]);
   const [cities, setCities] = useState<Division[]>([]);
   const [counties, setCounties] = useState<Division[]>([]);
@@ -36,15 +38,15 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
   const [searchResults, setSearchResults] = useState<Division[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // 缓存已加载的数据
+  // Cache loaded data
   const [dataCache, setDataCache] = useState<Record<string, Division[]>>({});
 
-  // 加载省份
+  // Load provinces
   useEffect(() => {
     loadProvinces();
   }, []);
 
-  // 如果有预选值，加载完整路径
+  // If there's a pre-selected value, load the complete path
   useEffect(() => {
     if (selectedDivisionId && provinces.length > 0) {
       loadDivisionPath(selectedDivisionId);
@@ -65,7 +67,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       setProvinces(data || []);
     } catch (error) {
       console.error('Failed to load provinces:', error);
-      toast.error('加载省份数据失败');
+      toast.error(t('regionSelector.loadProvincesFailed'));
     }
   };
 
@@ -94,13 +96,13 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       setCounties([]);
       setTowns([]);
       
-      // 缓存数据
+      // Cache data
       setDataCache(prev => ({ ...prev, [cacheKey]: cities }));
     } catch (error) {
       console.error('Failed to load cities:', error);
-      toast.error('加载城市数据失败');
+      toast.error(t('regionSelector.loadCitiesFailed'));
     }
-  }, [dataCache]);
+  }, [dataCache, t]);
 
   const loadCounties = useCallback(async (cityId: string) => {
     const cacheKey = `counties-${cityId}`;
@@ -125,13 +127,13 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       setCounties(counties);
       setTowns([]);
       
-      // 缓存数据
+      // Cache data
       setDataCache(prev => ({ ...prev, [cacheKey]: counties }));
     } catch (error) {
       console.error('Failed to load counties:', error);
-      toast.error('加载区县数据失败');
+      toast.error(t('regionSelector.loadCountiesFailed'));
     }
-  }, [dataCache]);
+  }, [dataCache, t]);
 
   const loadTowns = useCallback(async (countyId: string) => {
     const cacheKey = `towns-${countyId}`;
@@ -154,13 +156,13 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       const towns = data || [];
       setTowns(towns);
       
-      // 缓存数据
+      // Cache data
       setDataCache(prev => ({ ...prev, [cacheKey]: towns }));
     } catch (error) {
       console.error('Failed to load towns:', error);
-      toast.error('加载乡镇数据失败');
+      toast.error(t('regionSelector.loadTownsFailed'));
     }
-  }, [dataCache]);
+  }, [dataCache, t]);
 
   const loadDivisionPath = async (divisionId: string) => {
     try {
@@ -282,14 +284,14 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
             setSearchResults(data || []);
           } catch (error) {
             console.error('Search failed:', error);
-            toast.error('搜索失败');
+            toast.error(t('regionSelector.searchFailed'));
           } finally {
             setLoading(false);
           }
         }, 300);
       };
-    }, []),
-    []
+    }, [t]),
+    [t]
   );
 
   const handleSearchResultSelect = async (division: Division) => {
@@ -334,10 +336,10 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
 
   const getLevelLabel = (level: string) => {
     const labels = {
-      province: '省',
-      city: '市',
-      county: '县/区',
-      town: '镇/街道'
+      province: t('regionSelector.province'),
+      city: t('regionSelector.city'),
+      county: t('regionSelector.county'),
+      town: t('regionSelector.town')
     };
     return labels[level as keyof typeof labels] || level;
   };
@@ -349,7 +351,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="搜索省市县镇..."
+              placeholder={t('regionSelector.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -373,7 +375,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
         </div>
         
         {loading && (
-          <div className="text-center text-muted-foreground py-4">搜索中...</div>
+          <div className="text-center text-muted-foreground py-4">{t('regionSelector.searching')}</div>
         )}
         
         {searchResults.length > 0 && (
@@ -402,7 +404,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <MapPin className="h-5 w-5 text-primary" />
-        <span className="font-medium">选择区域</span>
+        <span className="font-medium">{t('regionSelector.selectRegion')}</span>
         <Button
           variant="ghost"
           size="sm"
@@ -410,7 +412,7 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           className="ml-auto"
         >
           <Search className="h-4 w-4 mr-1" />
-          搜索
+          {t('regionSelector.search')}
         </Button>
         {(selectedProvince || selectedCity || selectedCounty || selectedTown) && (
           <Button
@@ -424,12 +426,12 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 省份选择 */}
+        {/* Province selection */}
         <div>
-          <label className="text-sm font-medium mb-2 block">省份</label>
+          <label className="text-sm font-medium mb-2 block">{t('regionSelector.province')}</label>
           <Select value={selectedProvince} onValueChange={handleProvinceChange}>
             <SelectTrigger>
-              <SelectValue placeholder="选择省份" />
+              <SelectValue placeholder={t('regionSelector.selectProvince')} />
             </SelectTrigger>
             <SelectContent>
               {provinces.map((province) => (
@@ -441,13 +443,13 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           </Select>
         </div>
 
-        {/* 城市选择 */}
+        {/* City selection */}
         {cities.length > 0 && (
           <div>
-            <label className="text-sm font-medium mb-2 block">城市</label>
+            <label className="text-sm font-medium mb-2 block">{t('regionSelector.city')}</label>
             <Select value={selectedCity} onValueChange={handleCityChange}>
               <SelectTrigger>
-                <SelectValue placeholder="选择城市" />
+                <SelectValue placeholder={t('regionSelector.selectCity')} />
               </SelectTrigger>
               <SelectContent>
                 {cities.map((city) => (
@@ -460,13 +462,13 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           </div>
         )}
 
-        {/* 区县选择 */}
+        {/* County selection */}
         {counties.length > 0 && (
           <div>
-            <label className="text-sm font-medium mb-2 block">区县</label>
+            <label className="text-sm font-medium mb-2 block">{t('regionSelector.county')}</label>
             <Select value={selectedCounty} onValueChange={handleCountyChange}>
               <SelectTrigger>
-                <SelectValue placeholder="选择区县" />
+                <SelectValue placeholder={t('regionSelector.selectCounty')} />
               </SelectTrigger>
               <SelectContent>
                 {counties.map((county) => (
@@ -479,13 +481,13 @@ export function RegionSelector({ selectedDivisionId, onSelectionChange, placehol
           </div>
         )}
 
-        {/* 乡镇选择 */}
+        {/* Township selection */}
         {towns.length > 0 && (
           <div>
-            <label className="text-sm font-medium mb-2 block">乡镇</label>
+            <label className="text-sm font-medium mb-2 block">{t('regionSelector.town')}</label>
             <Select value={selectedTown} onValueChange={handleTownChange}>
               <SelectTrigger>
-                <SelectValue placeholder="选择乡镇" />
+                <SelectValue placeholder={t('regionSelector.selectTown')} />
               </SelectTrigger>
               <SelectContent>
                 {towns.map((town) => (
