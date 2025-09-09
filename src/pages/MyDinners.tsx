@@ -345,7 +345,8 @@ const MyDinners = () => {
     const canCancel = (dinner as any).status === 'active' || !(dinner as any).status;
     
     return (
-      <Card className="dinner-card-stable cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 !border-0 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden !border-none" style={{ border: 'none', borderBottom: 'none' }}>
+      <div className="dinner-card-stable cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden rounded-lg"
+           style={{ border: 'none' }}>
         <div onClick={() => navigate(`/dinner/${dinner.id}`)}>
           {canCancel && (
             <div className="absolute top-2 right-2 z-10 flex gap-1">
@@ -463,7 +464,7 @@ const MyDinners = () => {
           )}
         </CardContent>
         </div>
-      </Card>
+      </div>
     );
   };
 
