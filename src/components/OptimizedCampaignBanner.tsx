@@ -1,8 +1,10 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { requestDeduplicator } from '@/hooks/useQueryCache';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 interface Campaign {
   id: string;
@@ -23,6 +25,7 @@ interface OptimizedCampaignBannerProps {
 const OptimizedCampaignBanner = memo(({ className = "" }: OptimizedCampaignBannerProps) => {
   const { i18n } = useTranslation();
   const currentLanguage = i18n.language;
+  const [isOpen, setIsOpen] = useState(false);
 
   const { data: campaigns } = useQuery({
     queryKey: ['campaigns', 'active'],
@@ -70,19 +73,25 @@ const OptimizedCampaignBanner = memo(({ className = "" }: OptimizedCampaignBanne
   if (!activeCampaign) return null;
 
   return (
-    <div className={`campaign-banner-container mb-6 p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg ${className}`}>
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-xl font-semibold text-primary mb-2 leading-tight">
-          {displayTitle}
-        </h2>
-        <div className="text-sm text-muted-foreground whitespace-pre-line">
-          {displayDescription.length > 300 
-            ? `${displayDescription.substring(0, 300)}...` 
-            : displayDescription
-          }
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className={`campaign-banner-container mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-lg ${className}`}>
+        <div className="max-w-4xl mx-auto">
+          <CollapsibleTrigger className="w-full p-4 text-left hover:bg-primary/5 transition-colors rounded-lg">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-primary leading-tight pr-4">
+                {displayTitle}
+              </h2>
+              <ChevronDown className={`h-5 w-5 text-primary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="px-4 pb-4 text-sm text-muted-foreground whitespace-pre-line">
+              {displayDescription}
+            </div>
+          </CollapsibleContent>
         </div>
       </div>
-    </div>
+    </Collapsible>
   );
 });
 
