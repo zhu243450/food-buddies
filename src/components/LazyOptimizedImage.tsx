@@ -19,7 +19,7 @@ export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   className = '',
   priority = false,
   sizes,
-  aspectRatio,
+  aspectRatio = '16/9', // 默认宽高比避免CLS
   onLoad,
   onError
 }) => {
@@ -30,7 +30,7 @@ export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   const { ref: containerRef, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true,
-    rootMargin: '50px' // 提前50px开始加载
+    rootMargin: '100px' // 提前100px开始加载，减少等待时间
   });
 
   const handleLoad = useCallback(() => {
@@ -53,36 +53,47 @@ export const LazyOptimizedImage: React.FC<LazyOptimizedImageProps> = ({
   return (
     <div 
       ref={containerRef as React.RefObject<HTMLDivElement>}
-      className={`relative overflow-hidden ${className}`}
-      style={{ aspectRatio: aspectRatio || 'auto' }}
+      className={`relative overflow-hidden contain-paint ${className}`}
+      style={{ 
+        aspectRatio,
+        minHeight: '200px' // 防止CLS的最小高度
+      }}
     >
-      {/* 占位符 */}
+      {/* 优化的占位符 - 防止CLS */}
       {!isLoaded && !hasError && (
         <div 
           className="absolute inset-0 bg-muted lazy-placeholder"
-          style={{ aspectRatio: aspectRatio || 'auto' }}
+          style={{ aspectRatio }}
+          aria-hidden="true"
         />
       )}
       
       {/* 错误占位符 */}
       {hasError && (
-        <div className="absolute inset-0 bg-muted flex items-center justify-center text-muted-foreground text-sm">
+        <div 
+          className="absolute inset-0 bg-muted flex items-center justify-center text-muted-foreground text-sm"
+          style={{ aspectRatio }}
+        >
           图片加载失败
         </div>
       )}
       
-      {/* 实际图片 */}
+      {/* 实际图片 - 优化CLS */}
       {shouldLoad && !hasError && (
         <img
           ref={imgRef}
           {...optimizedProps}
-          className={`transition-opacity duration-300 ${
+          width="400"
+          height="300"
+          style={{ aspectRatio }}
+          className={`absolute inset-0 transition-opacity duration-200 ${
             isLoaded ? 'opacity-100' : 'opacity-0'
-          } object-cover w-full h-full`}
+          } object-cover w-full h-full gpu-accelerated`}
           onLoad={handleLoad}
           onError={handleError}
           // 性能优化属性
           decoding="async"
+          loading={priority ? "eager" : "lazy"}
         />
       )}
     </div>

@@ -7,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
 import { CampaignBanner } from "@/components/CampaignBanner";
+import { SkeletonCard } from "@/components/SkeletonCard";
 import type { User } from '@supabase/supabase-js';
 
 interface Dinner {
@@ -280,10 +282,45 @@ const MyDinners = () => {
           variant: isLate ? "destructive" : "default",
         });
 
-        // 重新获取数据，不刷新页面
+        // 重新获取数据，避免页面刷新
         setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+          const fetchData = async () => {
+            if (!user) return;
+            try {
+              const [joinedResponse, createdResponse] = await Promise.all([
+                supabase
+                  .from("dinner_participants")
+                  .select(`
+                    dinners!fk_dinner_participants_dinner_id (
+                      id, title, description, dinner_time, location, max_participants,
+                      food_preferences, friends_only, dinner_mode, urgency_level,
+                      gender_preference, personality_tags, dietary_restrictions,
+                      created_by, created_at, updated_at, status
+                    )
+                  `)
+                  .eq("user_id", user.id),
+                supabase
+                  .from("dinners")
+                  .select("*")
+                  .eq("created_by", user.id)
+                  .order("dinner_time", { ascending: true })
+              ]);
+
+              if (!joinedResponse.error) {
+                const joinedData = joinedResponse.data?.map(item => (item as any).dinners).filter((dinner: any) => dinner.status === 'active' || !dinner.status) || [];
+                setJoinedDinners(joinedData);
+              }
+
+              if (!createdResponse.error) {
+                const activeDinners = createdResponse.data?.filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
+                setCreatedDinners(activeDinners);
+              }
+            } catch (error) {
+              console.error('重新获取数据失败:', error);
+            }
+          };
+          fetchData();
+        }, 500);
       } else {
         const message = result.message || result.f2 || "操作失败";
         toast({
@@ -445,10 +482,22 @@ const MyDinners = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">{t('nav.myDinners')}</h1>
-          <div className="text-center">{t('common.loading')}</div>
+          <CampaignBanner className="mb-6" />
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+            <Skeleton className="h-4 w-48 mx-auto" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );

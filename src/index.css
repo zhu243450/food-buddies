@@ -132,15 +132,49 @@
     will-change: scroll-position;
   }
 
-  /* 优化图片加载 */
+  /* 优化图片加载 - 防止CLS */
   img {
     /* 防止图片闪烁 */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     /* 懒加载占位 */
     background-color: hsl(var(--muted));
-    /* 避免布局偏移 */
+    /* 避免布局偏移 - 重要CLS优化 */
     display: block;
+    width: 100%;
+    height: auto;
+    /* 预留空间避免布局跳动 */
+    min-height: 1px;
+  }
+
+  /* 强制所有容器保持尺寸 */
+  .aspect-ratio-container {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .aspect-ratio-container::before {
+    content: '';
+    display: block;
+    width: 100%;
+  }
+
+  /* 默认宽高比 */
+  .aspect-ratio-container.aspect-video::before {
+    padding-bottom: 56.25%; /* 16:9 */
+  }
+
+  .aspect-ratio-container.aspect-square::before {
+    padding-bottom: 100%; /* 1:1 */
+  }
+
+  .aspect-ratio-container > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   /* 优化动画性能 */
@@ -198,11 +232,14 @@
     contain: layout style paint;
   }
 
-  /* 优化的懒加载占位 */
+  /* 性能优化的骨架屏动画 */
   .lazy-placeholder {
-    background: linear-gradient(90deg, hsl(var(--muted)) 25%, transparent 37%, hsl(var(--muted)) 63%);
+    background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted) / 0.5) 37%, hsl(var(--muted)) 63%);
     background-size: 400% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
+    animation: shimmer 1.2s ease-in-out infinite;
+    /* 硬件加速 */
+    transform: translateZ(0);
+    will-change: background-position;
   }
 
   @keyframes shimmer {
@@ -210,10 +247,16 @@
     100% { background-position: 0% 50%; }
   }
 
-  /* 优化的阴影 */
+  /* 优化的阴影 - 减少重绘 */
   .shadow-performance {
-    box-shadow: 0 1px 3px 0 hsl(var(--primary) / 0.1);
+    box-shadow: 0 2px 8px 0 hsl(var(--primary) / 0.08);
     /* 避免阴影重绘 */
     will-change: box-shadow;
+  }
+
+  /* 防止CLS的基础容器 */
+  .stable-container {
+    contain: layout style paint;
+    min-height: 1px;
   }
 }
