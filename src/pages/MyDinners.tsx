@@ -12,7 +12,7 @@ import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2 } from 
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
-import { CampaignBanner } from "@/components/CampaignBanner";
+import { OptimizedCampaignBanner } from "@/components/OptimizedCampaignBanner";
 import { SkeletonCard } from "@/components/SkeletonCard";
 import type { User } from '@supabase/supabase-js';
 
@@ -473,7 +473,7 @@ const MyDinners = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
         <div className="max-w-4xl mx-auto">
-          <CampaignBanner className="mb-6" />
+          <OptimizedCampaignBanner className="mb-6" />
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
               <div className="w-8 h-8 bg-muted rounded animate-pulse" />
@@ -496,7 +496,7 @@ const MyDinners = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
       <div className="max-w-4xl mx-auto">
         {/* Campaign Banner */}
-        <CampaignBanner className="mb-6" />
+        <OptimizedCampaignBanner className="mb-6" />
         
         {/* 简洁的欢迎区域 */}
         <div className="text-center mb-8">

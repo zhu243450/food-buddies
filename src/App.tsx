@@ -42,9 +42,11 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 1000 * 60 * 10, // 10 minutes - 更长缓存
-      gcTime: 1000 * 60 * 30, // 30 minutes - 垃圾回收
-      refetchOnWindowFocus: false, // 减少不必要的重新获取
+      staleTime: 1000 * 60 * 15, // 15 minutes - longer cache
+      gcTime: 1000 * 60 * 60 * 2, // 2 hours
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
     },
     mutations: {
       retry: 1,
