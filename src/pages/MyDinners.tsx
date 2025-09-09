@@ -105,78 +105,60 @@ const MyDinners = () => {
       if (!user) return;
 
       try {
-        // 并行获取数据，但使用 Promise.all 优化
-        const [joinedResponse, createdResponse] = await Promise.all([
+        // 优化查询 - 单次批量获取，减少请求数量
+        const [joinedResponse, createdResponse, participantCountsResponse] = await Promise.all([
+          // 获取参与的饭局
           supabase
             .from("dinner_participants")
             .select(`
               dinners!fk_dinner_participants_dinner_id (
-                id,
-                title,
-                description,
-                dinner_time,
-                location,
-                max_participants,
-                food_preferences,
-                friends_only,
-                dinner_mode,
-                urgency_level,
-                gender_preference,
-                personality_tags,
-                dietary_restrictions,
-                created_by,
-                created_at,
-                updated_at,
-                status
+                id, title, description, dinner_time, location, max_participants,
+                food_preferences, friends_only, dinner_mode, urgency_level,
+                gender_preference, personality_tags, dietary_restrictions,
+                created_by, created_at, updated_at, status
               )
             `)
             .eq("user_id", user.id),
           
+          // 获取创建的饭局  
           supabase
             .from("dinners")
             .select("*")
             .eq("created_by", user.id)
-            .order("dinner_time", { ascending: true })
+            .order("dinner_time", { ascending: true }),
+            
+          // 预获取所有参与者数量
+          supabase
+            .from("dinner_participants")
+            .select("dinner_id")
         ]);
 
         // 处理参与的饭局
-        if (joinedResponse.error) {
-          console.error("Error fetching joined dinners:", joinedResponse.error);
-        } else {
-          const joinedDinnersData = joinedResponse.data?.map(item => (item as any).dinners).filter((dinner: any) => dinner.status === 'active' || !dinner.status) || [];
+        let joinedDinnersData: Dinner[] = [];
+        if (!joinedResponse.error && joinedResponse.data) {
+          joinedDinnersData = joinedResponse.data
+            ?.map(item => (item as any).dinners)
+            .filter((dinner: any) => dinner && (dinner.status === 'active' || !dinner.status)) || [];
           setJoinedDinners(joinedDinnersData);
         }
 
         // 处理创建的饭局
-        if (createdResponse.error) {
-          console.error("Error fetching created dinners:", createdResponse.error);
-        } else {
-          const activeDinners = createdResponse.data?.filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
-          setCreatedDinners(activeDinners);
+        let createdDinnersData: Dinner[] = [];
+        if (!createdResponse.error && createdResponse.data) {
+          createdDinnersData = createdResponse.data
+            .filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
+          setCreatedDinners(createdDinnersData);
         }
 
-        // 获取参与者数量（仅在有饭局时）
-        const allDinnerIds = [
-          ...(joinedResponse.data?.map(item => (item as any).dinners.id) || []),
-          ...(createdResponse.data?.map(dinner => dinner.id) || [])
-        ];
-
-        if (allDinnerIds.length > 0) {
-          const { data: participantData, error: participantError } = await supabase
-            .from("dinner_participants")
-            .select("dinner_id")
-            .in("dinner_id", allDinnerIds);
-
-          if (participantError) {
-            console.error("Error fetching participant counts:", participantError);
-          } else {
-            const counts: Record<string, number> = {};
-            participantData?.forEach(participant => {
-              counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
-            });
-            setParticipantCounts(counts);
-          }
+        // 处理参与者数量
+        if (!participantCountsResponse.error && participantCountsResponse.data) {
+          const counts: Record<string, number> = {};
+          participantCountsResponse.data.forEach(participant => {
+            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
+          });
+          setParticipantCounts(counts);
         }
+
       } catch (error) {
         console.error("Error fetching dinners:", error);
       } finally {
@@ -186,7 +168,8 @@ const MyDinners = () => {
 
     fetchMyDinners();
 
-    // 优化实时监听 - 避免页面刷新
+    // 优化实时监听 - 使用防抖避免频繁更新
+    let updateTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('my-dinner-participants-changes')
       .on(
@@ -197,14 +180,18 @@ const MyDinners = () => {
           table: 'dinner_participants'
         },
         (payload) => {
-          // 只重新获取数据，不刷新整个页面
-          console.log('Participant change detected:', payload);
-          fetchMyDinners();
+          // 防抖更新，避免频繁刷新
+          clearTimeout(updateTimeout);
+          updateTimeout = setTimeout(() => {
+            console.log('Participant change detected, refreshing data');
+            fetchMyDinners();
+          }, 500);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
   }, [user]);
@@ -358,7 +345,7 @@ const MyDinners = () => {
     const canCancel = (dinner as any).status === 'active' || !(dinner as any).status;
     
     return (
-      <Card className="cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group">
+      <Card className="dinner-card-stable cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group">
         <div onClick={() => navigate(`/dinner/${dinner.id}`)}>
           {canCancel && (
             <div className="absolute top-2 right-2 z-10 flex gap-1">
@@ -372,7 +359,7 @@ const MyDinners = () => {
               </Button>
             </div>
           )}
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3" style={{ minHeight: '120px' }}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
@@ -392,31 +379,33 @@ const MyDinners = () => {
             )}
           </div>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-foreground">{dinner.title}</CardTitle>
+            <CardTitle className="text-lg font-bold text-foreground line-clamp-2" style={{ minHeight: '56px' }}>
+              {dinner.title}
+            </CardTitle>
           </div>
           {dinner.description && (
-            <CardDescription className="text-muted-foreground">
+            <CardDescription className="text-muted-foreground line-clamp-2" style={{ minHeight: '40px' }}>
               {dinner.description.length > 50 
                 ? dinner.description.substring(0, 50) + "..."
                 : dinner.description}
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4" style={{ minHeight: '160px' }}>
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-            <CalendarDays className="w-4 h-4 text-primary" />
-            <span className="font-medium">{formatDateTime(dinner.dinner_time)}</span>
+            <CalendarDays className="w-4 h-4 text-primary shrink-0" />
+            <span className="font-medium truncate">{formatDateTime(dinner.dinner_time)}</span>
           </div>
           
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-            <MapPin className="w-4 h-4 text-primary" />
-            <span className="font-medium">{dinner.location}</span>
+            <MapPin className="w-4 h-4 text-primary shrink-0" />
+            <span className="font-medium truncate">{dinner.location}</span>
           </div>
           
           <div className={`flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg ${
             participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
           }`}>
-            <Users className="w-4 h-4 text-primary" />
+            <Users className="w-4 h-4 text-primary shrink-0" />
             <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
               {totalParticipants} / {dinner.max_participants} {t('myDinners.people')}
             </span>
