@@ -6,27 +6,28 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 import { HelmetProvider } from "react-helmet-async";
+// Critical pages (loaded immediately)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import UserProfile from "./pages/UserProfile";
-import CreateDinner from "./pages/CreateDinner";
-import Discover from "./pages/Discover";
-import DinnerDetail from "./pages/DinnerDetail";
-import MyDinners from "./pages/MyDinners";
-import Chat from "./pages/Chat";
-import ChatList from "./pages/ChatList";
-import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import { Privacy } from "./pages/Privacy";
-import { Terms } from "./pages/Terms";
-import { About } from "./pages/About";
-import { Help } from "./pages/Help";
-import Notifications from "./pages/Notifications";
-import Feedback from "./pages/Feedback";
-import { CampaignDetail } from "./pages/CampaignDetail";
 
-// Lazy load less critical pages
+// Lazy load all other pages to reduce initial bundle
+const Profile = lazy(() => import("./pages/Profile"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+const CreateDinner = lazy(() => import("./pages/CreateDinner"));
+const Discover = lazy(() => import("./pages/Discover"));
+const DinnerDetail = lazy(() => import("./pages/DinnerDetail"));
+const MyDinners = lazy(() => import("./pages/MyDinners"));
+const Chat = lazy(() => import("./pages/Chat"));
+const ChatList = lazy(() => import("./pages/ChatList"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Privacy = lazy(() => import("./pages/Privacy").then(module => ({ default: module.Privacy })));
+const Terms = lazy(() => import("./pages/Terms").then(module => ({ default: module.Terms })));
+const About = lazy(() => import("./pages/About").then(module => ({ default: module.About })));
+const Help = lazy(() => import("./pages/Help").then(module => ({ default: module.Help })));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const CampaignDetail = lazy(() => import("./pages/CampaignDetail").then(module => ({ default: module.CampaignDetail })));
 const CombinedFoodGuide = lazy(() => import("./pages/CombinedFoodGuide").then(module => ({ default: module.CombinedFoodGuide })));
 const FAQ = lazy(() => import("./pages/FAQ").then(module => ({ default: module.FAQ })));
 
@@ -75,34 +76,98 @@ const App = () => (
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/user/:userId" element={<UserProfile />} />
-            <Route path="/create-dinner" element={<CreateDinner />} />
-            <Route path="/discover" element={<Discover />} />
-            <Route path="/dinner/:id" element={<DinnerDetail />} />
-            <Route path="/my-dinners" element={<MyDinners />} />
-            <Route path="/chat-list" element={<ChatList />} />
-            <Route path="/chat/:sessionId" element={<Chat />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/feedback" element={<Feedback />} />
-            <Route path="/campaign/:id" element={<CampaignDetail />} />
+            <Route path="/profile" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Profile />
+              </Suspense>
+            } />
+            <Route path="/user/:userId" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <UserProfile />
+              </Suspense>
+            } />
+            <Route path="/create-dinner" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <CreateDinner />
+              </Suspense>
+            } />
+            <Route path="/discover" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Discover />
+              </Suspense>
+            } />
+            <Route path="/dinner/:id" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <DinnerDetail />
+              </Suspense>
+            } />
+            <Route path="/my-dinners" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <MyDinners />
+              </Suspense>
+            } />
+            <Route path="/chat-list" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <ChatList />
+              </Suspense>
+            } />
+            <Route path="/chat/:sessionId" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Chat />
+              </Suspense>
+            } />
+            <Route path="/admin" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Admin />
+              </Suspense>
+            } />
+            <Route path="/privacy" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Privacy />
+              </Suspense>
+            } />
+            <Route path="/terms" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Terms />
+              </Suspense>
+            } />
+            <Route path="/about" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <About />
+              </Suspense>
+            } />
+            <Route path="/help" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Help />
+              </Suspense>
+            } />
+            <Route path="/notifications" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Notifications />
+              </Suspense>
+            } />
+            <Route path="/feedback" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <Feedback />
+              </Suspense>
+            } />
+            <Route path="/campaign/:id" element={
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+                <CampaignDetail />
+              </Suspense>
+            } />
             <Route path="/city/:city" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
                 <CombinedFoodGuide />
               </Suspense>
             } />
             <Route path="/food-guide" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
                 <CombinedFoodGuide />
               </Suspense>
             } />
             <Route path="/faq" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">加载中...</div>}>
+              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
                 <FAQ />
               </Suspense>
             } />
