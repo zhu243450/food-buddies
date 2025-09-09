@@ -360,7 +360,7 @@ const MyDinners = () => {
               </Button>
             </div>
           )}
-        <CardHeader className="pb-3" style={{ minHeight: '120px' }}>
+        <div className="pb-3 flex flex-col space-y-1.5 p-6" style={{ minHeight: '120px', border: 'none' }}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
@@ -380,19 +380,19 @@ const MyDinners = () => {
             )}
           </div>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold text-foreground line-clamp-2" style={{ minHeight: '56px' }}>
+            <h3 className="text-lg font-bold text-foreground line-clamp-2 text-2xl font-semibold leading-none tracking-tight" style={{ minHeight: '56px' }}>
               {dinner.title}
-            </CardTitle>
+            </h3>
           </div>
           {dinner.description && (
-            <CardDescription className="text-muted-foreground line-clamp-2" style={{ minHeight: '40px' }}>
+            <p className="text-muted-foreground line-clamp-2 text-sm" style={{ minHeight: '40px' }}>
               {dinner.description.length > 50 
                 ? dinner.description.substring(0, 50) + "..."
                 : dinner.description}
-            </CardDescription>
+            </p>
           )}
-        </CardHeader>
-        <CardContent className="space-y-4" style={{ minHeight: '160px' }}>
+        </div>
+        <div className="space-y-4 p-6 pt-0" style={{ minHeight: '160px', border: 'none' }}>
           <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
             <CalendarDays className="w-4 h-4 text-primary shrink-0" />
             <span className="font-medium truncate">{formatDateTime(dinner.dinner_time)}</span>
@@ -462,7 +462,7 @@ const MyDinners = () => {
               {t('myDinners.friendsOnlyBadge')}
             </Badge>
           )}
-        </CardContent>
+        </div>
         </div>
       </div>
     );
