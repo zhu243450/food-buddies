@@ -25,12 +25,14 @@
     
     <!-- 关键资源预加载优化 -->
     <link rel="preload" href="/src/main.tsx" as="script" crossorigin="anonymous">
-    <link rel="preload" href="/src/index.css" as="style">
+    <link rel="preload" href="/src/index.css" as="style">  
     <link rel="modulepreload" href="/src/App.tsx">
+    <link rel="modulepreload" href="/src/pages/Index.tsx">
     <link rel="modulepreload" href="/src/pages/MyDinners.tsx">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin="anonymous">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
     <link rel="dns-prefetch" href="//supabase.co">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- 字体优化 - 防止FOIT/FOUT -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">

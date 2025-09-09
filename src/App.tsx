@@ -6,6 +6,8 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 import { HelmetProvider } from "react-helmet-async";
+import { OptimizedLoader } from "@/components/OptimizedLoader";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 // Critical pages (loaded immediately)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -40,7 +42,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 10, // 10 minutes - 更长缓存
+      gcTime: 1000 * 60 * 30, // 30 minutes - 垃圾回收
+      refetchOnWindowFocus: false, // 减少不必要的重新获取
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
@@ -69,6 +76,7 @@ const App = () => (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <PerformanceMonitor />
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -77,97 +85,97 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Profile />
               </Suspense>
             } />
             <Route path="/user/:userId" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <UserProfile />
               </Suspense>
             } />
             <Route path="/create-dinner" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <CreateDinner />
               </Suspense>
             } />
             <Route path="/discover" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Discover />
               </Suspense>
             } />
             <Route path="/dinner/:id" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <DinnerDetail />
               </Suspense>
             } />
             <Route path="/my-dinners" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <MyDinners />
               </Suspense>
             } />
             <Route path="/chat-list" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <ChatList />
               </Suspense>
             } />
             <Route path="/chat/:sessionId" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Chat />
               </Suspense>
             } />
             <Route path="/admin" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Admin />
               </Suspense>
             } />
             <Route path="/privacy" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Privacy />
               </Suspense>
             } />
             <Route path="/terms" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Terms />
               </Suspense>
             } />
             <Route path="/about" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <About />
               </Suspense>
             } />
             <Route path="/help" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Help />
               </Suspense>
             } />
             <Route path="/notifications" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Notifications />
               </Suspense>
             } />
             <Route path="/feedback" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <Feedback />
               </Suspense>
             } />
             <Route path="/campaign/:id" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <CampaignDetail />
               </Suspense>
             } />
             <Route path="/city/:city" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <CombinedFoodGuide />
               </Suspense>
             } />
             <Route path="/food-guide" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <CombinedFoodGuide />
               </Suspense>
             } />
             <Route path="/faq" element={
-              <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+              <Suspense fallback={<OptimizedLoader />}>
                 <FAQ />
               </Suspense>
             } />

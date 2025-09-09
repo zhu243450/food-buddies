@@ -25,12 +25,20 @@ export default defineConfig(({ mode }) => ({
       output: {
         // 简化分包策略 - 减少chunk数量
         manualChunks: {
-          // 核心库
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
-          // UI库
-          'ui': ['@radix-ui/react-slot', '@radix-ui/react-tooltip', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          // React核心
+          'react-vendor': ['react', 'react-dom'],
+          // 路由
+          'router': ['react-router-dom'],
+          // UI库分包
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          // 数据层
+          'data-vendor': ['@tanstack/react-query', '@supabase/supabase-js'],
           // 工具库
-          'utils': ['clsx', 'class-variance-authority', 'tailwind-merge', 'lucide-react']
+          'utils': ['date-fns', 'clsx', 'class-variance-authority', 'tailwind-merge'],
+          // 国际化
+          'i18n': ['react-i18next', 'i18next'],
+          // 图表和图标
+          'media': ['recharts', 'lucide-react']
         },
         // 优化文件名和哈希
         entryFileNames: 'js/[name]-[hash].js',

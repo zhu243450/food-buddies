@@ -1,0 +1,19 @@
+{
+  "name": "聚餐APP",
+  "short_name": "聚餐",
+  "description": "连接美食爱好者的聚餐社交平台",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#e91e63",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["social", "food", "lifestyle"],
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
