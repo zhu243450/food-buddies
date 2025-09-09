@@ -241,6 +241,20 @@
     height: 280px;
     contain: strict;
     will-change: auto;
+    border: none !important;
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    outline: none !important;
+  }
+
+  .dinner-card-stable * {
+    border: none !important;
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
   }
 
   /* 优化的占位符 - 移除动画减少重绘 */
