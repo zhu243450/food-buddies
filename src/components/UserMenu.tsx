@@ -37,6 +37,7 @@ export const UserMenu = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingReports, setPendingReports] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
 
   // 监听语言变化，强制重新渲染
   useEffect(() => {
@@ -54,36 +55,40 @@ export const UserMenu = () => {
   useEffect(() => {
     // 获取用户信息
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      
-      if (user) {
-        // 获取用户资料
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
         
-        setProfile(profileData);
+        if (user) {
+          // 获取用户资料
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          setProfile(profileData);
 
-        // 检查是否是管理员
-        const { data: adminCheck } = await supabase
-          .rpc('has_role', { 
-            _user_id: user.id, 
-            _role: 'admin' 
-          });
-        
-        setIsAdmin(adminCheck || false);
+          // 检查是否是管理员
+          const { data: adminCheck } = await supabase
+            .rpc('has_role', { 
+              _user_id: user.id, 
+              _role: 'admin' 
+            });
+          
+          setIsAdmin(adminCheck || false);
 
-        // 如果是管理员，获取待处理举报数量
-        if (adminCheck) {
-          const { data: reportsData } = await supabase
-            .from('reports')
-            .select('id')
-            .eq('status', 'pending');
-          setPendingReports(reportsData?.length || 0);
+          // 如果是管理员，获取待处理举报数量
+          if (adminCheck) {
+            const { data: reportsData } = await supabase
+              .from('reports')
+              .select('id')
+              .eq('status', 'pending');
+            setPendingReports(reportsData?.length || 0);
+          }
         }
+      } catch (error) {
+        console.error('Error loading user data:', error);
       }
     };
 
@@ -124,18 +129,36 @@ export const UserMenu = () => {
   }, [isAdmin]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const handleMenuItemClick = (path: string) => {
+    try {
+      setIsOpen(false);
+      navigate(path);
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
   };
 
   if (!user) return null;
 
   return (
-    <DropdownMenu key={`user-menu-${renderKey}`}>
+    <DropdownMenu key={`user-menu-${renderKey}`} open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
           className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 w-full max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
         >
           <div className="relative">
             <Avatar className="h-5 w-5">
@@ -167,12 +190,12 @@ export const UserMenu = () => {
         <DropdownMenuSeparator />
         
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
+          <DropdownMenuItem onClick={() => handleMenuItemClick('/profile')}>
             <User className="mr-2 h-4 w-4" />
             <span>{t('userMenu.profile')}</span>
           </DropdownMenuItem>
           
-          <DropdownMenuItem onClick={() => navigate('/notifications')}>
+          <DropdownMenuItem onClick={() => handleMenuItemClick('/notifications')}>
             <Bell className="mr-2 h-4 w-4" />
             <span>{t('userMenu.notifications')}</span>
             {unreadCount > 0 && (
@@ -182,12 +205,12 @@ export const UserMenu = () => {
             )}
           </DropdownMenuItem>
           
-          <DropdownMenuItem onClick={() => navigate('/feedback')}>
+          <DropdownMenuItem onClick={() => handleMenuItemClick('/feedback')}>
             <MessageSquare className="mr-2 h-4 w-4" />
             <span>{t('userMenu.feedback')}</span>
           </DropdownMenuItem>
           
-          <DropdownMenuItem onClick={() => navigate('/help')}>
+          <DropdownMenuItem onClick={() => handleMenuItemClick('/help')}>
             <HelpCircle className="mr-2 h-4 w-4" />
             <span>{t('userMenu.help')}</span>
           </DropdownMenuItem>
@@ -196,12 +219,12 @@ export const UserMenu = () => {
         <DropdownMenuSeparator />
         
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => navigate('/food-guide')}>
+          <DropdownMenuItem onClick={() => handleMenuItemClick('/food-guide')}>
             <ChefHat className="mr-2 h-4 w-4" />
             <span>美食城市指南</span>
           </DropdownMenuItem>
           
-          <DropdownMenuItem onClick={() => navigate('/faq')}>
+          <DropdownMenuItem onClick={() => handleMenuItemClick('/faq')}>
             <BookOpen className="mr-2 h-4 w-4" />
             <span>{t('userMenu.faq')}</span>
           </DropdownMenuItem>
@@ -211,7 +234,7 @@ export const UserMenu = () => {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => navigate('/admin')}>
+              <DropdownMenuItem onClick={() => handleMenuItemClick('/admin')}>
                 <Shield className="mr-2 h-4 w-4" />
                 <span>{t('userMenu.admin')}</span>
                 {pendingReports > 0 && (
