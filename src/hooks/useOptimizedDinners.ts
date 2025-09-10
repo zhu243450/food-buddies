@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from '@supabase/supabase-js';
+import { logger } from "@/lib/logger";
 
 interface Dinner {
   id: string;
@@ -84,13 +85,13 @@ export const useOptimizedDinners = (user: User | null) => {
       }
 
     } catch (error) {
-      console.error("Error fetching dinners:", error);
+      logger.error("Error fetching dinners:", error);
     } finally {
       setLoading(false);
     }
   }, [user]);
 
-  // 优化实时监听
+  // 优化实时监听 - 增加更长的防抖时间
   useEffect(() => {
     fetchMyDinners();
 
@@ -109,7 +110,7 @@ export const useOptimizedDinners = (user: User | null) => {
           clearTimeout(updateTimeout);
           updateTimeout = setTimeout(() => {
             fetchMyDinners();
-          }, 1000); // 增加防抖时间
+          }, 2000); // 增加防抖时间到2秒
         }
       )
       .subscribe();

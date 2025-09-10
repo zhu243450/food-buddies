@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import { OptimizedCampaignBanner } from "@/components/OptimizedCampaignBanner";
-import { SkeletonCard } from "@/components/SkeletonCard";
+import { FastSkeletonCard } from "@/components/FastSkeletonCard";
 import { OptimizedMyDinnersCard } from "@/components/OptimizedMyDinnersCard";
 import { useOptimizedDinners } from "@/hooks/useOptimizedDinners";
 import type { User } from '@supabase/supabase-js';
@@ -52,11 +52,8 @@ const MyDinners = memo(() => {
     document.body.style.paddingRight = '0px';
   }, []);
 
+  // 移除不必要的重复useEffect
   useEffect(() => {
-    // 组件加载时强制重置
-    forceReset();
-    
-    // 清理函数
     return () => {
       forceReset();
     };
@@ -67,22 +64,17 @@ const MyDinners = memo(() => {
     
     const checkUserSession = async () => {
       try {
-        console.log('MyDinners页面检查用户会话');
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!isComponentMounted) return;
         
-        console.log('当前会话状态:', !!session);
-        
         if (!session?.user) {
-          console.log('用户未登录，重定向到auth页面');
           navigate("/auth", { replace: true });
           return;
         }
         
         setUser(session.user);
       } catch (error) {
-        console.error('检查用户会话时出错:', error);
         if (isComponentMounted) {
           navigate("/auth", { replace: true });
         }
@@ -94,10 +86,7 @@ const MyDinners = memo(() => {
       (event, session) => {
         if (!isComponentMounted) return;
         
-        console.log('MyDinners页面认证状态变化:', { event, session: !!session });
-        
         if (event === 'SIGNED_OUT' || !session?.user) {
-          console.log('用户已登出，重定向到auth页面');
           navigate("/auth", { replace: true });
         } else if (session?.user) {
           setUser(session.user);
@@ -119,22 +108,13 @@ const MyDinners = memo(() => {
     setCancelling(true);
 
     try {
-      console.log('Calling cancel_dinner RPC with:', {
-        dinner_id_param: selectedDinner.id,
-        user_id_param: user.id,
-        cancellation_reason_param: reason
-      });
-
       const { data, error } = await supabase.rpc('cancel_dinner', {
         dinner_id_param: selectedDinner.id,
         user_id_param: user.id,
         cancellation_reason_param: reason || ''
       });
 
-      console.log('RPC response:', { data, error });
-
       if (error) {
-        console.error('RPC Error:', error);
         throw error;
       }
 
@@ -143,7 +123,6 @@ const MyDinners = memo(() => {
       }
 
       const result = data[0];
-      console.log('Result:', result);
 
       if (result.success || result.f1) { // f1 可能是字段名
         const isCreator = selectedDinner.created_by === user.id;
@@ -169,7 +148,6 @@ const MyDinners = memo(() => {
         });
       }
     } catch (error: any) {
-      console.error('Cancel dinner error:', error);
       toast({
         title: "操作失败",
         description: error.message || t('admin.cancelOperationError'),
@@ -193,10 +171,10 @@ const MyDinners = memo(() => {
     navigate(`/dinner/${dinnerId}`);
   }, [navigate]);
 
-  // 优化渲染函数
-  const renderDinnerCard = useCallback((dinner: Dinner) => (
+  // 优化渲染函数 - 使用稳定的 key 和减少重渲染
+  const renderDinnerCard = useCallback((dinner: Dinner, index: number) => (
     <OptimizedMyDinnersCard
-      key={dinner.id}
+      key={`${dinner.id}-${dinner.updated_at}`} // 更稳定的 key
       dinner={dinner}
       participantCount={participantCounts[dinner.id] || 0}
       userId={user?.id}
@@ -256,13 +234,13 @@ const MyDinners = memo(() => {
           <TabsContent value="joined" className="space-y-6">
             {loading ? (
               <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <SkeletonCard key={i} />
+                {Array.from({ length: 4 }, (_, i) => (
+                  <FastSkeletonCard key={i} />
                 ))}
               </div>
             ) : joinedDinners.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {joinedDinners.map(renderDinnerCard)}
+                {joinedDinners.map((dinner, index) => renderDinnerCard(dinner, index))}
               </div>
             ) : (
               <div className="text-center py-16">
@@ -282,13 +260,13 @@ const MyDinners = memo(() => {
           <TabsContent value="created" className="space-y-6">
             {loading ? (
               <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <SkeletonCard key={i} />
+                {Array.from({ length: 4 }, (_, i) => (
+                  <FastSkeletonCard key={i} />
                 ))}
               </div>
             ) : createdDinners.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {createdDinners.map(renderDinnerCard)}
+                {createdDinners.map((dinner, index) => renderDinnerCard(dinner, index))}
               </div>
             ) : (
               <div className="text-center py-16">
