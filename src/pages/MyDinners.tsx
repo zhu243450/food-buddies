@@ -184,6 +184,8 @@ const MyDinners = memo(() => {
 
   const handleCancelClick = useCallback((dinner: Dinner, event: React.MouseEvent) => {
     console.log('删除按钮被点击', { dinner: dinner.title, isCreator: dinner.created_by === user?.id });
+    console.log('设置showCancelDialog为true');
+    console.log('设置selectedDinner为:', dinner);
     event.stopPropagation();
     event.preventDefault();
     setSelectedDinner(dinner);
@@ -209,6 +211,12 @@ const MyDinners = memo(() => {
   if (!user) {
     return null; // 重定向处理
   }
+
+  console.log('MyDinners render state:', { 
+    showCancelDialog, 
+    selectedDinner: selectedDinner?.title, 
+    cancelling 
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -310,7 +318,14 @@ const MyDinners = memo(() => {
 
       <CancelDinnerDialog
         open={showCancelDialog}
-        onOpenChange={setShowCancelDialog}
+        onOpenChange={(open) => {
+          console.log('CancelDinnerDialog onOpenChange:', open);
+          setShowCancelDialog(open);
+          if (!open) {
+            console.log('关闭弹窗，清除selectedDinner');
+            setSelectedDinner(null);
+          }
+        }}
         onConfirm={handleCancelDinner}
         loading={cancelling}
         dinnerTitle={selectedDinner?.title || ''}
