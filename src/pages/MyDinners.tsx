@@ -43,6 +43,24 @@ const MyDinners = memo(() => {
   
   // 使用优化的hook
   const { joinedDinners, createdDinners, participantCounts, loading, refetch } = useOptimizedDinners(user);
+  
+  // 强制重置函数
+  const forceReset = useCallback(() => {
+    setShowCancelDialog(false);
+    setSelectedDinner(null);
+    document.body.style.overflow = 'unset';
+    document.body.style.paddingRight = '0px';
+  }, []);
+
+  useEffect(() => {
+    // 组件加载时强制重置
+    forceReset();
+    
+    // 清理函数
+    return () => {
+      forceReset();
+    };
+  }, [forceReset]);
 
   useEffect(() => {
     let isComponentMounted = true;
@@ -167,6 +185,7 @@ const MyDinners = memo(() => {
   const handleCancelClick = useCallback((dinner: Dinner, event: React.MouseEvent) => {
     console.log('删除按钮被点击', { dinner: dinner.title, isCreator: dinner.created_by === user?.id });
     event.stopPropagation();
+    event.preventDefault();
     setSelectedDinner(dinner);
     setShowCancelDialog(true);
   }, [user?.id]);
