@@ -64,42 +64,33 @@ const CancelDinnerDialog = ({
     <div 
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 50000,
+        inset: 0,
+        zIndex: 99999,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px'
+        padding: '16px'
       }}
       onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onOpenChange(false);
+        if (e.target === e.currentTarget) {
+          onOpenChange(false);
+        }
       }}
     >
-      {/* 弹窗内容 */}
       <div 
         style={{
           backgroundColor: 'white',
           borderRadius: '8px',
           padding: '24px',
-          maxWidth: '500px',
           width: '100%',
-          maxHeight: '85vh',
+          maxWidth: '500px',
+          maxHeight: '90vh',
           overflowY: 'auto',
-          position: 'relative',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-          margin: 'auto',
-          transform: 'none'
+          position: 'relative'
         }}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        onClick={(e) => e.stopPropagation()}
       >
           {/* 关闭按钮 */}
           <button
