@@ -97,8 +97,8 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
     };
   }, [dinner, participantCount, userId, i18n.language, t]);
 
-  // 预计算样式类名 - 增加更大的最小高度
-  const cardClassName = `dinner-card-stable cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 shadow-md bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden rounded-lg border min-h-[500px]`;
+  // 预计算样式类名 - 仅增加最小高度让名称完整显示
+  const cardClassName = `dinner-card-stable cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 shadow-md bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden rounded-lg border min-h-[450px]`;
   
   return (
     <div className={cardClassName}>
