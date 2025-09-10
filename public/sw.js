@@ -92,7 +92,7 @@ async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
-    if (networkResponse.ok) {
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
@@ -112,13 +112,15 @@ async function cacheFirstStrategy(request) {
   const cachedResponse = await caches.match(request);
   
   if (cachedResponse) {
-    // 后台更新缓存
-    fetch(request).then(response => {
-      if (response.ok) {
-        const cache = caches.open(STATIC_CACHE);
-        cache.then(c => c.put(request, response));
-      }
-    }).catch(() => {});
+    // 后台更新缓存 (仅 GET 请求)
+    if (request.method === 'GET') {
+      fetch(request).then(response => {
+        if (response.ok) {
+          const cache = caches.open(STATIC_CACHE);
+          cache.then(c => c.put(request, response));
+        }
+      }).catch(() => {});
+    }
     
     return cachedResponse;
   }
@@ -126,7 +128,7 @@ async function cacheFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
-    if (networkResponse.ok) {
+    if (networkResponse.ok && request.method === 'GET') {
       const cache = await caches.open(STATIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
