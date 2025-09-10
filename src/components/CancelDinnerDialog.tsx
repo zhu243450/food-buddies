@@ -28,12 +28,7 @@ const CancelDinnerDialog = ({
   const { t } = useTranslation();
   const [reason, setReason] = useState("");
 
-  console.log('=== CancelDinnerDialog render ===');
-  console.log('Props:', { open, dinnerTitle, isCreator, loading });
-  console.log('Reason state:', reason);
-
   const handleConfirm = () => {
-    console.log('handleConfirm called with reason:', reason);
     onConfirm(reason.trim() || undefined);
     setReason("");
   };
@@ -56,13 +51,13 @@ const CancelDinnerDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <AlertTriangle className="w-5 h-5 text-destructive" />
             {isCreator ? t('dinner.cancel') : t('dinner.leave')}
           </DialogTitle>
-          <DialogDescription className="space-y-3 pt-2">
+          <DialogDescription className="space-y-3 pt-2 max-h-[50vh] overflow-y-auto">
             <div className="p-3 rounded-lg bg-accent/10 border border-accent/30">
               <p className="font-medium text-foreground">{dinnerTitle}</p>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">

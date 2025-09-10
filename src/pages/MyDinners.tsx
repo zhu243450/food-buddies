@@ -183,22 +183,11 @@ const MyDinners = memo(() => {
   };
 
   const handleCancelClick = useCallback((dinner: Dinner, event: React.MouseEvent) => {
-    console.log('=== 删除按钮点击开始 ===');
-    console.log('点击的饭局:', { id: dinner.id, title: dinner.title, isCreator: dinner.created_by === user?.id });
-    console.log('当前showCancelDialog状态:', showCancelDialog);
-    console.log('当前selectedDinner:', selectedDinner?.title);
-    
     event.stopPropagation();
     event.preventDefault();
-    
-    console.log('设置selectedDinner为:', dinner.title);
     setSelectedDinner(dinner);
-    
-    console.log('设置showCancelDialog为true');
     setShowCancelDialog(true);
-    
-    console.log('=== 删除按钮点击结束 ===');
-  }, [user?.id, showCancelDialog, selectedDinner]);
+  }, []);
 
   const handleCardClick = useCallback((dinnerId: string) => {
     navigate(`/dinner/${dinnerId}`);
@@ -220,13 +209,6 @@ const MyDinners = memo(() => {
     return null; // 重定向处理
   }
 
-  console.log('MyDinners render state:', { 
-    showCancelDialog, 
-    selectedDinner: selectedDinner?.title, 
-    cancelling,
-    user: !!user
-  });
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -234,33 +216,6 @@ const MyDinners = memo(() => {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <OptimizedCampaignBanner className="mb-6" />
-          
-          {/* 临时测试按钮 */}
-          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
-            <p className="text-sm text-yellow-800 mb-2">调试测试区域:</p>
-            <button 
-              onClick={() => {
-                console.log('强制测试弹窗');
-                setSelectedDinner({
-                  id: 'test-id',
-                  title: '测试饭局',
-                  dinner_time: new Date().toISOString(),
-                  created_by: user?.id || '',
-                  location: '测试地点',
-                  max_participants: 4,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString()
-                } as Dinner);
-                setShowCancelDialog(true);
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              强制测试删除弹窗
-            </button>
-            <p className="text-xs text-yellow-700 mt-1">
-              当前状态: showCancelDialog={String(showCancelDialog)}, selectedDinner={selectedDinner?.title || '无'}
-            </p>
-          </div>
           
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
@@ -354,14 +309,7 @@ const MyDinners = memo(() => {
 
       <CancelDinnerDialog
         open={showCancelDialog}
-        onOpenChange={(open) => {
-          console.log('CancelDinnerDialog onOpenChange:', open);
-          setShowCancelDialog(open);
-          if (!open) {
-            console.log('关闭弹窗，清除selectedDinner');
-            setSelectedDinner(null);
-          }
-        }}
+        onOpenChange={setShowCancelDialog}
         onConfirm={handleCancelDinner}
         loading={cancelling}
         dinnerTitle={selectedDinner?.title || ''}
