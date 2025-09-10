@@ -109,7 +109,11 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
               variant="ghost"
               size="icon"
               className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive h-8 w-8"
-              onClick={(e) => onCancel(dinner, e)}
+              onClick={(e) => {
+                console.log('卡片删除按钮点击事件触发');
+                e.stopPropagation();
+                onCancel(dinner, e);
+              }}
             >
               <X className="w-4 h-4" />
             </Button>

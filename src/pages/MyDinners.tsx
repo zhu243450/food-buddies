@@ -165,10 +165,11 @@ const MyDinners = memo(() => {
   };
 
   const handleCancelClick = useCallback((dinner: Dinner, event: React.MouseEvent) => {
+    console.log('删除按钮被点击', { dinner: dinner.title, isCreator: dinner.created_by === user?.id });
     event.stopPropagation();
     setSelectedDinner(dinner);
     setShowCancelDialog(true);
-  }, []);
+  }, [user?.id]);
 
   const handleCardClick = useCallback((dinnerId: string) => {
     navigate(`/dinner/${dinnerId}`);
