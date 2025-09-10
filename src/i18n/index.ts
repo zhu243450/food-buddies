@@ -12,9 +12,12 @@ const resources = {
 // 异步读取用户设置的语言，提升初始加载性能
 const getSavedLanguage = () => {
   try {
-    return localStorage.getItem('language') || 'zh';
+    const saved = localStorage.getItem('language');
+    if (saved) return saved;
+    const navLang = (navigator.language || (navigator.languages && navigator.languages[0]) || 'en').toLowerCase();
+    return navLang.startsWith('zh') ? 'zh' : 'en';
   } catch {
-    return 'zh';
+    return 'en';
   }
 };
 

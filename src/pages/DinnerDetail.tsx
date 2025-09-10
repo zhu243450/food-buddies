@@ -43,11 +43,7 @@ const DinnerDetail = () => {
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
+      setUser(user ?? null);
     };
 
     getUser();
@@ -55,7 +51,7 @@ const DinnerDetail = () => {
 
   useEffect(() => {
     const fetchDinnerDetails = async () => {
-      if (!id || !user) return;
+      if (!id) return;
 
       // 获取饭局详情
       const { data: dinnerData, error: dinnerError } = await supabase
@@ -130,7 +126,7 @@ const DinnerDetail = () => {
         });
 
         setParticipants(participantsWithProfiles);
-        setIsParticipant(participantData?.some(p => p.user_id === user.id) || false);
+        setIsParticipant(user ? (participantData?.some(p => p.user_id === user.id) || false) : false);
       }
 
       setLoading(false);
@@ -278,7 +274,7 @@ const DinnerDetail = () => {
     });
   };
 
-  if (!user || loading) {
+  if (loading) {
     return (
       <>
         <SEO {...getPageSEO('dinner-detail')} />
@@ -292,28 +288,16 @@ const DinnerDetail = () => {
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t('common.back')}
             </Button>
-            
-            {loading ? (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
-                <CardContent className="p-8 text-center">
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-8 bg-muted rounded w-3/4 mx-auto"></div>
-                    <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
-                    <div className="h-32 bg-muted rounded"></div>
-                  </div>
-                  <p className="text-muted-foreground mt-4">{t('common.loading')}</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">{t('common.pleaseLogin')}</p>
-                  <Button onClick={() => navigate("/auth")} className="mt-4">
-                    {t('common.login')}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10">
+              <CardContent className="p-8 text-center">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-8 bg-muted rounded w-3/4 mx-auto"></div>
+                  <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+                  <div className="h-32 bg-muted rounded"></div>
+                </div>
+                <p className="text-muted-foreground mt-4">{t('common.loading')}</p>
+              </CardContent>
+            </Card>
           </div>
           <Navigation />
         </div>
@@ -338,7 +322,7 @@ const DinnerDetail = () => {
   }
 
   const isFull = participants.length >= dinner.max_participants;
-  const canJoin = !isParticipant && !isFull && dinner.created_by !== user.id;
+  const canJoin = !!user && !isParticipant && !isFull && dinner.created_by !== user.id;
   const seoData = getPageSEO('dinner-detail', dinner);
 
   return (

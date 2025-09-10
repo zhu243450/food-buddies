@@ -39,6 +39,11 @@ export const SEO = ({
       <meta name="keywords" content={metaKeywords} />
       <meta name="author" content="饭约社团队" />
       <link rel="canonical" href={currentUrl} />
+
+      {/* Hreflang alternates */}
+      <link rel="alternate" href={currentUrl} hrefLang="x-default" />
+      <link rel="alternate" href={currentUrl} hrefLang="en" />
+      <link rel="alternate" href={currentUrl} hrefLang="zh-CN" />
       
       {/* Language */}
       <html lang={i18n.language === 'zh' ? 'zh-CN' : 'en-US'} />
@@ -51,6 +56,8 @@ export const SEO = ({
       <meta property="og:url" content={currentUrl} />
       <meta property="og:site_name" content={siteTitle} />
       <meta property="og:locale" content={i18n.language === 'zh' ? 'zh_CN' : 'en_US'} />
+      <meta property="og:locale:alternate" content="en_US" />
+      <meta property="og:locale:alternate" content="zh_CN" />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
