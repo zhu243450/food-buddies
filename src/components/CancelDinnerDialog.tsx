@@ -91,10 +91,12 @@ const CancelDinnerDialog = ({
             padding: '24px',
             maxWidth: '500px',
             width: '100%',
-            maxHeight: '80vh',
-            overflow: 'auto',
+            maxHeight: '90vh',
+            overflowY: 'auto',
             position: 'relative',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            margin: 'auto',
+            transform: 'none'
           }}
           onClick={(e) => {
             e.preventDefault();
