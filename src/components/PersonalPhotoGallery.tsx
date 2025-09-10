@@ -55,6 +55,7 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
   const [newComment, setNewComment] = useState("");
   const [replyToComment, setReplyToComment] = useState<PhotoComment | null>(null);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [photoMenuOpen, setPhotoMenuOpen] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -431,22 +432,39 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
                 <DialogHeader className="p-4 border-b flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <DialogTitle className="text-lg">照片详情</DialogTitle>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="ghost">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem 
-                          className="text-destructive"
-                          onClick={() => handleDeletePhoto(selectedPhoto)}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          {t('photoGallery.deletePhoto')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                     <div className="relative">
+                       <Button 
+                         size="sm" 
+                         variant="ghost"
+                         onClick={(e) => {
+                           e.preventDefault();
+                           e.stopPropagation();
+                           setPhotoMenuOpen(!photoMenuOpen);
+                         }}
+                       >
+                         <MoreHorizontal className="w-4 h-4" />
+                       </Button>
+                       {photoMenuOpen && (
+                         <>
+                           <div 
+                             className="fixed inset-0 z-40" 
+                             onClick={() => setPhotoMenuOpen(false)}
+                           />
+                           <div className="absolute top-full right-0 mt-1 bg-background border rounded-md shadow-lg z-50">
+                             <button
+                               className="flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent w-full text-left rounded-md"
+                               onClick={() => {
+                                 handleDeletePhoto(selectedPhoto);
+                                 setPhotoMenuOpen(false);
+                               }}
+                             >
+                               <Trash2 className="w-4 h-4 mr-2" />
+                               {t('photoGallery.deletePhoto')}
+                             </button>
+                           </div>
+                         </>
+                       )}
+                     </div>
                   </div>
                 </DialogHeader>
 
