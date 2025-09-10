@@ -236,13 +236,13 @@ const MyDinners = memo(() => {
 
           <TabsContent value="joined" className="space-y-6">
             {loading ? (
-              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
             ) : joinedDinners.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {joinedDinners.map(renderDinnerCard)}
               </div>
             ) : (
@@ -262,13 +262,13 @@ const MyDinners = memo(() => {
 
           <TabsContent value="created" className="space-y-6">
             {loading ? (
-              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
             ) : createdDinners.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {createdDinners.map(renderDinnerCard)}
               </div>
             ) : (

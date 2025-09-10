@@ -116,65 +116,57 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
           </div>
         )}
         
-        <div className="pb-3 flex flex-col space-y-1.5 p-6">
+        <div className="pb-2 flex flex-col space-y-1 p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
-                {computedValues.modeIcon} {computedValues.modeLabel}
-              </Badge>
-              {computedValues.isCreatedByMe && computedValues.canCancel && (
-                <ShareDinner 
-                  dinner={dinner} 
-                  participantCount={computedValues.totalParticipants}
-                />
-              )}
-            </div>
+            <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
+              {computedValues.modeIcon} {computedValues.modeLabel}
+            </Badge>
             {computedValues.isCreatedByMe && participantCount > 0 && (
               <Badge className="bg-primary text-primary-foreground border-primary/30 text-xs font-bold animate-pulse">
-                {t('myDinners.participantsJoined', { count: participantCount })}
+                {participantCount}
               </Badge>
             )}
           </div>
           
-          <h3 className="text-lg font-bold text-foreground line-clamp-2 leading-tight">
+          <h3 className="text-base font-bold text-foreground line-clamp-2 leading-tight mb-2">
             {dinner.title}
           </h3>
           
           {computedValues.truncatedDescription && (
-            <p className="text-muted-foreground line-clamp-2 text-sm">
+            <p className="text-muted-foreground line-clamp-1 text-xs">
               {computedValues.truncatedDescription}
             </p>
           )}
         </div>
         
-        <div className="space-y-4 p-6 pt-0">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-            <CalendarDays className="w-4 h-4 text-primary shrink-0" />
+        <div className="space-y-3 p-4 pt-0">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/10 p-2 rounded">
+            <CalendarDays className="w-3 h-3 text-primary shrink-0" />
             <span className="font-medium truncate">{computedValues.formattedTime}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-            <MapPin className="w-4 h-4 text-primary shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/10 p-2 rounded">
+            <MapPin className="w-3 h-3 text-primary shrink-0" />
             <span className="font-medium truncate">{dinner.location}</span>
           </div>
           
-          <div className={`flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg ${
+          <div className={`flex items-center gap-2 text-xs text-muted-foreground p-2 rounded ${
             participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
           }`}>
-            <Users className="w-4 h-4 text-primary shrink-0" />
+            <Users className="w-3 h-3 text-primary shrink-0" />
             <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
-              {computedValues.totalParticipants} / {dinner.max_participants} {t('myDinners.people')}
+              {computedValues.totalParticipants}/{dinner.max_participants}
             </span>
             {computedValues.isFull && (
               <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
-                {t('myDinners.fullBadge')}
+                满
               </Badge>
             )}
           </div>
 
           {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {dinner.food_preferences.slice(0, 3).map((preference) => (
+            <div className="flex flex-wrap gap-1">
+              {dinner.food_preferences.slice(0, 2).map((preference) => (
                 <Badge 
                   key={preference} 
                   variant="secondary" 
@@ -183,17 +175,17 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
                   {preference}
                 </Badge>
               ))}
-              {dinner.food_preferences.length > 3 && (
+              {dinner.food_preferences.length > 2 && (
                 <Badge variant="secondary" className="text-xs">
-                  +{dinner.food_preferences.length - 3}
+                  +{dinner.food_preferences.length - 2}
                 </Badge>
               )}
             </div>
           )}
 
-          {dinner.personality_tags && dinner.personality_tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {dinner.personality_tags.slice(0, 3).map((tag) => (
+          <div className="flex flex-wrap gap-1 items-center">
+            {dinner.personality_tags && dinner.personality_tags.length > 0 && (
+              dinner.personality_tags.slice(0, 2).map((tag) => (
                 <Badge 
                   key={tag} 
                   variant="outline" 
@@ -201,27 +193,22 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
                 >
                   #{tag}
                 </Badge>
-              ))}
-              {dinner.personality_tags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{dinner.personality_tags.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
+              ))
+            )}
+            
+            {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
+              <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
+                <Users2 className="w-3 h-3 mr-1" />
+                {dinner.gender_preference === 'same_gender' ? '同性' : '异性'}
+              </Badge>
+            )}
 
-          {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
-            <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
-              <Users2 className="w-3 h-3 mr-1" />
-              {dinner.gender_preference === 'same_gender' ? t('myDinners.sameGenderPref') : t('myDinners.oppositeGenderPref')}
-            </Badge>
-          )}
-
-          {dinner.friends_only && (
-            <Badge variant="outline" className="text-xs border-accent text-accent">
-              {t('myDinners.friendsOnlyBadge')}
-            </Badge>
-          )}
+            {dinner.friends_only && (
+              <Badge variant="outline" className="text-xs border-accent text-accent">
+                仅好友
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
     </div>
