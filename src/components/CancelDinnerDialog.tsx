@@ -61,48 +61,46 @@ const CancelDinnerDialog = ({
   }
 
   return (
-    <>
-      {/* 遮罩层 */}
+    <div 
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 50000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpenChange(false);
+      }}
+    >
+      {/* 弹窗内容 */}
       <div 
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 10000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
+          backgroundColor: 'white',
+          borderRadius: '8px',
+          padding: '24px',
+          maxWidth: '500px',
+          width: '100%',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          position: 'relative',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          margin: 'auto',
+          transform: 'none'
         }}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onOpenChange(false);
         }}
       >
-        {/* 弹窗内容 */}
-        <div 
-          style={{
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            padding: '24px',
-            maxWidth: '500px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            position: 'relative',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            margin: 'auto',
-            transform: 'none'
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
           {/* 关闭按钮 */}
           <button
             onClick={() => onOpenChange(false)}
@@ -250,8 +248,7 @@ const CancelDinnerDialog = ({
             </button>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 };
 
