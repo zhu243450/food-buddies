@@ -1,19 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, MapPin, Users, Heart, Sparkles, Users2, X, Share2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
-import ShareDinner from "@/components/ShareDinner";
 import { OptimizedCampaignBanner } from "@/components/OptimizedCampaignBanner";
 import { SkeletonCard } from "@/components/SkeletonCard";
+import { OptimizedMyDinnersCard } from "@/components/OptimizedMyDinnersCard";
+import { useOptimizedDinners } from "@/hooks/useOptimizedDinners";
 import type { User } from '@supabase/supabase-js';
 
 interface Dinner {
@@ -36,18 +32,17 @@ interface Dinner {
   status?: string;
 }
 
-const MyDinners = () => {
-  const { t, i18n } = useTranslation();
+const MyDinners = memo(() => {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
-  const [joinedDinners, setJoinedDinners] = useState<Dinner[]>([]);
-  const [createdDinners, setCreatedDinners] = useState<Dinner[]>([]);
-  const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [selectedDinner, setSelectedDinner] = useState<Dinner | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // 使用优化的hook
+  const { joinedDinners, createdDinners, participantCounts, loading, refetch } = useOptimizedDinners(user);
 
   useEffect(() => {
     let isComponentMounted = true;
@@ -100,132 +95,6 @@ const MyDinners = () => {
     };
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchMyDinners = async () => {
-      if (!user) return;
-
-      try {
-        // 优化查询 - 单次批量获取，减少请求数量
-        const [joinedResponse, createdResponse, participantCountsResponse] = await Promise.all([
-          // 获取参与的饭局
-          supabase
-            .from("dinner_participants")
-            .select(`
-              dinners!fk_dinner_participants_dinner_id (
-                id, title, description, dinner_time, location, max_participants,
-                food_preferences, friends_only, dinner_mode, urgency_level,
-                gender_preference, personality_tags, dietary_restrictions,
-                created_by, created_at, updated_at, status
-              )
-            `)
-            .eq("user_id", user.id),
-          
-          // 获取创建的饭局  
-          supabase
-            .from("dinners")
-            .select("*")
-            .eq("created_by", user.id)
-            .order("dinner_time", { ascending: true }),
-            
-          // 预获取所有参与者数量
-          supabase
-            .from("dinner_participants")
-            .select("dinner_id")
-        ]);
-
-        // 处理参与的饭局
-        let joinedDinnersData: Dinner[] = [];
-        if (!joinedResponse.error && joinedResponse.data) {
-          joinedDinnersData = joinedResponse.data
-            ?.map(item => (item as any).dinners)
-            .filter((dinner: any) => dinner && (dinner.status === 'active' || !dinner.status)) || [];
-          setJoinedDinners(joinedDinnersData);
-        }
-
-        // 处理创建的饭局
-        let createdDinnersData: Dinner[] = [];
-        if (!createdResponse.error && createdResponse.data) {
-          createdDinnersData = createdResponse.data
-            .filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
-          setCreatedDinners(createdDinnersData);
-        }
-
-        // 处理参与者数量
-        if (!participantCountsResponse.error && participantCountsResponse.data) {
-          const counts: Record<string, number> = {};
-          participantCountsResponse.data.forEach(participant => {
-            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
-          });
-          setParticipantCounts(counts);
-        }
-
-      } catch (error) {
-        console.error("Error fetching dinners:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyDinners();
-
-    // 优化实时监听 - 使用防抖避免频繁更新
-    let updateTimeout: NodeJS.Timeout;
-    const channel = supabase
-      .channel('my-dinner-participants-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'dinner_participants'
-        },
-        (payload) => {
-          // 防抖更新，避免频繁刷新
-          clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => {
-            console.log('Participant change detected, refreshing data');
-            fetchMyDinners();
-          }, 500);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clearTimeout(updateTimeout);
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString(i18n.language === 'zh' ? 'zh-CN' : 'en-US', {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getModeIcon = (mode: string | undefined) => {
-    switch (mode) {
-      case 'instant': return '🔥';
-      case 'scheduled': return '📅';
-      case 'group': return '👥';
-      default: return '🔥';
-    }
-  };
-
-  const getModeLabel = (mode: string | undefined) => {
-    switch (mode) {
-      case 'instant': return t('dinner.instant');
-      case 'scheduled': return t('dinner.scheduled');
-      case 'group': return t('dinner.group');
-      default: return t('dinner.instant');
-    }
-  };
-
   const handleCancelDinner = async (reason?: string) => {
     if (!user || !selectedDinner) return;
 
@@ -271,42 +140,7 @@ const MyDinners = () => {
 
         // 重新获取数据，避免页面刷新
         setTimeout(() => {
-          const fetchData = async () => {
-            if (!user) return;
-            try {
-              const [joinedResponse, createdResponse] = await Promise.all([
-                supabase
-                  .from("dinner_participants")
-                  .select(`
-                    dinners!fk_dinner_participants_dinner_id (
-                      id, title, description, dinner_time, location, max_participants,
-                      food_preferences, friends_only, dinner_mode, urgency_level,
-                      gender_preference, personality_tags, dietary_restrictions,
-                      created_by, created_at, updated_at, status
-                    )
-                  `)
-                  .eq("user_id", user.id),
-                supabase
-                  .from("dinners")
-                  .select("*")
-                  .eq("created_by", user.id)
-                  .order("dinner_time", { ascending: true })
-              ]);
-
-              if (!joinedResponse.error) {
-                const joinedData = joinedResponse.data?.map(item => (item as any).dinners).filter((dinner: any) => dinner.status === 'active' || !dinner.status) || [];
-                setJoinedDinners(joinedData);
-              }
-
-              if (!createdResponse.error) {
-                const activeDinners = createdResponse.data?.filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
-                setCreatedDinners(activeDinners);
-              }
-            } catch (error) {
-              console.error('重新获取数据失败:', error);
-            }
-          };
-          fetchData();
+          refetch();
         }, 500);
       } else {
         const message = result.message || result.f2 || "操作失败";
@@ -330,265 +164,143 @@ const MyDinners = () => {
     }
   };
 
-  const handleCancelClick = (dinner: Dinner, event: React.MouseEvent) => {
+  const handleCancelClick = useCallback((dinner: Dinner, event: React.MouseEvent) => {
     event.stopPropagation();
     setSelectedDinner(dinner);
     setShowCancelDialog(true);
-  };
+  }, []);
 
-  const DinnerCard = ({ dinner }: { dinner: Dinner }) => {
-    const participantCount = participantCounts[dinner.id] || 0;
-    const isCreatedByMe = dinner.created_by === user?.id;
-    // 总人数 = 参与者数量 + 创建者(1人)
-    const totalParticipants = participantCount + 1;
-    
-    const canCancel = (dinner as any).status === 'active' || !(dinner as any).status;
-    
-    return (
-      <div className="dinner-card-stable cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 shadow-lg bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden rounded-lg"
-           style={{ border: 'none', borderTop: 'none', borderRight: 'none', borderBottom: 'none', borderLeft: 'none', outline: 'none' }}>
-        <div onClick={() => navigate(`/dinner/${dinner.id}`)}>
-          {canCancel && (
-            <div className="absolute top-2 right-2 z-10 flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive"
-                onClick={(e) => handleCancelClick(dinner, e)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-        <div className="pb-3 flex flex-col space-y-1.5 p-6" style={{ minHeight: '120px', border: 'none' }}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
-                {getModeIcon(dinner.dinner_mode)} {getModeLabel(dinner.dinner_mode)}
-              </Badge>
-              {isCreatedByMe && canCancel && (
-                <ShareDinner 
-                  dinner={dinner} 
-                  participantCount={totalParticipants}
-                />
-              )}
-            </div>
-            {isCreatedByMe && participantCount > 0 && (
-              <Badge className="bg-primary text-black border-primary/30 text-xs font-bold animate-pulse">
-                {t('myDinners.participantsJoined', { count: participantCount })}
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-foreground line-clamp-2 text-2xl font-semibold leading-none tracking-tight" style={{ minHeight: '56px' }}>
-              {dinner.title}
-            </h3>
-          </div>
-          {dinner.description && (
-            <p className="text-muted-foreground line-clamp-2 text-sm" style={{ minHeight: '40px' }}>
-              {dinner.description.length > 50 
-                ? dinner.description.substring(0, 50) + "..."
-                : dinner.description}
-            </p>
-          )}
-        </div>
-        <div className="space-y-4 p-6 pt-0" style={{ minHeight: '160px', border: 'none' }}>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-            <CalendarDays className="w-4 h-4 text-primary shrink-0" />
-            <span className="font-medium truncate">{formatDateTime(dinner.dinner_time)}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-2 rounded-lg">
-            <MapPin className="w-4 h-4 text-primary shrink-0" />
-            <span className="font-medium truncate">{dinner.location}</span>
-          </div>
-          
-          <div className={`flex items-center gap-2 text-sm text-muted-foreground p-2 rounded-lg ${
-            participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
-          }`}>
-            <Users className="w-4 h-4 text-primary shrink-0" />
-            <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
-              {totalParticipants} / {dinner.max_participants} {t('myDinners.people')}
-            </span>
-            {totalParticipants >= dinner.max_participants && (
-              <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive ml-auto">
-                {t('myDinners.fullBadge')}
-              </Badge>
-            )}
-          </div>
+  const handleCardClick = useCallback((dinnerId: string) => {
+    navigate(`/dinner/${dinnerId}`);
+  }, [navigate]);
 
-          {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {dinner.food_preferences.map((preference) => (
-                <Badge 
-                  key={preference} 
-                  variant="secondary" 
-                  className="text-xs bg-gradient-to-r from-primary/20 to-accent/20 text-primary border-primary/30"
-                >
-                  {preference}
-                </Badge>
-              ))}
-            </div>
-          )}
+  // 优化渲染函数
+  const renderDinnerCard = useCallback((dinner: Dinner) => (
+    <OptimizedMyDinnersCard
+      key={dinner.id}
+      dinner={dinner}
+      participantCount={participantCounts[dinner.id] || 0}
+      userId={user?.id}
+      onCancel={handleCancelClick}
+      onClick={() => handleCardClick(dinner.id)}
+    />
+  ), [participantCounts, user?.id, handleCancelClick, handleCardClick]);
 
-          {dinner.personality_tags && dinner.personality_tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {dinner.personality_tags.slice(0, 3).map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="outline" 
-                  className="text-xs bg-accent/10 text-accent border-accent/30"
-                >
-                  #{tag}
-                </Badge>
-              ))}
-              {dinner.personality_tags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{dinner.personality_tags.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
-            <Badge variant="outline" className="text-xs border-purple-300 text-purple-700">
-              <Users2 className="w-3 h-3 mr-1" />
-              {dinner.gender_preference === 'same_gender' ? t('myDinners.sameGenderPref') : t('myDinners.oppositeGenderPref')}
-            </Badge>
-          )}
-
-          {dinner.friends_only && (
-            <Badge variant="outline" className="text-xs border-accent text-accent">
-              {t('myDinners.friendsOnlyBadge')}
-            </Badge>
-          )}
-        </div>
-        </div>
-      </div>
-    );
-  };
-
-  if (!user) return null;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
-        <div className="max-w-4xl mx-auto">
-          <OptimizedCampaignBanner className="mb-6" />
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-muted rounded animate-pulse" />
-              <Skeleton className="h-8 w-32" />
-            </div>
-            <Skeleton className="h-4 w-48 mx-auto" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+  if (!user) {
+    return null; // 重定向处理
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4 pb-24">
-      <div className="max-w-4xl mx-auto">
-        {/* Campaign Banner */}
-        <OptimizedCampaignBanner className="mb-6" />
-        
-        {/* 简洁的欢迎区域 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center justify-center gap-2 mb-2">
-            <Heart className="w-8 h-8 text-primary" />
-            {t('nav.myDinners')}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {joinedDinners.length + createdDinners.length > 0 
-              ? t('myDinners.summary', { joined: joinedDinners.length, created: createdDinners.length })
-              : t('myDinners.welcomeMsg')
-            }
-          </p>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <OptimizedCampaignBanner className="mb-6" />
+          
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
+              {t('myDinners.title')}
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              {t('myDinners.subtitle')}
+            </p>
+          </div>
         </div>
 
         <Tabs defaultValue="joined" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-transparent p-2 rounded-xl gap-2">
-            <TabsTrigger value="joined" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
-              {t('myDinners.joinedTab')}
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger 
+              value="joined" 
+              className="flex items-center gap-2 text-lg font-semibold"
+            >
+              ❤️ {t('myDinners.joinedDinners')}
+              {joinedDinners.length > 0 && (
+                <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center">
+                  {joinedDinners.length}
+                </span>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="created" className="rounded-lg bg-background text-foreground data-[state=active]:bg-accent data-[state=active]:text-black font-bold mx-1 px-4 py-3">
-              {t('myDinners.createdTab')}
+            <TabsTrigger 
+              value="created" 
+              className="flex items-center gap-2 text-lg font-semibold"
+            >
+              ✨ {t('myDinners.createdDinners')}
+              {createdDinners.length > 0 && (
+                <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center">
+                  {createdDinners.length}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="joined" className="mt-6">
-            {joinedDinners.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
-                  <Heart className="w-12 h-12 text-primary" />
-                </div>
-                <p className="text-muted-foreground text-lg mb-2">{t('myDinners.noJoinedDinners')}</p>
-                <p className="text-sm text-muted-foreground mb-4">{t('myDinners.noJoinedDesc')}</p>
-                <Button 
-                  onClick={() => navigate("/discover")}
-                  className="bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold px-8 py-3 text-base shadow-lg rounded-full"
-                  size="default"
-                >
-                  {t('myDinners.discoverDinners')}
-                </Button>
+
+          <TabsContent value="joined" className="space-y-6">
+            {loading ? (
+              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                {[...Array(4)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : joinedDinners.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                {joinedDinners.map(renderDinnerCard)}
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {joinedDinners.map((dinner) => (
-                  <DinnerCard key={dinner.id} dinner={dinner} />
-                ))}
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🍽️</div>
+                <h3 className="text-2xl font-bold mb-2">{t('myDinners.noJoinedDinners')}</h3>
+                <p className="text-muted-foreground mb-6">{t('myDinners.noJoinedDinnersDesc')}</p>
+                <button 
+                  onClick={() => navigate('/discover')}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  {t('myDinners.exploreDinners')}
+                </button>
               </div>
             )}
           </TabsContent>
-          
-          <TabsContent value="created" className="mt-6">
-            {createdDinners.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
-                  <Sparkles className="w-12 h-12 text-primary" />
-                </div>
-                <p className="text-muted-foreground text-lg mb-2">{t('myDinners.noCreatedDinners')}</p>
-                <p className="text-sm text-muted-foreground mb-4">{t('myDinners.noCreatedDesc')}</p>
-                <Button 
-                  onClick={() => navigate("/create-dinner")}
-                  className="bg-accent text-black hover:bg-accent/90 hover:text-black font-semibold px-8 py-3 text-base shadow-lg rounded-full"
-                  size="default"
-                >
-                  {t('myDinners.createFirstDinner')}
-                </Button>
+
+          <TabsContent value="created" className="space-y-6">
+            {loading ? (
+              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                {[...Array(4)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : createdDinners.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                {createdDinners.map(renderDinnerCard)}
               </div>
             ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {createdDinners.map((dinner) => (
-                  <DinnerCard key={dinner.id} dinner={dinner} />
-                ))}
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold mb-2">{t('myDinners.noCreatedDinners')}</h3>
+                <p className="text-muted-foreground mb-6">{t('myDinners.noCreatedDinnersDesc')}</p>
+                <button 
+                  onClick={() => navigate('/create')}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-lg font-semibold transition-colors"
+                >
+                  {t('myDinners.createFirstDinner')}
+                </button>
               </div>
             )}
           </TabsContent>
         </Tabs>
       </div>
-      
-      {selectedDinner && (
-        <CancelDinnerDialog
-          open={showCancelDialog}
-          onOpenChange={setShowCancelDialog}
-          onConfirm={handleCancelDinner}
-          dinnerTitle={selectedDinner.title}
-          dinnerTime={selectedDinner.dinner_time}
-          isCreator={selectedDinner.created_by === user?.id}
-          loading={cancelling}
-        />
-      )}
-      
-      <Navigation />
+
+      <CancelDinnerDialog
+        open={showCancelDialog}
+        onOpenChange={setShowCancelDialog}
+        onConfirm={handleCancelDinner}
+        loading={cancelling}
+        dinnerTitle={selectedDinner?.title || ''}
+        dinnerTime={selectedDinner?.dinner_time || ''}
+        isCreator={selectedDinner?.created_by === user?.id}
+      />
     </div>
   );
-};
+});
+
+MyDinners.displayName = 'MyDinners';
+
 export default MyDinners;
