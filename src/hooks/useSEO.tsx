@@ -60,29 +60,45 @@ export const useSEO = () => {
         };
         
       case 'dinner-detail':
+        const dinnerTitle = data?.title ? `${data.title} - ${t('seo.dinnerDetail.title', 'Dinner Event Details')}` : t('seo.dinnerDetail.title', 'Dinner Event Details');
+        const dinnerDescription = data?.description || t('seo.dinnerDetail.description', 'View detailed dinner event information, understand activity arrangements, and interact with dining companions.');
         return {
-          title: data?.title ? `${data.title} - 饭局详情` : t('seo.dinnerDetail.title', '饭局详情'),
-          description: data?.description || t('seo.dinnerDetail.description', '查看饭局详细信息，了解活动安排，与饭友互动交流。'),
-          keywords: t('seo.dinnerDetail.keywords', '饭局详情,聚餐信息,美食活动'),
+          title: dinnerTitle,
+          description: dinnerDescription,
+          keywords: t('seo.dinnerDetail.keywords', 'dinner details,meal information,food activity,social dining,food meetup'),
           structuredData: data ? {
             "@context": "https://schema.org",
             "@type": "Event",
             "name": data.title,
             "description": data.description,
             "startDate": data.dinner_time,
+            "endDate": data.dinner_time, // Add end time estimate
+            "eventStatus": "EventScheduled",
+            "eventAttendanceMode": "OfflineEventAttendanceMode",
             "location": {
               "@type": "Place",
               "name": data.location,
-              "address": data.location
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": data.location
+              }
             },
             "organizer": {
               "@type": "Person",
-              "name": data.organizer_name || "饭约社用户"
+              "name": data.organizer_name || "FanYueShe User"
             },
             "offers": {
               "@type": "Offer",
-              "price": data.budget_per_person || "0",
-              "priceCurrency": "CNY"
+              "price": "0",
+              "priceCurrency": "USD",
+              "availability": "InStock"
+            },
+            "maximumAttendeeCapacity": data.max_participants,
+            "keywords": (data.food_preferences || []).join(", "),
+            "isAccessibleForFree": true,
+            "potentialAction": {
+              "@type": "JoinAction",
+              "target": window.location.href
             }
           } : undefined
         };

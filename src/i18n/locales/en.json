@@ -212,7 +212,8 @@
     "enterChat": "Enter Chat",
     "leaveDinner": "Leave Dinner",
     "yourDinner": "This is your dinner",
-    "cancelDinner": "Cancel Dinner"
+    "cancelDinner": "Cancel Dinner",
+    "loginToJoin": "Sign in to join this exciting dinner event and connect with fellow food lovers!"
   },
   "filter": {
     "description": "Set filter criteria to find the most suitable dinners",

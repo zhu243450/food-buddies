@@ -53,7 +53,7 @@ const DinnerDetail = () => {
     const fetchDinnerDetails = async () => {
       if (!id) return;
 
-      // 获取饭局详情
+      // 获取饭局详情 - 不需要用户登录即可查看（SEO友好）
       const { data: dinnerData, error: dinnerError } = await supabase
         .from("dinners")
         .select("*")
@@ -74,7 +74,7 @@ const DinnerDetail = () => {
 
       setDinner(dinnerData);
 
-      // 获取参与者列表
+      // 获取参与者列表 - 无需用户登录
       const { data: participantData, error: participantError } = await supabase
         .from("dinner_participants")
         .select("*")
@@ -133,7 +133,7 @@ const DinnerDetail = () => {
     };
 
     fetchDinnerDetails();
-  }, [id, user, navigate]);
+  }, [id, user, t]);
 
   const handleJoinDinner = async () => {
     if (!user || !dinner) return;
@@ -435,7 +435,29 @@ const DinnerDetail = () => {
               </div>
             </div>
 
-            {/* 动态按钮区域 */}
+            {/* Action buttons for different user states */}
+            {!user && (
+              <div className="space-y-3">
+                <div className="text-center p-4 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                  <p className="text-foreground mb-3">{t('dinnerDetail.loginToJoin')}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button 
+                      onClick={() => navigate("/auth")}
+                      className="bg-primary text-white hover:bg-primary/90"
+                    >
+                      {t('common.login')}
+                    </Button>
+                    <Button 
+                      onClick={() => navigate("/auth?mode=register")}
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary hover:text-white"
+                    >
+                      {t('common.register')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {canJoin && (
               <Button 
@@ -476,7 +498,7 @@ const DinnerDetail = () => {
               </div>
             )}
 
-            {dinner.created_by === user.id && (
+            {user && dinner.created_by === user.id && (
               <div className="space-y-3">
                 <div className="text-center p-4 rounded-lg bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200">
                   <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold text-lg">
