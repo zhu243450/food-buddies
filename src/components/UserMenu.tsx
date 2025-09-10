@@ -150,30 +150,27 @@ export const UserMenu = () => {
 
   return (
     <DropdownMenu key={`user-menu-${renderKey}`} open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50"
-          onClick={(e) => {
-            console.log('UserMenu button clicked!');
-            e.preventDefault();
-            e.stopPropagation();
-            setIsOpen(!isOpen);
-          }}
-        >
-          <div className="relative">
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="text-xs">
-                {profile?.nickname?.charAt(0)?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            {(unreadCount > 0 || (isAdmin && pendingReports > 0)) && (
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border border-background"></div>
-            )}
-          </div>
-          <span className="text-xs font-medium truncate w-full text-center">{t('userMenu.mine')}</span>
-        </Button>
+      <DropdownMenuTrigger 
+        className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50 border-none bg-transparent cursor-pointer"
+        onClick={(e) => {
+          console.log('UserMenu trigger clicked!');
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen(!isOpen);
+        }}
+      >
+        <div className="relative">
+          <Avatar className="h-5 w-5">
+            <AvatarImage src={profile?.avatar_url} />
+            <AvatarFallback className="text-xs">
+              {profile?.nickname?.charAt(0)?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          {(unreadCount > 0 || (isAdmin && pendingReports > 0)) && (
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full border border-background"></div>
+          )}
+        </div>
+        <span className="text-xs font-medium truncate w-full text-center">{t('userMenu.mine')}</span>
       </DropdownMenuTrigger>
       
       <DropdownMenuContent className="w-56 bg-background backdrop-blur-sm border" align="end" style={{ zIndex: 9999 }}>
