@@ -358,9 +358,9 @@ const Auth = () => {
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
-              <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
-              <TabsTrigger value="phone">
+              <TabsTrigger value="signin" className="text-sm">{t('auth.signIn')}</TabsTrigger>
+              <TabsTrigger value="signup" className="text-sm">{t('auth.signUp')}</TabsTrigger>
+              <TabsTrigger value="phone" className="text-sm">
                 <Phone className="w-4 h-4 mr-1" />
                 手机登录
               </TabsTrigger>
