@@ -265,6 +265,7 @@ const Auth = () => {
     }
 
     setLoading(true);
+    console.log("正在发送验证码到:", `+86${phone}`);
     
     try {
       const { error } = await supabase.auth.signInWithOtp({
@@ -274,20 +275,25 @@ const Auth = () => {
         }
       });
 
+      console.log("发送验证码结果:", { error });
+
       if (error) {
+        console.error("发送验证码错误:", error);
         toast({
           title: "发送验证码失败",
           description: error.message,
           variant: "destructive",
         });
       } else {
+        console.log("验证码发送成功，显示验证码输入界面");
         setOtpSent(true);
         toast({
           title: "验证码已发送",
-          description: "请检查短信并输入6位验证码",
+          description: "请检查短信并输入6位验证码（开发模式下请查看浏览器控制台）",
         });
       }
     } catch (error: any) {
+      console.error("发送验证码异常:", error);
       toast({
         title: "发送验证码失败",
         description: error.message || "发送验证码时发生未知错误",
