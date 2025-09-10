@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, Clock, Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface CancelDinnerDialogProps {
   open: boolean;
@@ -49,91 +45,193 @@ const CancelDinnerDialog = ({
   const hoursUntil = getTimeUntilStart();
   const isLateCancel = hoursUntil < 24;
 
+  if (!open) {
+    return null;
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-lg">
-            <AlertTriangle className="w-5 h-5 text-destructive" />
-            {isCreator ? t('dinner.cancel') : t('dinner.leave')}
-          </DialogTitle>
-          <DialogDescription className="space-y-3 pt-2 max-h-[50vh] overflow-y-auto">
-            <div className="p-3 rounded-lg bg-accent/10 border border-accent/30">
-              <p className="font-medium text-foreground">{dinnerTitle}</p>
-              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                <Calendar className="w-4 h-4" />
-                {new Date(dinnerTime).toLocaleString("zh-CN", {
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  weekday: "long",
-                })}
-              </div>
-            </div>
+    <>
+      {/* 遮罩层 */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}
+        onClick={() => onOpenChange(false)}
+      >
+        {/* 弹窗内容 */}
+        <div 
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            position: 'relative',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* 关闭按钮 */}
+          <button
+            onClick={() => onOpenChange(false)}
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              background: 'none',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer',
+              color: '#666'
+            }}
+          >
+            ×
+          </button>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="text-sm text-muted-foreground">
-                  {t('dinner.timeUntilStart', { hours: hoursUntil })}
-                </span>
-              </div>
-              
-              {isLateCancel && (
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-                  <Badge variant="destructive" className="mb-2">
-                    ⚠️ {t('dinner.lastMinuteCancel')}
-                  </Badge>
-                  <p className="text-sm text-destructive">
-                    {isCreator 
-                      ? t('dinner.creatorLateWarning')
-                      : t('dinner.participantLateWarning')
-                    }
-                  </p>
-                </div>
-              )}
-            </div>
+          {/* 标题 */}
+          <div style={{ marginBottom: '20px' }}>
+            <h2 style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              margin: 0, 
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#dc2626'
+            }}>
+              <AlertTriangle style={{ width: '20px', height: '20px' }} />
+              {isCreator ? t('dinner.cancel') : t('dinner.leave')}
+            </h2>
+          </div>
 
-            <p className="text-foreground">
-              {isCreator 
-                ? t('dinner.cancelConfirm')
-                : t('dinner.leaveConfirm')
-              }
+          {/* 饭局信息 */}
+          <div style={{ 
+            backgroundColor: '#f8fafc', 
+            border: '1px solid #e2e8f0', 
+            borderRadius: '6px', 
+            padding: '16px', 
+            marginBottom: '20px' 
+          }}>
+            <p style={{ fontWeight: 'bold', margin: '0 0 8px 0', color: '#1f2937' }}>
+              {dinnerTitle}
             </p>
-          </DialogDescription>
-        </DialogHeader>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#6b7280', fontSize: '14px' }}>
+              <Calendar style={{ width: '16px', height: '16px' }} />
+              {new Date(dinnerTime).toLocaleString("zh-CN", {
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                weekday: "long",
+              })}
+            </div>
+          </div>
 
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-foreground">
-            {t('dinner.cancelReason')}
-          </label>
-          <Textarea
-            placeholder={isCreator ? t('dinner.cancelReasonPlaceholder') : t('dinner.leaveReasonPlaceholder')}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="min-h-[80px]"
-          />
+          {/* 时间警告 */}
+          {isLateCancel && (
+            <div style={{ 
+              backgroundColor: '#fef2f2', 
+              border: '1px solid #fecaca', 
+              borderRadius: '6px', 
+              padding: '16px', 
+              marginBottom: '20px' 
+            }}>
+              <div style={{ 
+                backgroundColor: '#dc2626', 
+                color: 'white', 
+                padding: '4px 8px', 
+                borderRadius: '4px', 
+                fontSize: '12px',
+                display: 'inline-block',
+                marginBottom: '8px'
+              }}>
+                ⚠️ {t('dinner.lastMinuteCancel')}
+              </div>
+              <p style={{ margin: 0, fontSize: '14px', color: '#dc2626' }}>
+                {isCreator 
+                  ? t('dinner.creatorLateWarning')
+                  : t('dinner.participantLateWarning')
+                }
+              </p>
+            </div>
+          )}
+
+          <p style={{ marginBottom: '20px', color: '#1f2937' }}>
+            {isCreator 
+              ? t('dinner.cancelConfirm')
+              : t('dinner.leaveConfirm')
+            }
+          </p>
+
+          {/* 取消原因输入 */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#1f2937' }}>
+              {t('dinner.cancelReason')}
+            </label>
+            <textarea
+              placeholder={isCreator ? t('dinner.cancelReasonPlaceholder') : t('dinner.leaveReasonPlaceholder')}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                padding: '12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+
+          {/* 按钮 */}
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <button
+              onClick={handleCancel}
+              disabled={loading}
+              style={{
+                padding: '12px 20px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                backgroundColor: 'white',
+                color: '#374151',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              {t('dinner.continueParticipate')}
+            </button>
+            <button
+              onClick={handleConfirm}
+              disabled={loading}
+              style={{
+                padding: '12px 20px',
+                border: 'none',
+                borderRadius: '6px',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              {loading ? t('common.loading') : (isCreator ? t('dinner.confirmCancel') : t('dinner.confirmLeave'))}
+            </button>
+          </div>
         </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button 
-            variant="outline" 
-            onClick={handleCancel}
-            disabled={loading}
-          >
-            {t('dinner.continueParticipate')}
-          </Button>
-          <Button 
-            variant="destructive" 
-            onClick={handleConfirm}
-            disabled={loading}
-          >
-            {loading ? t('common.loading') : (isCreator ? t('dinner.confirmCancel') : t('dinner.confirmLeave'))}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   );
 };
 
