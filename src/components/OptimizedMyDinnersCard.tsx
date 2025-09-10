@@ -119,7 +119,7 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
           </div>
         )}
         
-        <div className="pb-4 flex flex-col space-y-3 p-6 flex-grow">
+        <div className="p-6 flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
             <Badge variant="secondary" className="text-sm bg-primary/20 text-primary border-primary/30 px-3 py-1">
               {computedValues.modeIcon} {computedValues.modeLabel}
@@ -131,86 +131,88 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             )}
           </div>
           
-          <h3 className="text-xl font-bold text-foreground line-clamp-2 leading-tight mb-4 min-h-[3rem]">
+          <h3 className="text-xl font-bold text-foreground line-clamp-2 leading-tight mb-3">
             {dinner.title}
           </h3>
           
           {computedValues.truncatedDescription && (
-            <p className="text-muted-foreground line-clamp-3 text-base mb-4 min-h-[4.5rem] leading-relaxed">
+            <p className="text-muted-foreground line-clamp-2 text-base mb-4 leading-relaxed">
               {dinner.description}
             </p>
           )}
-        </div>
-        
-        <div className="space-y-4 p-6 pt-0 mt-auto">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-4 rounded-lg">
-            <CalendarDays className="w-5 h-5 text-primary shrink-0" />
-            <span className="font-medium truncate">{computedValues.formattedTime}</span>
-          </div>
-          
-          <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-4 rounded-lg">
-            <MapPin className="w-5 h-5 text-primary shrink-0" />
-            <span className="font-medium truncate">{dinner.location}</span>
-          </div>
-          
-          <div className={`flex items-center gap-3 text-sm text-muted-foreground p-4 rounded-lg ${
-            participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
-          }`}>
-            <Users className="w-5 h-5 text-primary shrink-0" />
-            <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
-              {computedValues.totalParticipants}/{dinner.max_participants}
-            </span>
-            {computedValues.isFull && (
-              <Badge variant="secondary" className="text-sm bg-destructive/20 text-destructive ml-auto px-2 py-1">
-                满
-              </Badge>
-            )}
-          </div>
 
-          {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {dinner.food_preferences.slice(0, 3).map((preference) => (
-                <Badge 
-                  key={preference} 
-                  variant="secondary" 
-                  className="text-sm bg-gradient-to-r from-primary/20 to-accent/20 text-primary border-primary/30 px-3 py-1"
-                >
-                  {preference}
-                </Badge>
-              ))}
-              {dinner.food_preferences.length > 3 && (
-                <Badge variant="secondary" className="text-sm px-2 py-1">
-                  +{dinner.food_preferences.length - 3}
+          <div className="space-y-3 mt-2">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-3 rounded-lg">
+              <CalendarDays className="w-5 h-5 text-primary shrink-0" />
+              <span className="font-medium truncate">{computedValues.formattedTime}</span>
+            </div>
+            
+            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-3 rounded-lg">
+              <MapPin className="w-5 h-5 text-primary shrink-0" />
+              <span className="font-medium truncate">{dinner.location}</span>
+            </div>
+            
+            <div className={`flex items-center gap-3 text-sm text-muted-foreground p-3 rounded-lg ${
+              participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
+            }`}>
+              <Users className="w-5 h-5 text-primary shrink-0" />
+              <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
+                {computedValues.totalParticipants}/{dinner.max_participants}
+              </span>
+              {computedValues.isFull && (
+                <Badge variant="secondary" className="text-sm bg-destructive/20 text-destructive ml-auto px-2 py-1">
+                  满
                 </Badge>
               )}
             </div>
-          )}
+          </div>
 
-          <div className="flex flex-wrap gap-2 items-center mt-4">
-            {dinner.personality_tags && dinner.personality_tags.length > 0 && (
-              dinner.personality_tags.slice(0, 3).map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="outline" 
-                  className="text-sm bg-accent/10 text-accent border-accent/30 px-2 py-1"
-                >
-                  #{tag}
+          <div className="mt-4 flex-grow">
+            {dinner.food_preferences && dinner.food_preferences.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {dinner.food_preferences.slice(0, 3).map((preference) => (
+                  <Badge 
+                    key={preference} 
+                    variant="secondary" 
+                    className="text-sm bg-gradient-to-r from-primary/20 to-accent/20 text-primary border-primary/30 px-3 py-1"
+                  >
+                    {preference}
+                  </Badge>
+                ))}
+                {dinner.food_preferences.length > 3 && (
+                  <Badge variant="secondary" className="text-sm px-2 py-1">
+                    +{dinner.food_preferences.length - 3}
+                  </Badge>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 items-center">
+              {dinner.personality_tags && dinner.personality_tags.length > 0 && (
+                dinner.personality_tags.slice(0, 3).map((tag) => (
+                  <Badge 
+                    key={tag} 
+                    variant="outline" 
+                    className="text-sm bg-accent/10 text-accent border-accent/30 px-2 py-1"
+                  >
+                    #{tag}
+                  </Badge>
+                ))
+              )}
+              
+              {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
+                <Badge variant="outline" className="text-sm border-purple-300 text-purple-700 px-2 py-1">
+                  <Users2 className="w-4 h-4 mr-1" />
+                  {dinner.gender_preference === 'same_gender' ? '同性' : '异性'}
                 </Badge>
-              ))
-            )}
-            
-            {dinner.gender_preference && dinner.gender_preference !== 'no_preference' && (
-              <Badge variant="outline" className="text-sm border-purple-300 text-purple-700 px-2 py-1">
-                <Users2 className="w-4 h-4 mr-1" />
-                {dinner.gender_preference === 'same_gender' ? '同性' : '异性'}
-              </Badge>
-            )}
+              )}
 
-            {dinner.friends_only && (
-              <Badge variant="outline" className="text-sm border-accent text-accent px-2 py-1">
-                仅好友
-              </Badge>
-            )}
+              {dinner.friends_only && (
+                <Badge variant="outline" className="text-sm border-accent text-accent px-2 py-1">
+                  仅好友
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </div>
