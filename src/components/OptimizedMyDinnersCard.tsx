@@ -119,8 +119,8 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
           </div>
         )}
         
-        <div className="pb-2 flex flex-col space-y-1 p-4">
-          <div className="flex items-center justify-between mb-2">
+        <div className="pb-3 flex flex-col space-y-2 p-5">
+          <div className="flex items-center justify-between mb-3">
             <Badge variant="secondary" className="text-xs bg-primary/20 text-primary border-primary/30">
               {computedValues.modeIcon} {computedValues.modeLabel}
             </Badge>
@@ -131,32 +131,32 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             )}
           </div>
           
-          <h3 className="text-base font-bold text-foreground line-clamp-2 leading-tight mb-2">
+          <h3 className="text-lg font-bold text-foreground line-clamp-2 leading-tight mb-3">
             {dinner.title}
           </h3>
           
           {computedValues.truncatedDescription && (
-            <p className="text-muted-foreground line-clamp-1 text-xs">
+            <p className="text-muted-foreground line-clamp-2 text-sm mb-2">
               {computedValues.truncatedDescription}
             </p>
           )}
         </div>
         
-        <div className="space-y-3 p-4 pt-0">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/10 p-2 rounded">
-            <CalendarDays className="w-3 h-3 text-primary shrink-0" />
+        <div className="space-y-4 p-5 pt-0">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-3 rounded">
+            <CalendarDays className="w-4 h-4 text-primary shrink-0" />
             <span className="font-medium truncate">{computedValues.formattedTime}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-accent/10 p-2 rounded">
-            <MapPin className="w-3 h-3 text-primary shrink-0" />
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/10 p-3 rounded">
+            <MapPin className="w-4 h-4 text-primary shrink-0" />
             <span className="font-medium truncate">{dinner.location}</span>
           </div>
           
-          <div className={`flex items-center gap-2 text-xs text-muted-foreground p-2 rounded ${
+          <div className={`flex items-center gap-2 text-sm text-muted-foreground p-3 rounded ${
             participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
           }`}>
-            <Users className="w-3 h-3 text-primary shrink-0" />
+            <Users className="w-4 h-4 text-primary shrink-0" />
             <span className={`font-bold ${participantCount > 0 ? 'text-primary' : 'text-primary'}`}>
               {computedValues.totalParticipants}/{dinner.max_participants}
             </span>
@@ -168,7 +168,7 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
           </div>
 
           {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-2 mt-2">
               {dinner.food_preferences.slice(0, 2).map((preference) => (
                 <Badge 
                   key={preference} 
@@ -186,7 +186,7 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             </div>
           )}
 
-          <div className="flex flex-wrap gap-1 items-center">
+          <div className="flex flex-wrap gap-2 items-center mt-2">
             {dinner.personality_tags && dinner.personality_tags.length > 0 && (
               dinner.personality_tags.slice(0, 2).map((tag) => (
                 <Badge 
