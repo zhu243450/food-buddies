@@ -131,17 +131,17 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             )}
           </div>
           
-          <h3 className="text-xl font-bold text-foreground line-clamp-3 leading-tight mb-0 min-h-[4.5rem]">
+          <h3 className="text-xl font-bold text-foreground line-clamp-3 leading-tight mb-0">
             {dinner.title}
           </h3>
           
           {computedValues.truncatedDescription && (
-            <p className="text-muted-foreground line-clamp-3 text-base mb-2 leading-relaxed min-h-[4.5rem]">
+            <p className="text-muted-foreground line-clamp-3 text-base mb-1 leading-tight">
               {dinner.description}
             </p>
           )}
 
-          <div className="space-y-4 mt-0">
+          <div className="space-y-3 mt-1">
             <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-4 rounded-lg">
               <CalendarDays className="w-5 h-5 text-primary shrink-0" />
               <span className="font-medium truncate">{computedValues.formattedTime}</span>
@@ -167,7 +167,7 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             </div>
           </div>
 
-          <div className="mt-5 flex-grow">
+          <div className="mt-3 flex-grow">
             {dinner.food_preferences && dinner.food_preferences.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {dinner.food_preferences.slice(0, 3).map((preference) => (
