@@ -2,15 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useNotifications } from '@/hooks/useNotifications';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -149,11 +140,12 @@ export const UserMenu = () => {
   if (!user) return null;
 
   return (
-    <DropdownMenu key={`user-menu-${renderKey}`} open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger 
-        className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50 border-none bg-transparent cursor-pointer"
+    <div className="relative" key={`user-menu-${renderKey}`}>
+      <Button 
+        variant="ghost" 
+        className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50"
         onClick={(e) => {
-          console.log('UserMenu trigger clicked!');
+          console.log('UserMenu button clicked!');
           e.preventDefault();
           e.stopPropagation();
           setIsOpen(!isOpen);
@@ -171,87 +163,112 @@ export const UserMenu = () => {
           )}
         </div>
         <span className="text-xs font-medium truncate w-full text-center">{t('userMenu.mine')}</span>
-      </DropdownMenuTrigger>
+      </Button>
       
-      <DropdownMenuContent className="w-56 bg-background backdrop-blur-sm border" align="end" style={{ zIndex: 9999 }}>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {profile?.nickname || t('userMenu.user')}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => handleMenuItemClick('/profile')}>
-            <User className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.profile')}</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem onClick={() => handleMenuItemClick('/notifications')}>
-            <Bell className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.notifications')}</span>
-            {unreadCount > 0 && (
-              <Badge variant="destructive" className="ml-auto h-5 text-xs">
-                {unreadCount}
-              </Badge>
-            )}
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem onClick={() => handleMenuItemClick('/feedback')}>
-            <MessageSquare className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.feedback')}</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem onClick={() => handleMenuItemClick('/help')}>
-            <HelpCircle className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.help')}</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => handleMenuItemClick('/food-guide')}>
-            <ChefHat className="mr-2 h-4 w-4" />
-            <span>美食城市指南</span>
-          </DropdownMenuItem>
-          
-          <DropdownMenuItem onClick={() => handleMenuItemClick('/faq')}>
-            <BookOpen className="mr-2 h-4 w-4" />
-            <span>{t('userMenu.faq')}</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        
-        {isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => handleMenuItemClick('/admin')}>
-                <Shield className="mr-2 h-4 w-4" />
-                <span>{t('userMenu.admin')}</span>
-                {pendingReports > 0 && (
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute bottom-full right-0 mb-2 w-56 bg-background backdrop-blur-sm border rounded-md shadow-lg z-50 p-2">
+            <div className="font-normal p-2 border-b">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">
+                  {profile?.nickname || t('userMenu.user')}
+                </p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+            
+            <div className="py-2">
+              <button 
+                onClick={() => handleMenuItemClick('/profile')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <User className="mr-2 h-4 w-4" />
+                <span>{t('userMenu.profile')}</span>
+              </button>
+              
+              <button 
+                onClick={() => handleMenuItemClick('/notifications')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                <span>{t('userMenu.notifications')}</span>
+                {unreadCount > 0 && (
                   <Badge variant="destructive" className="ml-auto h-5 text-xs">
-                    {pendingReports}
+                    {unreadCount}
                   </Badge>
                 )}
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </>
-        )}
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>{t('userMenu.logout')}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              </button>
+              
+              <button 
+                onClick={() => handleMenuItemClick('/feedback')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>{t('userMenu.feedback')}</span>
+              </button>
+              
+              <button 
+                onClick={() => handleMenuItemClick('/help')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>{t('userMenu.help')}</span>
+              </button>
+            </div>
+            
+            <div className="border-t py-2">
+              <button 
+                onClick={() => handleMenuItemClick('/food-guide')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <ChefHat className="mr-2 h-4 w-4" />
+                <span>美食城市指南</span>
+              </button>
+              
+              <button 
+                onClick={() => handleMenuItemClick('/faq')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>{t('userMenu.faq')}</span>
+              </button>
+            </div>
+            
+            {isAdmin && (
+              <div className="border-t py-2">
+                <button 
+                  onClick={() => handleMenuItemClick('/admin')}
+                  className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>{t('userMenu.admin')}</span>
+                  {pendingReports > 0 && (
+                    <Badge variant="destructive" className="ml-auto h-5 text-xs">
+                      {pendingReports}
+                    </Badge>
+                  )}
+                </button>
+              </div>
+            )}
+            
+            <div className="border-t py-2">
+              <button 
+                onClick={handleLogout}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>{t('userMenu.logout')}</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 };
