@@ -28,7 +28,9 @@ const CancelDinnerDialog = ({
   const { t } = useTranslation();
   const [reason, setReason] = useState("");
 
-  console.log('CancelDinnerDialog render:', { open, dinnerTitle, isCreator });
+  console.log('=== CancelDinnerDialog render ===');
+  console.log('Props:', { open, dinnerTitle, isCreator, loading });
+  console.log('Reason state:', reason);
 
   const handleConfirm = () => {
     console.log('handleConfirm called with reason:', reason);
