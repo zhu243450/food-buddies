@@ -31,21 +31,32 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [isMounted, setIsMounted] = useState(true);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+
+  // 组件挂载状态管理
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+    };
+  }, []);
 
   useEffect(() => {
     loadActiveCampaigns();
     console.log('CampaignBanner: Loading campaigns...', { currentLanguage: i18n.language });
-    
-    // 自动轮播
+  }, [i18n.language]);
+
+  // 单独处理自动轮播逻辑
+  useEffect(() => {
     if (campaigns.length > 1) {
       const interval = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % campaigns.length);
       }, 8000);
       return () => clearInterval(interval);
     }
-  }, [campaigns.length, i18n.language]);
+  }, [campaigns.length]);
 
   const loadActiveCampaigns = async () => {
     try {
@@ -65,8 +76,11 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
         throw error;
       }
       
-      console.log('CampaignBanner: Campaigns fetched:', data?.length || 0, data);
-      setCampaigns(data || []);
+      // 只有在组件仍然挂载时才更新状态
+      if (isMounted) {
+        console.log('CampaignBanner: Campaigns fetched:', data?.length || 0, data);
+        setCampaigns(data || []);
+      }
     } catch (error) {
       console.error('Failed to load campaigns:', error);
     }
@@ -89,6 +103,8 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
   };
 
   const handleView = async (campaign: Campaign) => {
+    if (!isMounted) return; // 防止在组件卸载后执行
+    
     try {
       // 增加浏览计数（每个会话只计算一次）
       const viewedKey = `campaign_viewed_${campaign.id}`;
@@ -100,7 +116,9 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
           .update({ view_count: campaign.view_count + 1 })
           .eq('id', campaign.id);
         
-        sessionStorage.setItem(viewedKey, 'true');
+        if (isMounted) {
+          sessionStorage.setItem(viewedKey, 'true');
+        }
       }
     } catch (error) {
       console.error('Failed to track campaign view:', error);
@@ -108,10 +126,10 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
   };
 
   useEffect(() => {
-    if (campaigns.length > 0 && campaigns[currentIndex]) {
+    if (campaigns.length > 0 && campaigns[currentIndex] && currentIndex < campaigns.length) {
       handleView(campaigns[currentIndex]);
     }
-  }, [currentIndex, campaigns]);
+  }, [currentIndex]); // 只依赖currentIndex，不依赖campaigns数组
 
   const getCampaignIcon = (type: string) => {
     switch (type) {
