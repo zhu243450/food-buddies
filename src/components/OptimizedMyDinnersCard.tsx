@@ -131,7 +131,7 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             )}
           </div>
           
-          <h3 className="text-xl font-bold text-foreground line-clamp-3 leading-tight mb-2 min-h-[4.5rem]">
+          <h3 className="text-xl font-bold text-foreground line-clamp-3 leading-tight mb-1 min-h-[4.5rem]">
             {dinner.title}
           </h3>
           
