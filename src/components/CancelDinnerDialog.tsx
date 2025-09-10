@@ -61,7 +61,19 @@ const CancelDinnerDialog = ({
 
   return (
     <div 
-      className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/80 p-4"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999999,
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onOpenChange(false);
@@ -69,7 +81,17 @@ const CancelDinnerDialog = ({
       }}
     >
       <div 
-        className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-2xl"
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '500px',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
+          border: '2px solid #ffffff'
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 关闭按钮 */}
