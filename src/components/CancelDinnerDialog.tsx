@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, Clock, Calendar } from "lucide-react";
 
@@ -45,6 +45,17 @@ const CancelDinnerDialog = ({
   const hoursUntil = getTimeUntilStart();
   const isLateCancel = hoursUntil < 24;
 
+  // 锁定body滚动
+  useEffect(() => {
+    if (open) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [open]);
+
   if (!open) {
     return null;
   }
@@ -66,7 +77,11 @@ const CancelDinnerDialog = ({
           justifyContent: 'center',
           padding: '20px'
         }}
-        onClick={() => onOpenChange(false)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onOpenChange(false);
+        }}
       >
         {/* 弹窗内容 */}
         <div 
@@ -81,7 +96,10 @@ const CancelDinnerDialog = ({
             position: 'relative',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {/* 关闭按钮 */}
           <button
