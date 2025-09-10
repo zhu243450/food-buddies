@@ -97,8 +97,8 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
     };
   }, [dinner, participantCount, userId, i18n.language, t]);
 
-  // 预计算样式类名 - 增加最小高度
-  const cardClassName = `dinner-card-stable cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 shadow-md bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden rounded-lg border min-h-[400px]`;
+  // 预计算样式类名 - 增加更大的最小高度
+  const cardClassName = `dinner-card-stable cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 shadow-md bg-gradient-to-br from-card to-accent/5 relative group overflow-hidden rounded-lg border min-h-[500px]`;
   
   return (
     <div className={cardClassName}>
@@ -131,28 +131,28 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             )}
           </div>
           
-          <h3 className="text-xl font-bold text-foreground line-clamp-2 leading-tight mb-3">
+          <h3 className="text-xl font-bold text-foreground line-clamp-3 leading-tight mb-4 min-h-[4.5rem]">
             {dinner.title}
           </h3>
           
           {computedValues.truncatedDescription && (
-            <p className="text-muted-foreground line-clamp-2 text-base mb-4 leading-relaxed">
+            <p className="text-muted-foreground line-clamp-3 text-base mb-5 leading-relaxed min-h-[4.5rem]">
               {dinner.description}
             </p>
           )}
 
-          <div className="space-y-3 mt-2">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-3 rounded-lg">
+          <div className="space-y-4 mt-2">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-4 rounded-lg">
               <CalendarDays className="w-5 h-5 text-primary shrink-0" />
               <span className="font-medium truncate">{computedValues.formattedTime}</span>
             </div>
             
-            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-3 rounded-lg">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground bg-accent/10 p-4 rounded-lg">
               <MapPin className="w-5 h-5 text-primary shrink-0" />
               <span className="font-medium truncate">{dinner.location}</span>
             </div>
             
-            <div className={`flex items-center gap-3 text-sm text-muted-foreground p-3 rounded-lg ${
+            <div className={`flex items-center gap-3 text-sm text-muted-foreground p-4 rounded-lg ${
               participantCount > 0 ? 'bg-primary/20 border border-primary/30' : 'bg-primary/10'
             }`}>
               <Users className="w-5 h-5 text-primary shrink-0" />
@@ -167,9 +167,9 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
             </div>
           </div>
 
-          <div className="mt-4 flex-grow">
+          <div className="mt-5 flex-grow">
             {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {dinner.food_preferences.slice(0, 3).map((preference) => (
                   <Badge 
                     key={preference} 
