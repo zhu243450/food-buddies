@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
-import { Github, Facebook, Twitter } from "lucide-react";
+import { Github, Facebook, Twitter, Phone } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import type { User, Session } from '@supabase/supabase-js';
@@ -19,7 +20,10 @@ const Auth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -250,6 +254,96 @@ const Auth = () => {
     }
   };
 
+  const handleSendOtp = async () => {
+    if (!phone || phone.length < 11) {
+      toast({
+        title: "手机号格式错误",
+        description: "请输入正确的11位手机号",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: `+86${phone}`,
+        options: {
+          shouldCreateUser: true
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "发送验证码失败",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setOtpSent(true);
+        toast({
+          title: "验证码已发送",
+          description: "请检查短信并输入6位验证码",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "发送验证码失败",
+        description: error.message || "发送验证码时发生未知错误",
+        variant: "destructive",
+      });
+    }
+    
+    setLoading(false);
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!phone || !otp || otp.length !== 6) {
+      toast({
+        title: "验证码错误",
+        description: "请输入6位验证码",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: `+86${phone}`,
+        token: otp,
+        type: 'sms'
+      });
+
+      if (error) {
+        toast({
+          title: "验证码验证失败",
+          description: error.message === "Token has expired or is invalid" 
+            ? "验证码已过期或无效，请重新发送"
+            : error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "登录成功",
+          description: "正在跳转...",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "验证失败",
+        description: error.message || "验证时发生未知错误",
+        variant: "destructive",
+      });
+    }
+    
+    setLoading(false);
+  };
+
   if (user) {
     return null;
   }
@@ -263,9 +357,13 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
               <TabsTrigger value="signup">{t('auth.signUp')}</TabsTrigger>
+              <TabsTrigger value="phone">
+                <Phone className="w-4 h-4 mr-1" />
+                手机登录
+              </TabsTrigger>
             </TabsList>
             
             
@@ -347,6 +445,79 @@ const Auth = () => {
                   {loading ? `${t('auth.signUp')}...` : t('auth.signUp')}
                 </Button>
               </form>
+            </TabsContent>
+
+            <TabsContent value="phone">
+              <div className="space-y-4">
+                {!otpSent ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">手机号码</Label>
+                      <div className="flex">
+                        <div className="flex items-center px-3 border border-r-0 rounded-l-md border-input bg-muted">
+                          <span className="text-sm text-muted-foreground">+86</span>
+                        </div>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="请输入11位手机号"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                          className="rounded-l-none"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <Button 
+                      type="button"
+                      onClick={handleSendOtp}
+                      className="w-full bg-primary text-black hover:bg-primary/90 hover:text-black font-bold" 
+                      disabled={loading || !phone || phone.length !== 11}
+                    >
+                      {loading ? "发送中..." : "发送验证码"}
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleVerifyOtp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>验证码已发送到 +86 {phone}</Label>
+                      <div className="flex justify-center">
+                        <InputOTP value={otp} onChange={setOtp} maxLength={6}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtp("");
+                        }}
+                        disabled={loading}
+                      >
+                        重新发送
+                      </Button>
+                      <Button 
+                        type="submit"
+                        className="flex-1 bg-accent text-black hover:bg-accent/90 hover:text-black font-bold" 
+                        disabled={loading || otp.length !== 6}
+                      >
+                        {loading ? "验证中..." : "验证登录"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
           
