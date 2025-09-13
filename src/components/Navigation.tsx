@@ -75,7 +75,7 @@ const Navigation = () => {
       console.error("Error fetching unread count:", error);
       // 网络错误时保持现有状态，不重置计数
     }
-  }, [user, sessionIds]);
+  }, [user]); // 移除sessionIds依赖，避免循环
 
   // 初始化未读消息数量
   useEffect(() => {
@@ -115,7 +115,7 @@ const Navigation = () => {
     return () => {
       cancelled = true;
     };
-  }, [user, fetchUnreadCount]);
+  }, [user]); // 移除fetchUnreadCount依赖，避免循环
 
   // 实时监听新消息
   useEffect(() => {
@@ -129,7 +129,7 @@ const Navigation = () => {
         (payload: any) => {
           if (sessionIds.includes(payload.new.session_id)) {
             if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
-            fetchTimer.current = window.setTimeout(() => fetchUnreadCount(), 200);
+            fetchTimer.current = window.setTimeout(() => fetchUnreadCount(sessionIds), 200);
           }
         }
       )
@@ -139,7 +139,7 @@ const Navigation = () => {
         (payload: any) => {
           if (sessionIds.includes(payload.new.session_id)) {
             if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
-            fetchTimer.current = window.setTimeout(() => fetchUnreadCount(), 200);
+            fetchTimer.current = window.setTimeout(() => fetchUnreadCount(sessionIds), 200);
           }
         }
       )
@@ -149,7 +149,7 @@ const Navigation = () => {
       if (fetchTimer.current) window.clearTimeout(fetchTimer.current);
       supabase.removeChannel(channel);
     };
-  }, [user, sessionIds, fetchUnreadCount]);
+  }, [user, sessionIds]); // 移除fetchUnreadCount依赖，直接传递sessionIds参数
 
   const handleNavigation = useCallback((path: string) => {
     if (isNavigating) return;
