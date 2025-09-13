@@ -13,7 +13,6 @@ import {
   LogOut, 
   Shield,
   HelpCircle,
-  ChefHat,
   MapPin,
   BookOpen
 } from 'lucide-react';
@@ -247,14 +246,6 @@ export const UserMenu = () => {
             </div>
             
             <div className="border-t py-2">
-              <button 
-                onClick={() => handleMenuItemClick('/food-guide')}
-                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
-              >
-                <ChefHat className="mr-2 h-4 w-4" />
-                <span>美食城市指南</span>
-              </button>
-              
               <button 
                 onClick={() => handleMenuItemClick('/faq')}
                 className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
