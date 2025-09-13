@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -29,6 +29,7 @@ export const UserMenu = () => {
   const [pendingReports, setPendingReports] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // 监听语言变化，强制重新渲染
   useEffect(() => {
@@ -47,43 +48,79 @@ export const UserMenu = () => {
     // 获取用户信息
     const getUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        
         setUser(user);
         
         if (user) {
           // 获取用户资料
-          const { data: profileData } = await supabase
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('user_id', user.id)
             .single();
           
+          if (profileError && profileError.code !== 'PGRST116') {
+            throw profileError;
+          }
           setProfile(profileData);
 
           // 检查是否是管理员
-          const { data: adminCheck } = await supabase
+          const { data: adminCheck, error: adminError } = await supabase
             .rpc('has_role', { 
               _user_id: user.id, 
               _role: 'admin' 
             });
           
-          setIsAdmin(adminCheck || false);
+          if (adminError) {
+            console.error('Error checking admin role:', adminError);
+            setIsAdmin(false);
+          } else {
+            setIsAdmin(adminCheck || false);
+          }
 
           // 如果是管理员，获取待处理举报数量
           if (adminCheck) {
-            const { data: reportsData } = await supabase
-              .from('reports')
-              .select('id')
-              .eq('status', 'pending');
-            setPendingReports(reportsData?.length || 0);
+            try {
+              const { data: reportsData, error: reportsError } = await supabase
+                .from('reports')
+                .select('id')
+                .eq('status', 'pending');
+              
+              if (reportsError) throw reportsError;
+              setPendingReports(reportsData?.length || 0);
+            } catch (error) {
+              console.error('Error loading reports:', error);
+              setPendingReports(0);
+            }
           }
         }
       } catch (error) {
         console.error('Error loading user data:', error);
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
+        setPendingReports(0);
       }
     };
 
     getUser();
+    
+    // 监听认证状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        getUser();
+      } else {
+        setUser(null);
+        setProfile(null);
+        setIsAdmin(false);
+        setPendingReports(0);
+        setIsOpen(false);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
 
   // 管理员实时监听新举报
@@ -119,23 +156,36 @@ export const UserMenu = () => {
     };
   }, [isAdmin]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
+    if (isNavigating) return;
+    
+    setIsNavigating(true);
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setIsOpen(false);
       navigate('/auth');
     } catch (error) {
       console.error('Logout error:', error);
+    } finally {
+      setTimeout(() => setIsNavigating(false), 500);
     }
-  };
+  }, [navigate, isNavigating]);
 
-  const handleMenuItemClick = (path: string) => {
+  const handleMenuItemClick = useCallback((path: string) => {
+    if (isNavigating) return;
+    
+    setIsNavigating(true);
     try {
       setIsOpen(false);
+      console.log(`UserMenu navigation: ${path}`);
       navigate(path);
     } catch (error) {
       console.error('Navigation error:', error);
+    } finally {
+      setTimeout(() => setIsNavigating(false), 300);
     }
-  };
+  }, [navigate, isNavigating]);
 
   if (!user) return null;
 
@@ -148,8 +198,11 @@ export const UserMenu = () => {
           console.log('UserMenu button clicked!');
           e.preventDefault();
           e.stopPropagation();
-          setIsOpen(!isOpen);
+          if (!isNavigating) {
+            setIsOpen(!isOpen);
+          }
         }}
+        disabled={isNavigating}
       >
         <div className="relative">
           <Avatar className="h-5 w-5">
@@ -171,7 +224,7 @@ export const UserMenu = () => {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute bottom-full right-0 mb-2 w-56 bg-background backdrop-blur-sm border rounded-md shadow-lg z-50 p-2">
+          <div className="absolute bottom-full right-0 mb-2 w-56 bg-background/95 backdrop-blur-sm border border-border/50 rounded-md shadow-xl z-50 p-2">
             <div className="font-normal p-2 border-b">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
