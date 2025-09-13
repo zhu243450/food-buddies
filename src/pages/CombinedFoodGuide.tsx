@@ -14,8 +14,9 @@ import { RegionHero } from '@/components/FoodGuide/RegionHero';
 import { FeaturedRestaurants } from '@/components/FoodGuide/FeaturedRestaurants';
 import { CuisineGuides } from '@/components/FoodGuide/CuisineGuides';
 import { RestaurantDetailDialog } from '@/components/RestaurantDetailDialog';
-import { FastSkeletonCard } from '@/components/FastSkeletonCard';
+import { OptimizedFoodGuideSkeleton } from '@/components/FoodGuide/OptimizedFoodGuideSkeleton';
 import { memoryCache } from '@/lib/performanceOptimizer';
+import { useQueryCache, requestDeduplicator } from '@/hooks/useQueryCache';
 
 interface Restaurant {
   id: string;
@@ -64,6 +65,7 @@ export const CombinedFoodGuide: React.FC = () => {
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
   const { user } = useAuth();
+  const { getFromCache, setCache, prefetchQuery } = useQueryCache();
   const [selectedDivisionId, setSelectedDivisionId] = useState<string | null>(
     searchParams.get('divisionId') || null
   );
@@ -79,99 +81,152 @@ export const CombinedFoodGuide: React.FC = () => {
     loadErrorDescription: t('foodGuide.loadErrorDescription')
   }), [t]);
 
-  // Optimized data fetching with React Query and caching
+  // Optimized data fetching with request deduplication and enhanced caching
   const fetchRegionData = useCallback(async (divisionId: string): Promise<RegionInfo> => {
-    // Check memory cache first
     const cacheKey = `region-${divisionId}`;
-    const cached = memoryCache.get<RegionInfo>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
-    const [pathResult, restaurantsResult] = await Promise.all([
-      supabase.rpc('get_division_path', { division_id_param: divisionId }),
-      supabase
-        .from('restaurants')
-        .select('id, name, cuisine, area, rating, price_range, special_dishes, best_time, group_size, description, is_featured, is_active')
-        .eq('division_id', divisionId)
-        .eq('is_active', true)
-        .order('is_featured', { ascending: false })
-        .limit(20)
-    ]);
     
-    const divisionPath = pathResult.data;
-    const restaurantsData = restaurantsResult.data || [];
-    
-    const currentDivision = divisionPath?.[0];
-    if (!currentDivision) {
-      throw new Error(translations.divisionNotFound);
-    }
-
-    // Create cuisine guides efficiently
-    const cuisineMap = restaurantsData.reduce((acc, restaurant) => {
-      if (!acc[restaurant.cuisine]) {
-        acc[restaurant.cuisine] = [];
+    // Use request deduplication to prevent duplicate requests
+    return requestDeduplicator.deduplicate(cacheKey, async () => {
+      // Check query cache first
+      const cached = getFromCache<RegionInfo>([cacheKey]);
+      if (cached) {
+        return cached;
       }
-      acc[restaurant.cuisine].push(restaurant);
-      return acc;
-    }, {} as Record<string, Restaurant[]>);
-    
-    const cuisineGuides = Object.entries(cuisineMap)
-      .slice(0, 3)
-      .map(([cuisine, restaurants]) => ({
-        id: `cuisine-${cuisine}`,
-        name: cuisine,
-        description: `${cuisine} ${translations.cuisineDescription}`,
-        characteristics: [],
-        must_try_dishes: [],
-        restaurants: restaurants.slice(0, 6)
-      }));
 
-    const pathArray: Division[] = (divisionPath || []).reverse().map(d => ({
-      id: d.id,
-      name: d.name,
-      code: '',
-      level: d.level as Division['level'],
-      parent_id: null
-    }));
+      // Check memory cache
+      const memoryCached = memoryCache.get<RegionInfo>(cacheKey);
+      if (memoryCached) {
+        setCache([cacheKey], memoryCached, 1000 * 60 * 15); // 15 minutes
+        return memoryCached;
+      }
 
-    const regionInfo: RegionInfo = {
-      id: currentDivision.id,
-      name: currentDivision.name,
-      description: `${currentDivision.name} ${translations.description}`,
-      path: pathArray,
-      cuisineGuides: cuisineGuides,
-      featuredRestaurants: restaurantsData.filter(r => r.is_featured).slice(0, 3)
-    };
+      try {
+        // Parallel requests with timeout and error handling
+        const pathPromise = Promise.race([
+          supabase.rpc('get_division_path', { division_id_param: divisionId }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        ]);
+        
+        const restaurantsPromise = Promise.race([
+          supabase
+            .from('restaurants')
+            .select('id, name, cuisine, area, rating, price_range, special_dishes, best_time, group_size, description, is_featured, is_active')
+            .eq('division_id', divisionId)
+            .eq('is_active', true)
+            .order('is_featured', { ascending: false })
+            .limit(20),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+        ]);
 
-    // Cache the result for 10 minutes
-    memoryCache.set(cacheKey, regionInfo, 10);
-    return regionInfo;
-  }, [translations]);
+        const [pathResult, restaurantsResult] = await Promise.allSettled([
+          pathPromise,
+          restaurantsPromise
+        ]);
+        
+        const divisionPath = pathResult.status === 'fulfilled' ? (pathResult.value as any)?.data : null;
+        const restaurantsData = restaurantsResult.status === 'fulfilled' ? ((restaurantsResult.value as any)?.data || []) : [];
+        
+        const currentDivision = divisionPath?.[0];
+        if (!currentDivision) {
+          throw new Error(translations.divisionNotFound);
+        }
 
-  // Get default Beijing division ID with caching
+        // Create cuisine guides efficiently with memoization
+        const cuisineMap = restaurantsData.reduce((acc, restaurant) => {
+          const cuisine = restaurant.cuisine || 'Unknown';
+          if (!acc[cuisine]) {
+            acc[cuisine] = [];
+          }
+          acc[cuisine].push(restaurant);
+          return acc;
+        }, {} as Record<string, Restaurant[]>);
+        
+        const cuisineGuides = Object.entries(cuisineMap)
+          .sort(([, a], [, b]) => (b as Restaurant[]).length - (a as Restaurant[]).length) // Sort by restaurant count
+          .slice(0, 3)
+          .map(([cuisine, restaurants]) => ({
+            id: `cuisine-${cuisine}`,
+            name: cuisine,
+            description: `${cuisine} ${translations.cuisineDescription}`,
+            characteristics: [],
+            must_try_dishes: [],
+            restaurants: (restaurants as Restaurant[]).slice(0, 6)
+          }));
+
+        const pathArray: Division[] = (divisionPath || []).reverse().map(d => ({
+          id: d.id,
+          name: d.name,
+          code: '',
+          level: d.level as Division['level'],
+          parent_id: null
+        }));
+
+        const regionInfo: RegionInfo = {
+          id: currentDivision.id,
+          name: currentDivision.name,
+          description: `${currentDivision.name} ${translations.description}`,
+          path: pathArray,
+          cuisineGuides: cuisineGuides,
+          featuredRestaurants: restaurantsData.filter(r => r.is_featured).slice(0, 3)
+        };
+
+        // Cache in both memory and query cache
+        memoryCache.set(cacheKey, regionInfo, 15);
+        setCache([cacheKey], regionInfo, 1000 * 60 * 15);
+        
+        return regionInfo;
+      } catch (error) {
+        console.error('Failed to fetch region data:', error);
+        throw error;
+      }
+    });
+  }, [translations, getFromCache, setCache]);
+
+  // Get default Beijing division ID with enhanced caching and request deduplication
   const fetchBeijingId = useCallback(async (): Promise<string> => {
-    const cached = memoryCache.get<string>('beijing-id');
-    if (cached) return cached;
+    return requestDeduplicator.deduplicate('beijing-id', async () => {
+      const cached = getFromCache<string>(['beijing-id']);
+      if (cached) return cached;
 
-    const { data: beijingDivision, error } = await supabase
-      .from('administrative_divisions')
-      .select('id')
-      .eq('name', '北京市')
-      .eq('level', 'city')
-      .single();
+      const memoryCached = memoryCache.get<string>('beijing-id');
+      if (memoryCached) {
+        setCache(['beijing-id'], memoryCached, 1000 * 60 * 60); // 1 hour
+        return memoryCached;
+      }
 
-    if (error) throw error;
-    
-    memoryCache.set('beijing-id', beijingDivision.id, 60); // Cache for 1 hour
-    return beijingDivision.id;
-  }, []);
+      try {
+        const { data: beijingDivision, error } = await Promise.race([
+          supabase
+            .from('administrative_divisions')
+            .select('id')
+            .eq('name', '北京市')
+            .eq('level', 'city')
+            .single(),
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+          )
+        ]);
+
+        if (error) throw error;
+        
+        // Cache in both places
+        memoryCache.set('beijing-id', beijingDivision.id, 60);
+        setCache(['beijing-id'], beijingDivision.id, 1000 * 60 * 60);
+        
+        return beijingDivision.id;
+      } catch (error) {
+        console.error('Failed to fetch Beijing ID:', error);
+        // Fallback to a default ID if available
+        throw error;
+      }
+    });
+  }, [getFromCache, setCache]);
 
   // Determine which division ID to use
   const activeDivisionId = selectedDivisionId || 'default';
   
-  // Use React Query for optimized data fetching
-  const { data: regionInfo, isLoading, error } = useQuery({
+  // Enhanced React Query with better error handling and retries
+  const { data: regionInfo, isLoading, error, refetch } = useQuery({
     queryKey: ['regionData', activeDivisionId],
     queryFn: async () => {
       if (activeDivisionId === 'default') {
@@ -181,10 +236,35 @@ export const CombinedFoodGuide: React.FC = () => {
       return fetchRegionData(activeDivisionId);
     },
     enabled: true,
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
-    retry: 2,
+    staleTime: 1000 * 60 * 15, // 15 minutes
+    gcTime: 1000 * 60 * 60, // 1 hour
+    retry: (failureCount, error) => {
+      // Don't retry on certain errors
+      if (error.message.includes('division not found')) return false;
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
   });
+
+  // Prefetch common regions for better UX
+  useEffect(() => {
+    const prefetchCommonRegions = async () => {
+      try {
+        // Prefetch Beijing data if not already loaded
+        if (activeDivisionId !== 'default') {
+          const beijingId = await fetchBeijingId();
+          prefetchQuery(['regionData', 'default'], () => fetchRegionData(beijingId));
+        }
+      } catch (error) {
+        // Silently fail prefetching
+        console.debug('Prefetch failed:', error);
+      }
+    };
+
+    prefetchCommonRegions();
+  }, [activeDivisionId, fetchBeijingId, fetchRegionData, prefetchQuery]);
   
   // SEO data with regionInfo
   const seoData = useMemo(() => getPageSEO('foodGuide', regionInfo ? { 
@@ -240,23 +320,7 @@ export const CombinedFoodGuide: React.FC = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-8">
-          {/* Optimized skeleton loading */}
-          <div className="mb-8">
-            <div className="h-8 bg-muted rounded w-1/3 mb-4 animate-pulse" />
-            <div className="h-4 bg-muted rounded w-2/3 animate-pulse" />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <FastSkeletonCard key={i} />
-            ))}
-          </div>
-          
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">{t('foodGuide.loading')}</p>
-          </div>
-        </div>
+        <OptimizedFoodGuideSkeleton />
       </div>
     );
   }
