@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { Home, Search, Plus, MessageCircle } from "lucide-react";
@@ -11,7 +11,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { unreadCount } = useNavigationData(user);
   const [renderKey, setRenderKey] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -43,12 +43,18 @@ const Navigation = () => {
     }
   }, [navigate, isNavigating, location.pathname]);
 
-  const navItems = [
+  // 使用useMemo稳定navItems引用
+  const navItems = useMemo(() => [
     { icon: Home, label: t('nav.myDinners'), path: "/my-dinners" },
     { icon: Search, label: t('nav.discover'), path: "/discover" },
     { icon: Plus, label: t('dinner.create'), path: "/create-dinner", special: true },
     { icon: MessageCircle, label: t('nav.chat'), path: "/chat-list", hasNotification: unreadCount > 0 },
-  ];
+  ], [t, unreadCount]);
+
+  // 如果还在加载认证状态，不渲染导航
+  if (authLoading) {
+    return null;
+  }
 
   return (
     <div 
