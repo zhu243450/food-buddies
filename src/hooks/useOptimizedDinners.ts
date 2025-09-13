@@ -91,12 +91,11 @@ export const useOptimizedDinners = (user: User | null) => {
     }
   }, [user]);
 
-  // 优化实时监听 - 增加更长的防抖时间
+  // 优化实时监听 - 监听dinners表的变化
   useEffect(() => {
     fetchMyDinners();
 
-    // 防抖更新，避免频繁刷新
-    let updateTimeout: NodeJS.Timeout;
+    // 监听饭局和参与者变化
     const channel = supabase
       .channel('optimized-dinner-changes')
       .on(
@@ -107,16 +106,23 @@ export const useOptimizedDinners = (user: User | null) => {
           table: 'dinner_participants'
         },
         () => {
-          clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => {
-            fetchMyDinners();
-          }, 2000); // 增加防抖时间到2秒
+          fetchMyDinners();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'dinners'
+        },
+        () => {
+          fetchMyDinners();
         }
       )
       .subscribe();
 
     return () => {
-      clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
   }, [fetchMyDinners]);

@@ -300,9 +300,8 @@ const Discover = () => {
           variant: isLate ? "destructive" : "default",
         });
 
-        setTimeout(() => {
-          refetch();
-        }, 500);
+        // 立即更新数据
+        refetch();
       } else {
         const message = result.message || result.f2 || "操作失败";
         toast({
