@@ -732,78 +732,64 @@ const Discover = () => {
           </TabsContent>
 
           <TabsContent value="myDinners" className="space-y-6">
-            <Tabs defaultValue="joined" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger 
-                  value="joined" 
-                  className="flex items-center gap-2 text-lg font-semibold"
-                >
-                  ❤️ {t('myDinners.joinedDinners')}
-                  {joinedDinners.length > 0 && (
+            {/* Combined My Dinners View */}
+            <div className="space-y-8">
+              {/* Joined Dinners Section */}
+              {joinedDinners.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-xl font-bold text-foreground">❤️ 参与的饭局</h2>
                     <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center">
                       {joinedDinners.length}
                     </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="created" 
-                  className="flex items-center gap-2 text-lg font-semibold"
-                >
-                  ✨ {t('myDinners.createdDinners')}
-                  {createdDinners.length > 0 && (
-                    <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center">
-                      {createdDinners.length}
-                    </span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="joined" className="space-y-6">
-                {myDinnersLoading ? (
-                  <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {Array.from({ length: 4 }, (_, i) => (
-                      <FastSkeletonCard key={i} />
-                    ))}
                   </div>
-                ) : joinedDinners.length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {joinedDinners.map((dinner, index) => renderMyDinnerCard(dinner, index))}
                   </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="text-6xl mb-4">🍽️</div>
-                    <h3 className="text-2xl font-bold mb-2">{t('myDinners.noJoinedDinners')}</h3>
-                    <p className="text-muted-foreground mb-6">{t('myDinners.noJoinedDinnersDesc')}</p>
-                    <Button onClick={() => handleTabChange('discover')}>
-                      {t('myDinners.exploreDinners')}
-                    </Button>
-                  </div>
-                )}
-              </TabsContent>
+                </section>
+              )}
 
-              <TabsContent value="created" className="space-y-6">
-                {myDinnersLoading ? (
-                  <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {Array.from({ length: 4 }, (_, i) => (
-                      <FastSkeletonCard key={i} />
-                    ))}
+              {/* Created Dinners Section */}
+              {createdDinners.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-xl font-bold text-foreground">✨ 创建的饭局</h2>
+                    <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center">
+                      {createdDinners.length}
+                    </span>
                   </div>
-                ) : createdDinners.length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {createdDinners.map((dinner, index) => renderMyDinnerCard(dinner, index))}
                   </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="text-6xl mb-4">🎉</div>
-                    <h3 className="text-2xl font-bold mb-2">{t('myDinners.noCreatedDinners')}</h3>
-                    <p className="text-muted-foreground mb-6">{t('myDinners.noCreatedDinnersDesc')}</p>
+                </section>
+              )}
+
+              {/* Loading State */}
+              {myDinnersLoading && (
+                <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <FastSkeletonCard key={i} />
+                  ))}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!myDinnersLoading && joinedDinners.length === 0 && createdDinners.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🍽️</div>
+                  <h3 className="text-2xl font-bold mb-2">还没有饭局</h3>
+                  <p className="text-muted-foreground mb-6">创建你的第一个饭局或者浏览其他饭局加入吧！</p>
+                  <div className="flex gap-4 justify-center">
                     <Button onClick={() => navigate('/create-dinner')}>
-                      {t('myDinners.createFirstDinner')}
+                      创建饭局
+                    </Button>
+                    <Button variant="outline" onClick={() => handleTabChange('discover')}>
+                      浏览饭局
                     </Button>
                   </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
