@@ -103,16 +103,17 @@ export const OptimizedMyDinnersCard = memo<OptimizedMyDinnersCardProps>(({
   return (
     <div className={cardClassName}>
       <div onClick={onClick} className="h-full flex flex-col">
-        {computedValues.canCancel && (
+        {computedValues.canCancel && computedValues.isCreatedByMe && (
           <div className="absolute top-3 right-3 z-10 flex gap-1">
             <Button
               variant="ghost"
               size="icon"
-              className="opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive h-8 w-8"
+              className="opacity-70 hover:opacity-100 transition-opacity bg-destructive/10 hover:bg-destructive hover:text-white text-destructive h-8 w-8 shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onCancel(dinner, e);
               }}
+              title="删除饭局"
             >
               <X className="w-4 h-4" />
             </Button>
