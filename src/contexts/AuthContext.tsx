@@ -24,7 +24,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // 刷新认证状态
   const refreshAuth = useCallback(async () => {
@@ -38,37 +37,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('刷新认证状态失败:', error);
       setSession(null);
       setUser(null);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // 登出功能
   const signOut = useCallback(async () => {
     try {
-      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (error) {
       console.error('登出失败:', error);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    if (isInitialized) return;
-    
     let mounted = true;
 
-    // 设置认证状态监听器 - 只有一个全局监听器
+    // 设置认证状态监听器
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
         
         console.log('全局认证状态变化:', event, !!session);
         
-        // 同步更新状态
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -84,18 +75,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
-          setIsInitialized(true);
+          setLoading(false);
         }
       } catch (error) {
         console.error('初始化认证失败:', error);
         if (mounted) {
           setSession(null);
           setUser(null);
-        }
-      } finally {
-        if (mounted) {
           setLoading(false);
-          setIsInitialized(true);
         }
       }
     };
@@ -106,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [isInitialized]);
+  }, [])
 
   const value: AuthContextType = {
     user,
