@@ -71,7 +71,7 @@ export const useOptimizedDinners = (user: User | null) => {
 
       if (!createdResponse.error && createdResponse.data) {
         const createdData = createdResponse.data
-          .filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status) || [];
+          .filter(dinner => (dinner as any).status === 'active' || !(dinner as any).status);
         setCreatedDinners(createdData);
       }
 
