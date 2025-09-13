@@ -45,7 +45,6 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
 
   useEffect(() => {
     loadActiveCampaigns();
-    console.log('CampaignBanner: Loading campaigns...', { currentLanguage: i18n.language });
   }, [i18n.language]);
 
   // 单独处理自动轮播逻辑
@@ -60,7 +59,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
 
   const loadActiveCampaigns = async () => {
     try {
-      console.log('CampaignBanner: Fetching campaigns from Supabase...', { language: i18n.language });
+      console.log('CampaignBanner: Fetching campaigns...');
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -78,7 +77,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
       
       // 只有在组件仍然挂载时才更新状态
       if (isMounted) {
-        console.log('CampaignBanner: Campaigns fetched:', data?.length || 0, data);
+        console.log('CampaignBanner: Campaigns fetched:', data?.length || 0);
         setCampaigns(data || []);
       }
     } catch (error) {
@@ -171,16 +170,9 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
               </div>
               
               <h3 className="font-bold text-lg mb-2 text-foreground">
-                {(() => {
-                  const useEnglish = i18n.language === 'en' && currentCampaign.title_en;
-                  console.log('CampaignBanner title display:', {
-                    language: i18n.language,
-                    hasEnglishTitle: !!currentCampaign.title_en,
-                    useEnglish,
-                    title: useEnglish ? currentCampaign.title_en : currentCampaign.title
-                  });
-                  return useEnglish ? currentCampaign.title_en : currentCampaign.title;
-                })()}
+                {i18n.language === 'en' && currentCampaign.title_en 
+                  ? currentCampaign.title_en 
+                  : currentCampaign.title}
               </h3>
               
               <p className="text-muted-foreground text-sm mb-3 line-clamp-2">

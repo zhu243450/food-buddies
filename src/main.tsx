@@ -6,8 +6,8 @@ import './i18n'
 import { CriticalCSS } from './components/CriticalCSS'
 import { AuthProvider } from '@/contexts/AuthContext'
 
-// 注册Service Worker
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+// 暂时禁用 Service Worker 注册以避免 MIME type 冲突
+if ('serviceWorker' in navigator && import.meta.env.PROD && false) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {
       // 静默失败，不影响应用功能

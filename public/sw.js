@@ -1,21 +1,16 @@
-// Service Worker 激进缓存策略
-const CACHE_NAME = 'dinner-app-v1';
-const STATIC_CACHE = 'static-v1';
-const DYNAMIC_CACHE = 'dynamic-v1';
+// Service Worker 优化缓存策略 - 避免 MIME type 冲突
+const CACHE_NAME = 'dinner-app-v2';
+const STATIC_CACHE = 'static-v2';
+const DYNAMIC_CACHE = 'dynamic-v2';
 
 // 需要预缓存的关键资源
 const STATIC_ASSETS = [
   '/',
-  '/auth',
-  '/my-dinners',
-  '/discover',
   '/manifest.json'
 ];
 
 // API路径缓存策略
 const API_CACHE_PATTERNS = [
-  /\/api\/dinners/,
-  /\/api\/profiles/,
   /\/rest\/v1\//
 ];
 
@@ -24,7 +19,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
       caches.open(STATIC_CACHE).then(cache => 
-        cache.addAll(STATIC_ASSETS)
+        cache.addAll(STATIC_ASSETS).catch(() => {})
       ),
       self.skipWaiting()
     ])
@@ -49,18 +44,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 拦截请求 - 激进缓存策略
+// 拦截请求 - 避免缓存 JS 模块和开发资源
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 只处理同域或API请求
-  if (!url.origin.includes(self.location.origin) && 
-      !url.href.includes('supabase')) {
-    return;
+  // 不缓存开发服务器资源和模块
+  if (url.pathname.includes('/@') || 
+      url.pathname.includes('/src/') ||
+      url.pathname.includes('.tsx') ||
+      url.pathname.includes('.ts') ||
+      url.pathname.includes('/node_modules/') ||
+      url.pathname.includes('/__vite') ||
+      request.destination === 'script' && url.pathname.includes('/src/')) {
+    return; // 让浏览器正常处理这些请求
   }
 
-  // API请求策略：网络优先，失败则缓存
+  // 只处理 API 请求
   if (API_CACHE_PATTERNS.some(pattern => pattern.test(url.pathname))) {
     event.respondWith(
       networkFirstStrategy(request)
@@ -68,33 +68,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 静态资源策略：缓存优先
-  if (request.destination === 'script' || 
-      request.destination === 'style' ||
-      request.destination === 'image') {
+  // 对于其他静态资源，使用简单的网络优先策略
+  if (request.destination === 'image' || 
+      request.destination === 'font' ||
+      url.pathname.includes('/manifest.json')) {
     event.respondWith(
-      cacheFirstStrategy(request)
+      networkFirstStrategy(request)
     );
-    return;
-  }
-
-  // HTML请求策略：网络优先，快速回退
-  if (request.destination === 'document') {
-    event.respondWith(
-      networkFirstWithFastFallback(request)
-    );
-    return;
   }
 });
 
-// 网络优先策略
+// 简化的网络优先策略
 async function networkFirstStrategy(request) {
   try {
     const networkResponse = await fetch(request);
     
-    if (networkResponse.ok && request.method === 'GET') {
+    if (networkResponse.ok && request.method === 'GET' && 
+        !request.url.includes('/src/') && 
+        !request.url.includes('.tsx')) {
       const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, networkResponse.clone());
+      cache.put(request, networkResponse.clone()).catch(() => {});
     }
     
     return networkResponse;
@@ -105,50 +98,4 @@ async function networkFirstStrategy(request) {
     }
     throw error;
   }
-}
-
-// 缓存优先策略
-async function cacheFirstStrategy(request) {
-  const cachedResponse = await caches.match(request);
-  
-  if (cachedResponse) {
-    // 后台更新缓存 (仅 GET 请求)
-    if (request.method === 'GET') {
-      fetch(request).then(response => {
-        if (response.ok) {
-          const cache = caches.open(STATIC_CACHE);
-          cache.then(c => c.put(request, response));
-        }
-      }).catch(() => {});
-    }
-    
-    return cachedResponse;
-  }
-  
-  try {
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok && request.method === 'GET') {
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, networkResponse.clone());
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    // 返回离线页面或默认资源
-    if (request.destination === 'document') {
-      return caches.match('/');
-    }
-    throw error;
-  }
-}
-
-// 快速回退的网络优先策略
-async function networkFirstWithFastFallback(request) {
-  return Promise.race([
-    fetch(request).catch(() => caches.match(request)),
-    new Promise(resolve => 
-      setTimeout(() => resolve(caches.match(request)), 500)
-    )
-  ]);
 }
