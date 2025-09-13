@@ -45,8 +45,8 @@ const Navigation = () => {
 
   // 使用useMemo稳定navItems引用
   const navItems = useMemo(() => [
-    { icon: Home, label: t('nav.myDinners'), path: "/my-dinners" },
-    { icon: Search, label: t('nav.discover'), path: "/discover" },
+    { icon: Search, label: t('nav.dinners'), path: "/discover" },
+    { icon: Home, label: t('nav.foodGuide'), path: "/food-guide" },
     { icon: Plus, label: t('dinner.create'), path: "/create-dinner", special: true },
     { icon: MessageCircle, label: t('nav.chat'), path: "/chat-list", hasNotification: unreadCount > 0 },
   ], [t, unreadCount]);

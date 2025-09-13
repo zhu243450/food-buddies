@@ -37,13 +37,17 @@
     "locale": "zh-CN"
   },
   "nav": {
-    "discover": "发现饭局",
-    "myDinners": "我的饭局",
+    "dinners": "饭局",
+    "foodGuide": "美食指南",
     "chat": "聊天",
     "profile": "个人中心",
     "admin": "管理后台",
     "login": "登录",
     "logout": "退出"
+  },
+  "dinnerTabs": {
+    "discover": "发现饭局",
+    "myDinners": "我的饭局"
   },
   "auth": {
     "login": "登录",

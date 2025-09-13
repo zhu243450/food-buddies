@@ -38,13 +38,17 @@
     "backToHome": "Back to Home"
   },
   "nav": {
-    "discover": "Discover",
-    "myDinners": "My Dinners",
+    "dinners": "Dinners",
+    "foodGuide": "Food Guide",
     "chat": "Chat",
     "profile": "Profile",
     "admin": "Admin",
     "login": "Login",
     "logout": "Logout"
+  },
+  "dinnerTabs": {
+    "discover": "Discover",
+    "myDinners": "My Dinners"
   },
   "auth": {
     "login": "Login",

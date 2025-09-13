@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
 import { HelmetProvider } from "react-helmet-async";
 import { OptimizedLoader } from "@/components/OptimizedLoader";
@@ -113,7 +113,7 @@ const App = () => (
             } />
             <Route path="/my-dinners" element={
               <Suspense fallback={<OptimizedLoader />}>
-                <MyDinners />
+                <Navigate to="/discover?tab=myDinners" replace />
               </Suspense>
             } />
             <Route path="/chat-list" element={
