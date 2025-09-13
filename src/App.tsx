@@ -111,11 +111,7 @@ const App = () => (
                 <DinnerDetail />
               </Suspense>
             } />
-            <Route path="/my-dinners" element={
-              <Suspense fallback={<OptimizedLoader />}>
-                <Navigate to="/discover?tab=myDinners" replace />
-              </Suspense>
-            } />
+            <Route path="/my-dinners" element={<Navigate to="/discover?tab=myDinners" replace />} />
             <Route path="/chat-list" element={
               <Suspense fallback={<OptimizedLoader />}>
                 <ChatList />
