@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
 import { Home, Search, Plus, MessageCircle } from "lucide-react";
 import { useTranslation } from 'react-i18next';
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigationData } from "@/hooks/useNavigationData";
 
 const Navigation = () => {

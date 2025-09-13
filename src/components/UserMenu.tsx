@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -18,22 +18,24 @@ import {
   BookOpen
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const UserMenu = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { unreadCount } = useNotifications();
-  const [user, setUser] = useState<any>(null);
+  const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [pendingReports, setPendingReports] = useState(0);
   const [renderKey, setRenderKey] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const loadingRef = useRef(false);
 
   // 监听语言变化，强制重新渲染
   useEffect(() => {
-    const handleLanguageChanged = (lng: string) => {
+    const handleLanguageChanged = () => {
       setRenderKey(prev => prev + 1);
     };
     
@@ -44,84 +46,56 @@ export const UserMenu = () => {
     };
   }, [i18n]);
 
+  // 获取用户配置文件和管理员状态
   useEffect(() => {
-    // 获取用户信息
-    const getUser = async () => {
+    if (!user || loadingRef.current) return;
+    
+    loadingRef.current = true;
+    
+    const getProfile = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
+        // 获取用户资料
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
         
-        setUser(user);
+        setProfile(profileData);
+
+        // 检查是否是管理员
+        const { data: adminCheck } = await supabase
+          .rpc('has_role', { 
+            _user_id: user.id, 
+            _role: 'admin' 
+          });
         
-        if (user) {
-          // 获取用户资料
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (profileError && profileError.code !== 'PGRST116') {
-            throw profileError;
-          }
-          setProfile(profileData);
+        const isAdminUser = adminCheck || false;
+        setIsAdmin(isAdminUser);
 
-          // 检查是否是管理员
-          const { data: adminCheck, error: adminError } = await supabase
-            .rpc('has_role', { 
-              _user_id: user.id, 
-              _role: 'admin' 
-            });
-          
-          if (adminError) {
-            console.error('Error checking admin role:', adminError);
-            setIsAdmin(false);
-          } else {
-            setIsAdmin(adminCheck || false);
-          }
-
-          // 如果是管理员，获取待处理举报数量
-          if (adminCheck) {
-            try {
-              const { data: reportsData, error: reportsError } = await supabase
-                .from('reports')
-                .select('id')
-                .eq('status', 'pending');
-              
-              if (reportsError) throw reportsError;
-              setPendingReports(reportsData?.length || 0);
-            } catch (error) {
-              console.error('Error loading reports:', error);
-              setPendingReports(0);
-            }
+        // 如果是管理员，获取待处理举报数量
+        if (isAdminUser) {
+          try {
+            const { data: reportsData } = await supabase
+              .from('reports')
+              .select('id')
+              .eq('status', 'pending');
+            
+            setPendingReports(reportsData?.length || 0);
+          } catch (error) {
+            console.error('Error loading reports:', error);
+            setPendingReports(0);
           }
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-        setPendingReports(0);
+        console.error('获取用户配置文件失败:', error);
+      } finally {
+        loadingRef.current = false;
       }
     };
 
-    getUser();
-    
-    // 监听认证状态变化
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        getUser();
-      } else {
-        setUser(null);
-        setProfile(null);
-        setIsAdmin(false);
-        setPendingReports(0);
-        setIsOpen(false);
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, []);
+    getProfile();
+  }, [user?.id]);
 
   // 管理员实时监听新举报
   useEffect(() => {
@@ -161,8 +135,7 @@ export const UserMenu = () => {
     
     setIsNavigating(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      await signOut();
       setIsOpen(false);
       navigate('/auth');
     } catch (error) {
@@ -170,7 +143,7 @@ export const UserMenu = () => {
     } finally {
       setTimeout(() => setIsNavigating(false), 500);
     }
-  }, [navigate, isNavigating]);
+  }, [signOut, navigate, isNavigating]);
 
   const handleMenuItemClick = useCallback((path: string) => {
     if (isNavigating) return;
@@ -178,7 +151,6 @@ export const UserMenu = () => {
     setIsNavigating(true);
     try {
       setIsOpen(false);
-      console.log(`UserMenu navigation: ${path}`);
       navigate(path);
     } catch (error) {
       console.error('Navigation error:', error);
@@ -195,7 +167,6 @@ export const UserMenu = () => {
         variant="ghost" 
         className="flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-muted-foreground hover:text-foreground hover:bg-accent/50"
         onClick={(e) => {
-          console.log('UserMenu button clicked!');
           e.preventDefault();
           e.stopPropagation();
           if (!isNavigating) {

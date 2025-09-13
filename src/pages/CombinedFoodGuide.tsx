@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Users, Utensils, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { RegionHero } from '@/components/FoodGuide/RegionHero';
 import { FeaturedRestaurants } from '@/components/FoodGuide/FeaturedRestaurants';
 import { CuisineGuides } from '@/components/FoodGuide/CuisineGuides';

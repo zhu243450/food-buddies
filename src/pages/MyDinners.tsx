@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, memo } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -10,7 +9,8 @@ import { OptimizedCampaignBanner } from "@/components/OptimizedCampaignBanner";
 import { FastSkeletonCard } from "@/components/FastSkeletonCard";
 import { OptimizedMyDinnersCard } from "@/components/OptimizedMyDinnersCard";
 import { useOptimizedDinners } from "@/hooks/useOptimizedDinners";
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from "@/integrations/supabase/client";
 
 interface Dinner {
   id: string;
@@ -34,7 +34,7 @@ interface Dinner {
 
 const MyDinners = memo(() => {
   const { t } = useTranslation();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [selectedDinner, setSelectedDinner] = useState<Dinner | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -52,55 +52,19 @@ const MyDinners = memo(() => {
     document.body.style.paddingRight = '0px';
   }, []);
 
+  // 检查用户认证状态
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [user, navigate]);
+
   // 移除不必要的重复useEffect
   useEffect(() => {
     return () => {
       forceReset();
     };
   }, [forceReset]);
-
-  useEffect(() => {
-    let isComponentMounted = true;
-    
-    const checkUserSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!isComponentMounted) return;
-        
-        if (!session?.user) {
-          navigate("/auth", { replace: true });
-          return;
-        }
-        
-        setUser(session.user);
-      } catch (error) {
-        if (isComponentMounted) {
-          navigate("/auth", { replace: true });
-        }
-      }
-    };
-
-    // 监听认证状态变化 - 只关注登出事件
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!isComponentMounted) return;
-        
-        if (event === 'SIGNED_OUT' || !session?.user) {
-          navigate("/auth", { replace: true });
-        } else if (session?.user) {
-          setUser(session.user);
-        }
-      }
-    );
-
-    checkUserSession();
-
-    return () => {
-      isComponentMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
 
   const handleCancelDinner = async (reason?: string) => {
     if (!user || !selectedDinner) return;

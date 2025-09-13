@@ -1,84 +1,30 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import type { User, Session } from '@supabase/supabase-js';
+import { Link } from "react-router-dom";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Auth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    let redirectTimeout: NodeJS.Timeout;
-    let mounted = true;
-    
-    // 监听认证状态变化
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth页面认证状态变化:', { event, session: !!session });
-        
-        // 同步更新状态
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // 只在登录成功时立即重定向，避免延迟
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('用户成功登录，立即重定向');
-          navigate("/my-dinners", { replace: true });
-        }
-      }
-    );
-
-    // 检查初始会话
-    const checkInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (!mounted || error) {
-          if (error) console.error('获取会话时出错:', error);
-          return;
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          console.log('Auth页面检测到已有会话，立即重定向');
-          navigate("/my-dinners", { replace: true });
-        }
-      } catch (error) {
-        console.error('检查会话时出错:', error);
-      }
-    };
-
-    checkInitialSession();
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-      if (redirectTimeout) {
-        clearTimeout(redirectTimeout);
-      }
-    };
-  }, [navigate]);
+  // 如果用户已登录，不显示认证页面
+  if (user) {
+    return null;
+  }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,17 +95,12 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    console.log('开始登录:', { email });
-    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    console.log('登录结果:', { data, error });
-
     if (error) {
-      console.error('登录错误:', error);
       toast({
         title: t('auth.signInFailed'),
         description: error.message === "Invalid login credentials" 
@@ -168,19 +109,15 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
-      console.log('登录成功，用户信息:', data.user);
       toast({
         title: t('auth.signInSuccess'),
         description: t('auth.redirecting'),
       });
+      // AuthContext将处理重定向
     }
     
     setLoading(false);
   };
-
-  if (user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -195,7 +132,6 @@ const Auth = () => {
               <TabsTrigger value="signin" className="text-sm">{t('auth.signIn')}</TabsTrigger>
               <TabsTrigger value="signup" className="text-sm">{t('auth.signUp')}</TabsTrigger>
             </TabsList>
-            
             
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">

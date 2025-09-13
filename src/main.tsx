@@ -4,6 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import './i18n'
 import { CriticalCSS } from './components/CriticalCSS'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 // 注册Service Worker
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
@@ -115,7 +116,9 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <StrictMode>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </StrictMode>
   );
 } else {

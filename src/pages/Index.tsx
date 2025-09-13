@@ -1,80 +1,33 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from 'react-i18next';
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import { CampaignBanner } from "@/components/CampaignBanner";
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
 
   const seoData = getPageSEO('home');
 
+  // 用户已登录时自动重定向
   useEffect(() => {
-    let isComponentMounted = true;
-    
-    // 检查当前会话
-    const checkUser = async () => {
-      try {
-        console.log('Index页面检查用户会话');
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!isComponentMounted) return;
-        
-        console.log('当前会话:', !!session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          console.log('用户已登录，重定向到my-dinners');
-          navigate("/my-dinners", { replace: true });
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('检查用户会话时出错:', error);
-        if (isComponentMounted) {
-          setLoading(false);
-        }
-      }
-    };
+    if (!loading && user) {
+      navigate("/my-dinners", { replace: true });
+    }
+  }, [user, loading, navigate]);
 
-    // 监听认证状态变化 - 只监听登录事件
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!isComponentMounted) return;
-        
-        console.log('Index页面认证状态变化:', { event, session: !!session });
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('检测到用户登录，重定向');
-          navigate("/my-dinners", { replace: true });
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    checkUser();
-
-    return () => {
-      isComponentMounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
-
-  // 如果正在加载或用户已登录，显示空白页面
+  // 如果还在加载或用户已登录，显示加载状态
   if (loading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
+          <div className="loading-spinner mx-auto mb-4" />
           <div className="text-lg">{t('common.loading')}</div>
         </div>
       </div>
