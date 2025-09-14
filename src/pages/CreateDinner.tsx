@@ -14,7 +14,7 @@ import { Plus, Zap, Clock, Users2, MapPin, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Navigation from "@/components/Navigation";
 import MapLocationPicker from "@/components/MapLocationPicker";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
@@ -401,6 +401,9 @@ const CreateDinner = () => {
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
                         <DialogTitle>{t('dinner.selectLocation')}</DialogTitle>
+                        <DialogDescription>
+                          {t('dinner.selectLocationDesc', '在地图上选择用餐地点')}
+                        </DialogDescription>
                       </DialogHeader>
                       <MapLocationPicker 
                         onLocationSelect={handleLocationSelect}

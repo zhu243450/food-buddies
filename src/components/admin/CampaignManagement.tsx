@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, Eye, Calendar, Users } from "lucide-react";
@@ -343,6 +343,9 @@ export const CampaignManagement = () => {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingCampaign ? '编辑活动' : '新建活动'}</DialogTitle>
+              <DialogDescription>
+                {editingCampaign ? '修改现有活动的详细信息' : '创建新的活动来吸引用户参与'}
+              </DialogDescription>
             </DialogHeader>
 
             <div className="grid gap-4 py-4">

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Share2, Copy, MessageCircle, Heart, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -151,6 +151,9 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
             <Share2 className="w-5 h-5 text-primary" />
             {t('share.shareDinner')}
           </DialogTitle>
+          <DialogDescription>
+            {t('share.shareDescription', 'Choose how you want to share this dinner event')}
+          </DialogDescription>
         </DialogHeader>
         
         {/* 饭局预览卡片 */}

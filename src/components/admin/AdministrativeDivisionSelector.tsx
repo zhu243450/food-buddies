@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, MapPin } from "lucide-react";
@@ -384,6 +384,9 @@ export function AdministrativeDivisionSelector({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>添加省/直辖市</DialogTitle>
+              <DialogDescription>
+                创建新的省级行政区划
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -439,6 +442,9 @@ export function AdministrativeDivisionSelector({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>添加市</DialogTitle>
+                <DialogDescription>
+                  为所选省份添加新的地级市
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -495,6 +501,9 @@ export function AdministrativeDivisionSelector({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>添加区/县</DialogTitle>
+                <DialogDescription>
+                  为所选城市添加新的区县
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -551,6 +560,9 @@ export function AdministrativeDivisionSelector({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>添加街道/镇</DialogTitle>
+                <DialogDescription>
+                  为所选区县添加新的街道或镇
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>

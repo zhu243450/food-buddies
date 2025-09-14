@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -431,7 +431,12 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
               <div className="flex flex-col h-[600px]">
                 <DialogHeader className="p-4 border-b flex-shrink-0">
                   <div className="flex items-center justify-between">
-                    <DialogTitle className="text-lg">照片详情</DialogTitle>
+                    <div>
+                      <DialogTitle className="text-lg">照片详情</DialogTitle>
+                      <DialogDescription className="text-sm text-muted-foreground">
+                        浏览个人照片并与其他用户互动
+                      </DialogDescription>
+                    </div>
                      <div className="relative">
                        <Button 
                          size="sm" 

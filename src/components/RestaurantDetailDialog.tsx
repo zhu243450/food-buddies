@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +62,9 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
               <span className="text-lg font-semibold">{restaurant.rating}</span>
             </div>
           </DialogTitle>
+          <DialogDescription>
+            查看餐厅详情，了解招牌菜品和就餐建议
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">

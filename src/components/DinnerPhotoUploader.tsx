@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Upload, X, Image, Video, Play } from "lucide-react";
@@ -215,6 +215,9 @@ const DinnerMediaUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
             <Camera className="w-5 h-5 text-primary" />
             {dinnerId ? '分享饭局媒体' : '分享媒体'}
           </DialogTitle>
+          <DialogDescription>
+            上传照片或视频来分享精彩瞬间
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
