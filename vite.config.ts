@@ -33,20 +33,10 @@ export default defineConfig(({ mode }) => ({
           'data': ['@tanstack/react-query', '@supabase/supabase-js'],
           'utils': ['date-fns', 'clsx', 'tailwind-merge', 'lucide-react']
         },
-        // 优化文件名和哈希
-        entryFileNames: 'js/[name]-[hash].js',
-        chunkFileNames: 'js/[name]-[hash].js',
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name?.split('.') || [];
-          const ext = info[info.length - 1];
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext || '')) {
-            return `images/[name]-[hash][extname]`;
-          }
-          if (/css/i.test(ext || '')) {
-            return `css/[name]-[hash][extname]`;
-          }
-          return `assets/[name]-[hash][extname]`;
-        }
+        // 简化文件名配置
+        entryFileNames: '[name].[hash].js',
+        chunkFileNames: '[name].[hash].js',
+        assetFileNames: '[name].[hash].[ext]'
       },
       // 优化外部化
       external: (id) => {
@@ -55,35 +45,13 @@ export default defineConfig(({ mode }) => ({
       }
     },
     // 生产环境优化
-    minify: mode === 'production' ? 'terser' : false,
-    terserOptions: mode === 'production' ? {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
-        // 移除未使用的代码
-        dead_code: true,
-        // 内联函数
-        inline: true,
-        // 优化条件表达式
-        conditionals: true,
-        // 移除未使用的变量
-        unused: true
-      },
-      mangle: {
-        // 混淆变量名以减小体积
-        safari10: true
-      },
-      format: {
-        // 移除注释
-        comments: false
-      }
-    } : undefined,
-    // 极致性能配置
+    minify: mode === 'production' ? 'esbuild' : false,
+    // 修复MIME类型和性能配置
     chunkSizeWarningLimit: 600,
-    cssCodeSplit: false, // 减少HTTP请求
-    reportCompressedSize: false, // 减少构建时间
-    sourcemap: false
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    sourcemap: false,
+    assetsDir: 'assets'
   },
   // 预构建优化
   optimizeDeps: {

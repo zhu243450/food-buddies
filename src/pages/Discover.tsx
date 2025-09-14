@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, MapPin, Users, Search, Sparkles, Zap, Clock, Users2, Filter } from "lucide-react";
+import { CalendarDays, MapPin, Users, Search, Sparkles, Zap, Clock, Users2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 
 import ShareDinner from "@/components/ShareDinner";
