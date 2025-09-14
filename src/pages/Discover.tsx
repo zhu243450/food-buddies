@@ -293,7 +293,7 @@ const Discover = () => {
       }
 
       const result = data[0];
-      console.log('删除结果详情:', result);
+      console.log('删除结果详情:', JSON.stringify(result, null, 2));
 
       if (result.success || result.f1) {
         const isCreator = selectedDinner.created_by === user.id;
