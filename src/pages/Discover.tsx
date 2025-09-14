@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDays, MapPin, Users, Search, Sparkles, Zap, Clock, Users2, Filter } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import DinnerFiltersComponent, { DinnerFilters } from "@/components/DinnerFilters";
+
 import ShareDinner from "@/components/ShareDinner";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import { SEO } from "@/components/SEO";
@@ -129,19 +129,6 @@ const Discover = () => {
   const [joinedDinnerIds, setJoinedDinnerIds] = useState<string[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<DinnerFilters>({
-    genderPreference: "all",
-    timeRange: "all", 
-    timeOfDay: [],
-    location: "",
-    radius: 10,
-    foodPreferences: [],
-    dietaryRestrictions: [],
-    dinnerMode: [],
-    urgencyLevel: [],
-    maxParticipants: [2, 20],
-    showExpired: false
-  });
 
   // My Dinners tab states
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -420,118 +407,11 @@ const Discover = () => {
     fetchDinners();
   }, [user]);
 
-  // Apply filters
+  // Display only active dinners (not expired)
   useEffect(() => {
     if (!allDinners.length) return;
-
-    let filtered = [...allDinners];
-
-    if (filters.genderPreference !== "all") {
-      filtered = filtered.filter(dinner => dinner.gender_preference === filters.genderPreference);
-    }
-
-    if (filters.timeRange !== "all") {
-      const now = new Date();
-      switch (filters.timeRange) {
-        case "today":
-          filtered = filtered.filter(dinner => {
-            const dinnerDate = new Date(dinner.dinner_time);
-            return dinnerDate.getDate() === now.getDate() &&
-              dinnerDate.getMonth() === now.getMonth() &&
-              dinnerDate.getFullYear() === now.getFullYear();
-          });
-          break;
-        case "tomorrow":
-          filtered = filtered.filter(dinner => {
-            const tomorrow = new Date(now);
-            tomorrow.setDate(now.getDate() + 1);
-            const dinnerDate = new Date(dinner.dinner_time);
-            return dinnerDate.getDate() === tomorrow.getDate() &&
-              dinnerDate.getMonth() === tomorrow.getMonth() &&
-              dinnerDate.getFullYear() === tomorrow.getFullYear();
-          });
-          break;
-        case "thisWeek":
-          const startOfWeek = new Date(now);
-          startOfWeek.setDate(now.getDate() - now.getDay());
-          const endOfWeek = new Date(now);
-          endOfWeek.setDate(now.getDate() + (6 - now.getDay()));
-
-          filtered = filtered.filter(dinner => {
-            const dinnerDate = new Date(dinner.dinner_time);
-            return dinnerDate >= startOfWeek && dinnerDate <= endOfWeek;
-          });
-          break;
-        case "weekend":
-          filtered = filtered.filter(dinner => {
-            const dinnerDate = new Date(dinner.dinner_time);
-            return dinnerDate.getDay() === 0 || dinnerDate.getDay() === 6;
-          });
-          break;
-        default:
-          break;
-      }
-    }
-
-    if (filters.timeOfDay && filters.timeOfDay.length > 0) {
-      filtered = filtered.filter(dinner => {
-        const dinnerTime = new Date(dinner.dinner_time);
-        const hour = dinnerTime.getHours();
-        return filters.timeOfDay?.some(time => {
-          switch (time) {
-            case "lunch":
-              return hour >= 11 && hour < 14;
-            case "dinnerTime":
-              return hour >= 17 && hour < 21;
-            case "supper":
-              return hour >= 21 || hour < 2;
-            default:
-              return false;
-          }
-        });
-      });
-    }
-
-    if (filters.location) {
-      filtered = filtered.filter(dinner =>
-        dinner.location.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    if (filters.foodPreferences && filters.foodPreferences.length > 0) {
-      filtered = filtered.filter(dinner =>
-        filters.foodPreferences?.every(pref => (dinner as any).food_preferences?.includes(pref))
-      );
-    }
-
-    if (filters.dietaryRestrictions && filters.dietaryRestrictions.length > 0) {
-      filtered = filtered.filter(dinner =>
-        filters.dietaryRestrictions?.every(restrict => (dinner as any).dietary_restrictions?.includes(restrict))
-      );
-    }
-
-    if (filters.dinnerMode && filters.dinnerMode.length > 0) {
-      filtered = filtered.filter(dinner =>
-        filters.dinnerMode?.includes(dinner.dinner_mode)
-      );
-    }
-
-    if (filters.urgencyLevel && filters.urgencyLevel.length > 0) {
-      filtered = filtered.filter(dinner =>
-        filters.urgencyLevel?.includes(dinner.urgency_level)
-      );
-    }
-
-    filtered = filtered.filter(dinner =>
-      participantCounts[dinner.id] ? participantCounts[dinner.id] + 1 >= filters.maxParticipants[0] && participantCounts[dinner.id] + 1 <= filters.maxParticipants[1] : 1 >= filters.maxParticipants[0] && 1 <= filters.maxParticipants[1]
-    );
-
-    if (!filters.showExpired) {
-      filtered = filtered.filter(dinner => new Date(dinner.dinner_time) > new Date());
-    }
-
-    setFilteredDinners(filtered);
-  }, [allDinners, filters]);
+    setFilteredDinners(allDinners.filter(dinner => new Date(dinner.dinner_time) > new Date()));
+  }, [allDinners]);
 
   if (!user) {
     return null;
@@ -584,17 +464,6 @@ const Discover = () => {
           </TabsList>
 
           <TabsContent value="discover" className="space-y-6">
-            {/* Filters */}
-            <div className="mb-6">
-              <DinnerFiltersComponent 
-                filters={filters} 
-                onFiltersChange={setFilters}
-                activeFilterCount={Object.values(filters).filter(v => 
-                  Array.isArray(v) ? v.length > 0 : 
-                  v !== "all" && v !== "" && v !== false && v !== 10 && !Array.isArray(v)
-                ).length}
-              />
-            </div>
             
             {/* Dinner Cards */}
             {loading ? (
