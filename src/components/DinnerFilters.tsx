@@ -201,11 +201,15 @@ export const DinnerFiltersComponent = ({ filters, onFiltersChange, activeFilterC
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="relative border-2 border-primary/30 hover:bg-primary/10">
-          <Filter className="w-4 h-4 mr-2" />
-          {t('common.filter')}
+        <Button 
+          variant="default" 
+          size="lg"
+          className="relative bg-gradient-to-r from-primary to-primary-foreground text-primary-foreground hover:from-primary/90 hover:to-primary-foreground/90 shadow-md hover:shadow-lg transition-all duration-200 font-medium"
+        >
+          <Filter className="w-5 h-5 mr-2" />
+          {t('common.filter')}筛选饭局
           {activeFilterCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-primary text-black text-xs">
+            <Badge className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center bg-accent text-accent-foreground text-xs font-bold animate-pulse">
               {activeFilterCount}
             </Badge>
           )}
