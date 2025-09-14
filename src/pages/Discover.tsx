@@ -310,8 +310,9 @@ const Discover = () => {
         refetch();
       } else {
         const message = result.message || result.f2 || "操作失败";
+        console.error('删除失败:', message);
         toast({
-          title: "操作失败",
+          title: "删除失败",
           description: message,
           variant: "destructive",
         });
