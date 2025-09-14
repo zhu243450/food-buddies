@@ -283,14 +283,17 @@ const Discover = () => {
       console.log('删除操作结果:', { data, error });
 
       if (error) {
+        console.error('删除操作错误:', error);
         throw error;
       }
 
       if (!data || !Array.isArray(data) || data.length === 0) {
+        console.error('函数返回数据格式错误:', data);
         throw new Error('函数返回数据格式错误');
       }
 
       const result = data[0];
+      console.log('删除结果详情:', result);
 
       if (result.success || result.f1) {
         const isCreator = selectedDinner.created_by === user.id;
