@@ -270,6 +270,7 @@ const Discover = () => {
   const handleCancelDinner = async (reason?: string) => {
     if (!user || !selectedDinner) return;
 
+    console.log('开始删除饭局:', selectedDinner.id, '用户ID:', user.id);
     setCancelling(true);
 
     try {
@@ -278,6 +279,8 @@ const Discover = () => {
         user_id_param: user.id,
         cancellation_reason_param: reason || ''
       });
+
+      console.log('删除操作结果:', { data, error });
 
       if (error) {
         throw error;
