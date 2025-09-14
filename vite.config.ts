@@ -26,22 +26,12 @@ export default defineConfig(({ mode }) => ({
     // 极致性能优化配置
     rollupOptions: {
       output: {
-        // 简化分包策略 - 减少chunk数量
+        // 极简分包策略 - 最小化HTTP请求
         manualChunks: {
-          // React核心
-          'react-vendor': ['react', 'react-dom'],
-          // 路由
-          'router': ['react-router-dom'],
-          // UI库分包
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
-          // 数据层
-          'data-vendor': ['@tanstack/react-query', '@supabase/supabase-js'],
-          // 工具库
-          'utils': ['date-fns', 'clsx', 'class-variance-authority', 'tailwind-merge'],
-          // 国际化
-          'i18n': ['react-i18next', 'i18next'],
-          // 图表和图标
-          'media': ['recharts', 'lucide-react']
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+          'data': ['@tanstack/react-query', '@supabase/supabase-js'],
+          'utils': ['date-fns', 'clsx', 'tailwind-merge', 'lucide-react']
         },
         // 优化文件名和哈希
         entryFileNames: 'js/[name]-[hash].js',
@@ -89,14 +79,11 @@ export default defineConfig(({ mode }) => ({
         comments: false
       }
     } : undefined,
-    // 优化chunk大小
-    chunkSizeWarningLimit: 800,
-    // CSS代码分割
-    cssCodeSplit: true,
-    // 启用gzip预压缩
-    reportCompressedSize: true,
-    // 优化sourcemap
-    sourcemap: mode === 'development' ? true : false
+    // 极致性能配置
+    chunkSizeWarningLimit: 600,
+    cssCodeSplit: false, // 减少HTTP请求
+    reportCompressedSize: false, // 减少构建时间
+    sourcemap: false
   },
   // 预构建优化
   optimizeDeps: {

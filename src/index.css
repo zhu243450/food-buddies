@@ -132,175 +132,26 @@
     will-change: scroll-position;
   }
 
-  /* 优化图片加载 - 防止CLS */
+  /* 极简图片优化 */
   img {
-    /* 防止图片闪烁 */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    /* 懒加载占位 */
-    background-color: hsl(var(--muted));
-    /* 避免布局偏移 - 重要CLS优化 */
+    background: hsl(var(--muted));
     display: block;
     width: 100%;
     height: auto;
-    /* 预留空间避免布局跳动 */
     min-height: 1px;
+    contain: layout;
   }
 
-  /* 强制所有容器保持尺寸 */
-  .aspect-ratio-container {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .aspect-ratio-container::before {
-    content: '';
-    display: block;
-    width: 100%;
-  }
-
-  /* 默认宽高比 */
-  .aspect-ratio-container.aspect-video::before {
-    padding-bottom: 56.25%; /* 16:9 */
-  }
-
-  .aspect-ratio-container.aspect-square::before {
-    padding-bottom: 100%; /* 1:1 */
-  }
-
-  .aspect-ratio-container > * {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* 优化动画性能 */
-  .animate-spin,
-  .animate-pulse,
-  .animate-bounce {
-    /* 使用transform而不是改变layout属性 */
-    will-change: transform;
-    /* 启用硬件加速 */
-    transform: translateZ(0);
-  }
-
-  /* 优化滚动性能 */
-  .scroll-area {
-    /* 启用滚动优化 */
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
-    /* 减少重绘 */
-    contain: layout style paint;
-  }
-
-  /* 性能优化的按钮 */
-  button,
-  .btn {
-    /* 避免不必要的重绘 */
-    contain: layout style paint;
-    /* 优化点击响应 */
-    touch-action: manipulation;
-  }
-
-  /* 优化表格性能 */
-  table {
-    /* 固定表格布局以提升性能 */
-    table-layout: fixed;
-  }
-
-  /* Critical CSS内联 - 关键样式 */
-  .critical-above-fold {
-    /* 首屏关键内容样式 */
-    contain: layout style paint;
-    will-change: auto;
-  }
+  /* 核心性能优化 */
+  button { contain: layout; touch-action: manipulation; }
+  .scroll-area { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+  .animate-spin { will-change: transform; transform: translateZ(0); }
 }
 
-/* 性能优化的工具类 */
+/* 核心工具类 - 最小化CSS */
 @layer utilities {
-  /* GPU加速 */
-  .gpu-accelerated {
-    transform: translateZ(0);
-    will-change: transform;
-  }
-
-  /* 严格的容器约束 - 防止CLS */
-  .contain-paint {
-    contain: layout style paint;
-  }
-
-  .contain-strict {
-    contain: strict;
-  }
-
-  /* 聚餐卡片稳定布局 - 固定高度防止CLS */
-  .dinner-card-stable {
-    height: 280px;
-    contain: strict;
-    will-change: auto;
-    border: none !important;
-    border-top: none !important;
-    border-right: none !important;
-    border-bottom: none !important;
-    border-left: none !important;
-    outline: none !important;
-  }
-
-  .dinner-card-stable * {
-    border: none !important;
-    border-top: none !important;
-    border-right: none !important;
-    border-bottom: none !important;
-    border-left: none !important;
-  }
-
-  /* 优化的占位符 - 移除动画减少重绘 */
-  .lazy-placeholder {
-    background: hsl(var(--muted));
-    contain: strict;
-  }
-
-  /* 性能优化的阴影 */
-  .shadow-performance {
-    box-shadow: 0 1px 3px 0 hsl(var(--primary) / 0.1);
-  }
-
-  /* 稳定容器 */
-  .stable-container {
-    min-height: 100px;
-    contain: layout style paint;
-  }
-
-  /* 关键渲染路径优化 */
-  .critical-path {
-    contain: layout style;
-    content-visibility: auto;
-    contain-intrinsic-size: 280px;
-  }
-
-  /* 文本截断优化 */
-  .line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* 图标容器 - 防止布局偏移 */
-  .icon-container {
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-    contain: layout style paint;
-  }
+  .dinner-card-stable { height: 280px; contain: strict; }
+  .contain-strict { contain: strict; }
+  .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 }
