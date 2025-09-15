@@ -32,12 +32,18 @@ interface RestaurantDetailDialogProps {
 export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: RestaurantDetailDialogProps) {
   const navigate = useNavigate();
   
-  // Auto-scroll to top when dialog opens
+  // Prevent body scroll when dialog is open
   useEffect(() => {
     if (open) {
-      // Scroll to top of page to ensure dialog is visible
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [open]);
   
   if (!restaurant) return null;
