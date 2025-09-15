@@ -68,9 +68,9 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-0 flex flex-col">
+      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-0 flex flex-col overflow-hidden">
         {/* Header - Fixed */}
-        <div className="p-6 pb-4 border-b border-border shrink-0">
+        <div className="p-6 pb-4 border-b border-border flex-shrink-0">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between text-xl">
               <span>{restaurant.name}</span>
@@ -86,7 +86,13 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
         </div>
         
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div 
+          className="flex-1 min-h-0 overflow-y-scroll p-6 space-y-6"
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'thin'
+          }}
+        >
           {/* 基本信息 */}
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary" className="text-sm px-3 py-1">
