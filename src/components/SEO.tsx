@@ -29,7 +29,30 @@ export const SEO = ({
   const fullTitle = title ? `${title} - ${siteTitle}` : siteTitle;
   const metaDescription = description || defaultDescription;
   const metaKeywords = keywords || defaultKeywords;
-  const currentUrl = url || window.location.href;
+  
+  // 生成清洁的规范URL，移除查询参数和片段
+  const getCanonicalUrl = () => {
+    if (url) return url;
+    
+    const baseUrl = 'https://dinemate.xyz';
+    const pathname = window.location.pathname;
+    
+    // 处理特殊路由映射
+    if (pathname === '/my-dinners') {
+      return `${baseUrl}/discover`;
+    }
+    
+    return `${baseUrl}${pathname}`;
+  };
+  
+  const canonicalUrl = getCanonicalUrl();
+  
+  // 生成语言特定的URL
+  const getLocalizedUrl = (lang: string) => {
+    const baseUrl = canonicalUrl;
+    // 根据需要可以添加语言路径前缀
+    return baseUrl;
+  };
   
   return (
     <Helmet>
@@ -38,12 +61,12 @@ export const SEO = ({
       <meta name="description" content={metaDescription} />
       <meta name="keywords" content={metaKeywords} />
       <meta name="author" content="饭约社团队" />
-      <link rel="canonical" href={currentUrl} />
+      <link rel="canonical" href={canonicalUrl} />
 
       {/* Hreflang alternates */}
-      <link rel="alternate" href={currentUrl} hrefLang="x-default" />
-      <link rel="alternate" href={currentUrl} hrefLang="en" />
-      <link rel="alternate" href={currentUrl} hrefLang="zh-CN" />
+      <link rel="alternate" href={getLocalizedUrl('x-default')} hrefLang="x-default" />
+      <link rel="alternate" href={getLocalizedUrl('en')} hrefLang="en" />
+      <link rel="alternate" href={getLocalizedUrl('zh-CN')} hrefLang="zh-CN" />
       
       {/* Language */}
       <html lang={i18n.language === 'zh' ? 'zh-CN' : 'en-US'} />
@@ -53,7 +76,7 @@ export const SEO = ({
       <meta property="og:description" content={metaDescription} />
       <meta property="og:type" content={type} />
       <meta property="og:image" content={image} />
-      <meta property="og:url" content={currentUrl} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:site_name" content={siteTitle} />
       <meta property="og:locale" content={i18n.language === 'zh' ? 'zh_CN' : 'en_US'} />
       <meta property="og:locale:alternate" content="en_US" />
