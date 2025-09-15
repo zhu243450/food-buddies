@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -31,10 +31,15 @@ interface RestaurantDetailDialogProps {
 
 export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: RestaurantDetailDialogProps) {
   const navigate = useNavigate();
+  const [dialogPosition, setDialogPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const dialogRef = useRef<HTMLDivElement>(null);
   
-  // Prevent body scroll when dialog is open
+  // Reset position when dialog opens
   useEffect(() => {
     if (open) {
+      setDialogPosition({ x: 0, y: 0 });
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -65,21 +70,106 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
     toast.success('正在跳转到创建饭局页面');
   };
 
+  // Touch and mouse event handlers for dragging
+  const handleStart = (clientX: number, clientY: number) => {
+    setIsDragging(true);
+    setDragStart({ x: clientX - dialogPosition.x, y: clientY - dialogPosition.y });
+  };
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (!isDragging) return;
+    
+    const newX = clientX - dragStart.x;
+    const newY = clientY - dragStart.y;
+    
+    // Limit movement to keep dialog visible
+    const maxY = window.innerHeight * 0.3;
+    const minY = -window.innerHeight * 0.2;
+    
+    setDialogPosition({
+      x: Math.max(-200, Math.min(200, newX)),
+      y: Math.max(minY, Math.min(maxY, newY))
+    });
+  };
+
+  const handleEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Mouse events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.dialog-content')) {
+      handleStart(e.clientX, e.clientY);
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleMove(e.clientX, e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    handleEnd();
+  };
+
+  // Touch events
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      handleStart(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && isDragging) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      handleMove(touch.clientX, touch.clientY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    handleEnd();
+  };
+
+  // Add global event listeners for mouse
+  useEffect(() => {
+    if (isDragging) {
+      const handleGlobalMouseMove = (e: MouseEvent) => {
+        handleMove(e.clientX, e.clientY);
+      };
+      
+      const handleGlobalMouseUp = () => {
+        handleEnd();
+      };
+
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+
+      return () => {
+        document.removeEventListener('mousemove', handleGlobalMouseMove);
+        document.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+    }
+  }, [isDragging, dragStart, dialogPosition]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-4xl w-[95vw] max-h-[90vh] p-0 gap-0"
+        ref={dialogRef}
+        className="max-w-4xl w-[95vw] max-h-[85vh] p-0 dialog-content"
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
+          transform: `translate(${dialogPosition.x}px, ${dialogPosition.y}px)`,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          userSelect: isDragging ? 'none' : 'auto',
+          transition: isDragging ? 'none' : 'transform 0.2s ease'
         }}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        {/* Fixed Header */}
-        <div 
-          className="p-6 pb-4 border-b border-border bg-background"
-          style={{ flexShrink: 0 }}
-        >
+        {/* Header */}
+        <div className="p-6 pb-4 border-b border-border">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between text-xl">
               <span>{restaurant.name}</span>
@@ -89,22 +179,13 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
               </div>
             </DialogTitle>
             <DialogDescription>
-              查看餐厅详情，了解招牌菜品和就餐建议
+              查看餐厅详情，了解招牌菜品和就餐建议 - 可拖拽移动位置
             </DialogDescription>
           </DialogHeader>
         </div>
         
-        {/* Scrollable Content Area */}
-        <div 
-          className="p-6 space-y-6 bg-background"
-          style={{
-            flex: '1 1 auto',
-            overflowY: 'scroll',
-            overflowX: 'hidden',
-            minHeight: '0',
-            maxHeight: 'calc(90vh - 200px)'
-          }}
-        >
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* 基本信息 */}
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary" className="text-sm px-3 py-1">
@@ -119,9 +200,7 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
               {restaurant.price_range}
             </Badge>
             {restaurant.is_featured && (
-              <Badge className="text-sm px-3 py-1">
-                推荐
-              </Badge>
+              <Badge className="text-sm px-3 py-1">推荐</Badge>
             )}
           </div>
 
@@ -171,39 +250,31 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
           </div>
 
           <Separator />
-          
-          {/* Extra content for testing scroll */}
-          <div>
-            <h4 className="font-semibold text-foreground mb-3">餐厅特色</h4>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-muted-foreground">
-                  这里是一些额外的餐厅信息，用来测试滚动功能是否正常工作。
-                  如果你能看到这段文字，说明滚动已经正常工作了。
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Bottom padding for better scrolling */}
-          <div style={{ height: '60px' }}></div>
         </div>
 
-        {/* Fixed Footer */}
-        <div 
-          className="border-t border-border p-6 bg-background"
-          style={{ flexShrink: 0 }}
-        >
+        {/* Footer */}
+        <div className="border-t border-border p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-muted-foreground">
               喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              <Button variant="outline" size="sm" onClick={handleNavigation} className="flex-1 sm:flex-none">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleNavigation} 
+                className="flex-1 sm:flex-none"
+                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+              >
                 <Navigation className="h-4 w-4 mr-2" />
                 导航
               </Button>
-              <Button size="sm" onClick={handleCreateDinner} className="flex-1 sm:flex-none">
+              <Button 
+                size="sm" 
+                onClick={handleCreateDinner} 
+                className="flex-1 sm:flex-none"
+                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
+              >
                 <Utensils className="h-4 w-4 mr-2" />
                 创建饭局
               </Button>
