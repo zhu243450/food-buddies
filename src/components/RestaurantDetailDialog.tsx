@@ -68,7 +68,7 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-0 flex flex-col overflow-hidden">
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] p-0 flex flex-col">
         {/* Header - Fixed */}
         <div className="p-6 pb-4 border-b border-border flex-shrink-0">
           <DialogHeader>
@@ -87,10 +87,11 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
         
         {/* Scrollable Content */}
         <div 
-          className="flex-1 min-h-0 overflow-y-scroll p-6 space-y-6"
+          className="flex-1 min-h-0 p-6 space-y-6"
           style={{
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'thin'
+            overflowY: 'auto',
+            maxHeight: 'calc(90vh - 180px)',
+            WebkitOverflowScrolling: 'touch'
           }}
         >
           {/* 基本信息 */}
@@ -165,7 +166,7 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
         </div>
 
         {/* Footer - Fixed */}
-        <div className="border-t border-border p-6 shrink-0">
+        <div className="border-t border-border p-6 flex-shrink-0">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-muted-foreground">
               喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
