@@ -66,7 +66,10 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-0">
+      <DialogContent 
+        className="max-w-4xl w-[95vw] h-[85vh] p-0 !top-[25%] !translate-y-[-25%]"
+        style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%) translateY(-25%)', top: '25%' }}
+      >
         {/* 固定标题 */}
         <div className="p-6 pb-4 border-b border-border bg-background">
           <DialogHeader>
