@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Star, MapPin, Clock, Users, Utensils, Phone, Navigation } from "lucide-react";
+import { Star, MapPin, Clock, Users, Utensils, Navigation } from "lucide-react";
 import { toast } from "sonner";
 
 interface Restaurant {
@@ -40,7 +40,6 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
       document.body.style.overflow = 'unset';
     }
     
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -68,9 +67,19 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] p-0 flex flex-col">
-        {/* Header - Fixed */}
-        <div className="p-6 pb-4 border-b border-border flex-shrink-0">
+      <DialogContent 
+        className="max-w-4xl w-[95vw] max-h-[90vh] p-0 gap-0"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Fixed Header */}
+        <div 
+          className="p-6 pb-4 border-b border-border bg-background"
+          style={{ flexShrink: 0 }}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between text-xl">
               <span>{restaurant.name}</span>
@@ -85,13 +94,15 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
           </DialogHeader>
         </div>
         
-        {/* Scrollable Content */}
+        {/* Scrollable Content Area */}
         <div 
-          className="flex-1 min-h-0 p-6 space-y-6"
+          className="p-6 space-y-6 bg-background"
           style={{
-            overflowY: 'auto',
-            maxHeight: 'calc(90vh - 180px)',
-            WebkitOverflowScrolling: 'touch'
+            flex: '1 1 auto',
+            overflowY: 'scroll',
+            overflowX: 'hidden',
+            minHeight: '0',
+            maxHeight: 'calc(90vh - 200px)'
           }}
         >
           {/* 基本信息 */}
@@ -161,12 +172,28 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
           <Separator />
           
-          {/* Add some extra space at the bottom for better scrolling */}
-          <div className="h-4"></div>
+          {/* Extra content for testing scroll */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-3">餐厅特色</h4>
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-muted-foreground">
+                  这里是一些额外的餐厅信息，用来测试滚动功能是否正常工作。
+                  如果你能看到这段文字，说明滚动已经正常工作了。
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Bottom padding for better scrolling */}
+          <div style={{ height: '60px' }}></div>
         </div>
 
-        {/* Footer - Fixed */}
-        <div className="border-t border-border p-6 flex-shrink-0">
+        {/* Fixed Footer */}
+        <div 
+          className="border-t border-border p-6 bg-background"
+          style={{ flexShrink: 0 }}
+        >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-muted-foreground">
               喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
