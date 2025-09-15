@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,14 @@ interface RestaurantDetailDialogProps {
 export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: RestaurantDetailDialogProps) {
   const navigate = useNavigate();
   
+  // Auto-scroll to top when dialog opens
+  useEffect(() => {
+    if (open) {
+      // Scroll to top of page to ensure dialog is visible
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [open]);
+  
   if (!restaurant) return null;
 
   const handleNavigation = () => {
@@ -54,7 +62,7 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[90vw] h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl w-[90vw] max-h-[85vh] flex flex-col p-0 fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
         <DialogHeader className="p-6 pb-4 border-b border-border flex-shrink-0">
           <DialogTitle className="flex items-center justify-between text-xl">
             <span>{restaurant.name}</span>
