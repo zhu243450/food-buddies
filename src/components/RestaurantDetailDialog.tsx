@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -31,15 +31,9 @@ interface RestaurantDetailDialogProps {
 
 export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: RestaurantDetailDialogProps) {
   const navigate = useNavigate();
-  const [dialogPosition, setDialogPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const dialogRef = useRef<HTMLDivElement>(null);
   
-  // Reset position when dialog opens
   useEffect(() => {
     if (open) {
-      setDialogPosition({ x: 0, y: 0 });
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -70,106 +64,11 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
     toast.success('正在跳转到创建饭局页面');
   };
 
-  // Touch and mouse event handlers for dragging
-  const handleStart = (clientX: number, clientY: number) => {
-    setIsDragging(true);
-    setDragStart({ x: clientX - dialogPosition.x, y: clientY - dialogPosition.y });
-  };
-
-  const handleMove = (clientX: number, clientY: number) => {
-    if (!isDragging) return;
-    
-    const newX = clientX - dragStart.x;
-    const newY = clientY - dragStart.y;
-    
-    // Limit movement to keep dialog visible
-    const maxY = window.innerHeight * 0.3;
-    const minY = -window.innerHeight * 0.2;
-    
-    setDialogPosition({
-      x: Math.max(-200, Math.min(200, newX)),
-      y: Math.max(minY, Math.min(maxY, newY))
-    });
-  };
-
-  const handleEnd = () => {
-    setIsDragging(false);
-  };
-
-  // Mouse events
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.dialog-content')) {
-      handleStart(e.clientX, e.clientY);
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    handleMove(e.clientX, e.clientY);
-  };
-
-  const handleMouseUp = () => {
-    handleEnd();
-  };
-
-  // Touch events
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      handleStart(touch.clientX, touch.clientY);
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 1 && isDragging) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      handleMove(touch.clientX, touch.clientY);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    handleEnd();
-  };
-
-  // Add global event listeners for mouse
-  useEffect(() => {
-    if (isDragging) {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
-        handleMove(e.clientX, e.clientY);
-      };
-      
-      const handleGlobalMouseUp = () => {
-        handleEnd();
-      };
-
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-
-      return () => {
-        document.removeEventListener('mousemove', handleGlobalMouseMove);
-        document.removeEventListener('mouseup', handleGlobalMouseUp);
-      };
-    }
-  }, [isDragging, dragStart, dialogPosition]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
-        ref={dialogRef}
-        className="max-w-4xl w-[95vw] max-h-[85vh] p-0 dialog-content"
-        style={{
-          transform: `translate(${dialogPosition.x}px, ${dialogPosition.y}px)`,
-          cursor: isDragging ? 'grabbing' : 'grab',
-          userSelect: isDragging ? 'none' : 'auto',
-          transition: isDragging ? 'none' : 'transform 0.2s ease'
-        }}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Header */}
-        <div className="p-6 pb-4 border-b border-border">
+      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-0">
+        {/* 固定标题 */}
+        <div className="p-6 pb-4 border-b border-border bg-background">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between text-xl">
               <span>{restaurant.name}</span>
@@ -184,7 +83,7 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
           </DialogHeader>
         </div>
         
-        {/* Content */}
+        {/* 可滚动内容区域 */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* 基本信息 */}
           <div className="flex flex-wrap gap-3">
@@ -250,31 +149,55 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
           </div>
 
           <Separator />
+          
+          {/* 测试内容 - 确保有足够内容可以滚动 */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-3">餐厅环境</h4>
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-muted-foreground mb-4">
+                  这家餐厅装修典雅，环境舒适，非常适合朋友聚会和商务宴请。
+                </p>
+                <p className="text-muted-foreground mb-4">
+                  服务态度好，菜品新鲜，价格合理，是当地人气很高的餐厅之一。
+                </p>
+                <p className="text-muted-foreground">
+                  建议提前预订，特别是周末和节假日期间。
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-foreground mb-3">营业信息</h4>
+            <Card>
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-medium">营业时间：</span>10:00 - 22:00</p>
+                  <p className="text-sm"><span className="font-medium">电话预订：</span>400-888-8888</p>
+                  <p className="text-sm"><span className="font-medium">人均消费：</span>{restaurant.price_range}</p>
+                  <p className="text-sm"><span className="font-medium">停车信息：</span>提供免费停车位</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* 底部间距 */}
+          <div className="pb-4"></div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border p-6">
+        {/* 固定底部按钮 */}
+        <div className="border-t border-border p-6 bg-background">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-muted-foreground">
               喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleNavigation} 
-                className="flex-1 sm:flex-none"
-                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-              >
+              <Button variant="outline" size="sm" onClick={handleNavigation} className="flex-1 sm:flex-none">
                 <Navigation className="h-4 w-4 mr-2" />
                 导航
               </Button>
-              <Button 
-                size="sm" 
-                onClick={handleCreateDinner} 
-                className="flex-1 sm:flex-none"
-                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-              >
+              <Button size="sm" onClick={handleCreateDinner} className="flex-1 sm:flex-none">
                 <Utensils className="h-4 w-4 mr-2" />
                 创建饭局
               </Button>
