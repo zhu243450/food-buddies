@@ -510,9 +510,10 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
                               )}
                             </div>
                          </>
-                        )}
-                   </div>
-                 </DialogHeader>
+                         )}
+                    </div>
+                  </div>
+                </DialogHeader>
 
                 {/* 照片信息和操作 */}
                 <div className="p-4 border-b flex-shrink-0">
