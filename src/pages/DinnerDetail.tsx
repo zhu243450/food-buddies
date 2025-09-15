@@ -377,7 +377,7 @@ const DinnerDetail = () => {
               <div className="p-4 rounded-lg bg-accent/10">
                 <h3 className="font-semibold mb-3 text-foreground">🍽️ {t('dinnerDetail.foodPreferences')}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {dinner.food_preferences.map((preference) => (
+                  {dinner.food_preferences.map((preference) => preference && (
                     <Badge 
                       key={preference} 
                       variant="secondary" 

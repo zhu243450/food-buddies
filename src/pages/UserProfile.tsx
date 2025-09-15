@@ -113,10 +113,13 @@ const UserProfile = () => {
         
         // 获取照片的点赞和评论数据
         if (photos.length > 0) {
-          await Promise.all([
-            fetchLikes(photos.map(p => p.id)),
-            fetchComments(photos.map(p => p.id))
-          ]);
+          const validPhotos = photos.filter(p => p && p.id);
+          if (validPhotos.length > 0) {
+            await Promise.all([
+              fetchLikes(validPhotos.map(p => p.id)),
+              fetchComments(validPhotos.map(p => p.id))
+            ]);
+          }
         }
       }
       

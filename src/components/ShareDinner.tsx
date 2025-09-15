@@ -178,22 +178,22 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
               )}
             </div>
           </div>
-          {dinner.food_preferences && dinner.food_preferences.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-3">
-              {dinner.food_preferences.slice(0, 3).map((preference) => (
-                <Badge 
-                  key={preference} 
-                  variant="secondary" 
-                  className="text-xs bg-primary/20 text-primary"
-                >
-                  {preference}
-                </Badge>
-              ))}
-              {dinner.food_preferences.length > 3 && (
-                <Badge variant="outline" className="text-xs">
-                  +{dinner.food_preferences.length - 3}
-                </Badge>
-              )}
+            {dinner.food_preferences && dinner.food_preferences.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3">
+                {dinner.food_preferences.slice(0, 3).map((preference) => preference && (
+                  <Badge 
+                    key={preference} 
+                    variant="secondary" 
+                    className="text-xs bg-primary/20 text-primary"
+                  >
+                    {preference}
+                  </Badge>
+                ))}
+                {dinner.food_preferences.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{dinner.food_preferences.length - 3}
+                  </Badge>
+                )}
             </div>
           )}
         </div>

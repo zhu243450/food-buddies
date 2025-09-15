@@ -71,10 +71,13 @@ const DinnerPhotoGallery = ({ dinnerId, currentUserId }: DinnerPhotoGalleryProps
       
       // 获取每张照片的点赞和评论
       if (photosData && photosData.length > 0) {
-        await Promise.all([
-          fetchLikes(photosData.map(p => p.id)),
-          fetchComments(photosData.map(p => p.id))
-        ]);
+        const validPhotos = photosData.filter(p => p && p.id);
+        if (validPhotos.length > 0) {
+          await Promise.all([
+            fetchLikes(validPhotos.map(p => p.id)),
+            fetchComments(validPhotos.map(p => p.id))
+          ]);
+        }
       }
     } catch (error) {
       console.error('Error fetching photos:', error);

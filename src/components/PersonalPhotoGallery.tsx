@@ -236,11 +236,14 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
 
   useEffect(() => {
     if (photos.length > 0) {
-      const photoIds = photos.map(p => p.id);
-      Promise.all([
-        fetchLikes(photoIds),
-        fetchComments(photoIds)
-      ]);
+      const validPhotos = photos.filter(p => p && p.id);
+      if (validPhotos.length > 0) {
+        const photoIds = validPhotos.map(p => p.id);
+        Promise.all([
+          fetchLikes(photoIds),
+          fetchComments(photoIds)
+        ]);
+      }
     }
   }, [photos]);
 
@@ -248,7 +251,9 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
   useEffect(() => {
     if (photos.length === 0) return;
 
-    const photoIds = photos.map(p => p.id);
+    const validPhotos = photos.filter(p => p && p.id);
+    if (validPhotos.length === 0) return;
+    const photoIds = validPhotos.map(p => p.id);
 
     const likesChannel = supabase
       .channel('personal-photo-likes-changes')
