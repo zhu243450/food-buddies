@@ -54,7 +54,15 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col p-0">
+      <DialogContent 
+        className="flex flex-col p-0" 
+        style={{
+          maxWidth: '48rem',
+          width: '95%',
+          maxHeight: '85vh',
+          overflowY: 'hidden'
+        }}
+      >
         <DialogHeader className="p-6 pb-4 border-b border-border flex-shrink-0">
           <DialogTitle className="flex items-center justify-between text-xl">
             <span>{restaurant.name}</span>
