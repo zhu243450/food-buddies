@@ -68,21 +68,25 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] overflow-hidden flex flex-col p-0 sm:rounded-lg">
-        <DialogHeader className="p-6 pb-4 border-b border-border flex-shrink-0">
-          <DialogTitle className="flex items-center justify-between text-xl">
-            <span>{restaurant.name}</span>
-            <div className="flex items-center gap-2 bg-gradient-primary text-primary-foreground px-3 py-1 rounded-full">
-              <Star className="h-4 w-4 fill-current" />
-              <span className="text-sm font-semibold">{restaurant.rating}</span>
-            </div>
-          </DialogTitle>
-          <DialogDescription>
-            查看餐厅详情，了解招牌菜品和就餐建议
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-4xl w-[95vw] h-[85vh] p-0 flex flex-col">
+        {/* Header - Fixed */}
+        <div className="p-6 pb-4 border-b border-border shrink-0">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between text-xl">
+              <span>{restaurant.name}</span>
+              <div className="flex items-center gap-2 bg-gradient-primary text-primary-foreground px-3 py-1 rounded-full">
+                <Star className="h-4 w-4 fill-current" />
+                <span className="text-sm font-semibold">{restaurant.rating}</span>
+              </div>
+            </DialogTitle>
+            <DialogDescription>
+              查看餐厅详情，了解招牌菜品和就餐建议
+            </DialogDescription>
+          </DialogHeader>
+        </div>
         
-        <div className="flex-1 overflow-y-scroll p-6 space-y-6" style={{ maxHeight: 'calc(85vh - 120px)' }}>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* 基本信息 */}
           <div className="flex flex-wrap gap-3">
             <Badge variant="secondary" className="text-sm px-3 py-1">
@@ -149,11 +153,13 @@ export function RestaurantDetailDialog({ restaurant, open, onOpenChange }: Resta
           </div>
 
           <Separator />
-
+          
+          {/* Add some extra space at the bottom for better scrolling */}
+          <div className="h-4"></div>
         </div>
 
-        {/* 操作按钮 - 固定在底部 */}
-        <div className="border-t border-border p-6 flex-shrink-0">
+        {/* Footer - Fixed */}
+        <div className="border-t border-border p-6 shrink-0">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-sm text-muted-foreground">
               喜欢这家餐厅？创建饭局邀请朋友一起品尝吧！
