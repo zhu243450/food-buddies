@@ -73,11 +73,17 @@ export function MediaViewer({
   const displayUrl = signedUrl || url;
 
   const handleDownload = async () => {
+    console.log('开始下载:', { filePath, bucketName, displayUrl });
+    
     if (!filePath) {
       // 如果无法提取filePath，尝试直接下载URL
       const fileName = `${mediaType}-${Date.now()}.${mediaType === 'image' ? 'jpg' : 'mp4'}`;
+      console.log('使用直接下载方式:', fileName);
       try {
         const response = await fetch(displayUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         const blob = await response.blob();
         const downloadUrl = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -87,16 +93,25 @@ export function MediaViewer({
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(downloadUrl);
+        console.log('直接下载完成:', fileName);
       } catch (error) {
         console.error('下载失败:', error);
+        alert('下载失败: ' + (error instanceof Error ? error.message : '未知错误'));
       }
       return;
     }
 
-    await downloadFile(filePath, {
-      bucketName,
-      fileName: `${mediaType}-${Date.now()}.${mediaType === 'image' ? 'jpg' : 'mp4'}`
-    });
+    console.log('使用Supabase下载方式:', filePath);
+    try {
+      await downloadFile(filePath, {
+        bucketName,
+        fileName: `${mediaType}-${Date.now()}.${mediaType === 'image' ? 'jpg' : 'mp4'}`
+      });
+      console.log('Supabase下载完成');
+    } catch (error) {
+      console.error('Supabase下载失败:', error);
+      alert('下载失败: ' + (error instanceof Error ? error.message : '未知错误'));
+    }
   };
 
   if (loading) {
