@@ -140,7 +140,7 @@ export function MediaViewer({
         <video
           src={displayUrl}
           controls
-          className="w-full h-full object-cover rounded"
+          className="w-full h-full object-contain rounded"
           preload="metadata"
         >
           您的浏览器不支持视频播放。
@@ -181,7 +181,7 @@ export function MediaViewer({
       <img
         src={displayUrl}
         alt={alt}
-        className="object-cover rounded w-full h-full"
+        className="object-contain rounded w-full h-full"
         loading="lazy"
       />
       
