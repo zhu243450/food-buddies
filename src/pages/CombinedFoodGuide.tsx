@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import Navigation from '@/components/Navigation';
@@ -15,6 +15,7 @@ import { FeaturedRestaurants } from '@/components/FoodGuide/FeaturedRestaurants'
 import { CuisineGuides } from '@/components/FoodGuide/CuisineGuides';
 import { RestaurantDetailDialog } from '@/components/RestaurantDetailDialog';
 import { OptimizedFoodGuideSkeleton } from '@/components/FoodGuide/OptimizedFoodGuideSkeleton';
+import ShareFoodGuide from '@/components/ShareFoodGuide';
 import { memoryCache } from '@/lib/performanceOptimizer';
 import { useQueryCache, requestDeduplicator } from '@/hooks/useQueryCache';
 
@@ -62,6 +63,7 @@ interface RegionInfo {
 export const CombinedFoodGuide: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
   const { user } = useAuth();
@@ -340,6 +342,20 @@ export const CombinedFoodGuide: React.FC = () => {
           user={user}
           onRegionChange={handleRegionChange}
         />
+        
+        {/* Share Button */}
+        {regionInfo && (
+          <div className="flex justify-end mb-6">
+            <ShareFoodGuide 
+              regionInfo={{
+                name: currentRegionName,
+                description: regionDescription,
+                path: regionInfo.path || []
+              }}
+              currentPath={location.pathname}
+            />
+          </div>
+        )}
 
         {/* Featured Restaurants */}
         {regionInfo?.featuredRestaurants && regionInfo.featuredRestaurants.length > 0 && (
