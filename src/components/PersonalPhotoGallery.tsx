@@ -4,7 +4,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, X, User, MoreHorizontal, Trash2, Camera } from "lucide-react";
+import { useDownload } from "@/hooks/useDownload";
+import { Heart, MessageCircle, Send, X, User, MoreHorizontal, Trash2, Camera, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from 'react-i18next';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -58,6 +59,7 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
   const [photoMenuOpen, setPhotoMenuOpen] = useState(false);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { downloadFile, downloading } = useDownload();
 
   // 获取点赞数据
   const fetchLikes = async (photoIds: string[]) => {
@@ -230,6 +232,28 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
         title: t('photoGallery.deleteFailed'),
         description: t('photoGallery.deleteFailedDesc'),
         variant: "destructive",
+      });
+    }
+  };
+
+  // 下载照片
+  const handleDownloadPhoto = async (photo: PersonalPhoto) => {
+    try {
+      // 从 photo_url 提取文件路径
+      const url = new URL(photo.photo_url);
+      const pathname = url.pathname;
+      const filePath = pathname.replace('/storage/v1/object/public/user-photos/', '');
+      
+      await downloadFile(filePath, {
+        bucketName: 'user-photos',
+        fileName: `photo-${Date.now()}.jpg`
+      });
+    } catch (error) {
+      console.error('下载照片失败:', error);
+      toast({
+        title: '下载失败',
+        description: '无法下载照片，请重试',
+        variant: 'destructive'
       });
     }
   };
@@ -460,23 +484,35 @@ const PersonalPhotoGallery = ({ photos, currentUserId, onPhotoDeleted }: Persona
                              className="fixed inset-0 z-40" 
                              onClick={() => setPhotoMenuOpen(false)}
                            />
-                           <div className="absolute top-full right-0 mt-1 bg-background border rounded-md shadow-lg z-50">
-                             <button
-                               className="flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent w-full text-left rounded-md"
-                               onClick={() => {
-                                 handleDeletePhoto(selectedPhoto);
-                                 setPhotoMenuOpen(false);
-                               }}
-                             >
-                               <Trash2 className="w-4 h-4 mr-2" />
-                               {t('photoGallery.deletePhoto')}
-                             </button>
-                           </div>
+                            <div className="absolute top-full right-0 mt-1 bg-background border rounded-md shadow-lg z-50">
+                              <button
+                                className="flex items-center px-3 py-2 text-sm hover:bg-accent w-full text-left rounded-t-md"
+                                onClick={() => {
+                                  handleDownloadPhoto(selectedPhoto);
+                                  setPhotoMenuOpen(false);
+                                }}
+                                disabled={downloading !== null}
+                              >
+                                <Download className="w-4 h-4 mr-2" />
+                                {downloading ? '下载中...' : t('photoGallery.downloadPhoto', '下载照片')}
+                              </button>
+                              {selectedPhoto.user_id === currentUserId && (
+                                <button
+                                  className="flex items-center px-3 py-2 text-sm text-destructive hover:bg-accent w-full text-left rounded-b-md"
+                                  onClick={() => {
+                                    handleDeletePhoto(selectedPhoto);
+                                    setPhotoMenuOpen(false);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  {t('photoGallery.deletePhoto')}
+                                </button>
+                              )}
+                            </div>
                          </>
-                       )}
-                     </div>
-                  </div>
-                </DialogHeader>
+                        )}
+                   </div>
+                 </DialogHeader>
 
                 {/* 照片信息和操作 */}
                 <div className="p-4 border-b flex-shrink-0">
