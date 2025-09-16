@@ -299,7 +299,15 @@ const ChatList = () => {
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative">
+                    <div 
+                      className="relative cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation(); // 阻止卡片的点击事件
+                        if (session.otherUser?.user_id) {
+                          navigate(`/user/${session.otherUser.user_id}`);
+                        }
+                      }}
+                    >
                       <Avatar className="w-12 h-12">
                         <AvatarImage 
                           src={session.otherUser?.avatar_url || ""} 

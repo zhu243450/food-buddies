@@ -319,19 +319,22 @@ const Chat = () => {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={otherUser.avatar_url || ""} alt={otherUser.nickname} />
-            <AvatarFallback className="text-sm bg-primary/10 text-primary">
-              {otherUser.nickname[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <CardTitle className="text-base">{otherUser.nickname}</CardTitle>
-            {isExpired && (
-              <Badge variant="destructive" className="text-xs mt-1">
-                {t('chat.expired')}
-              </Badge>
-            )}
+          <div className="flex items-center gap-3 flex-1 cursor-pointer hover:bg-accent/10 rounded-lg p-2 -ml-2 transition-colors"
+               onClick={() => navigate(`/user/${otherUser.user_id}`)}>
+            <Avatar className="w-10 h-10">
+              <AvatarImage src={otherUser.avatar_url || ""} alt={otherUser.nickname} />
+              <AvatarFallback className="text-sm bg-primary/10 text-primary">
+                {otherUser.nickname[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <CardTitle className="text-base hover:text-primary transition-colors">{otherUser.nickname}</CardTitle>
+              {isExpired && (
+                <Badge variant="destructive" className="text-xs mt-1">
+                  {t('chat.expired')}
+                </Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
       </Card>
