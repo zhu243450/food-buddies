@@ -443,7 +443,6 @@ const DinnerDetail = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <Button 
                       onClick={() => navigate("/auth")}
-                      className="bg-primary text-white hover:bg-primary/90"
                     >
                       {t('common.login')}
                     </Button>
@@ -463,7 +462,7 @@ const DinnerDetail = () => {
               <Button 
                 onClick={handleJoinDinner} 
                 disabled={joining}
-                className="w-full h-12 text-lg font-semibold bg-accent text-black hover:bg-accent/90 hover:text-black transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="w-full"
                 size="lg"
               >
                 {joining ? t('dinnerDetail.joining') : `🎉 ${t('dinnerDetail.joinDinner')}`}

@@ -118,7 +118,7 @@ export const RandomMatchButton = () => {
         onClick={handleRandomMatch}
         disabled={isMatching}
         size="lg"
-        className="relative overflow-hidden bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-lg hover:shadow-xl transition-all hover:scale-105 h-14 px-6"
+        className="relative overflow-hidden"
       >
         <div className={`flex items-center gap-2 ${isMatching ? 'animate-pulse' : ''}`}>
           <Shuffle className={`w-5 h-5 ${isMatching ? 'animate-spin' : ''}`} />
@@ -199,7 +199,7 @@ export const RandomMatchButton = () => {
                     setShowResult(false);
                     navigate(`/dinner/${matchedDinner.id}`);
                   }}
-                  className="w-full mt-6 bg-gradient-to-r from-primary to-accent"
+                  className="w-full mt-6"
                 >
                   {t('randomMatch.viewDetails', '查看详情')}
                 </Button>
@@ -216,7 +216,6 @@ export const RandomMatchButton = () => {
                   setShowResult(false);
                   navigate("/create-dinner");
                 }}
-                className="bg-gradient-to-r from-primary to-accent"
               >
                 {t('randomMatch.createOwn', '自己发起一个')}
               </Button>

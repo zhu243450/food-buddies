@@ -155,7 +155,7 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90 hover:text-black font-bold" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? `${t('auth.signIn')}...` : t('auth.signIn')}
                 </Button>
               </form>
@@ -205,7 +205,7 @@ const Auth = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-accent text-black hover:bg-accent/90 hover:text-black font-bold" 
+                  className="w-full" 
                   disabled={loading || !agreeToTerms}
                 >
                   {loading ? `${t('auth.signUp')}...` : t('auth.signUp')}

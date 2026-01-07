@@ -474,7 +474,8 @@ const CreateDinner = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 text-lg font-semibold bg-accent text-black hover:bg-accent/90 hover:text-black transition-all duration-300 shadow-lg hover:shadow-xl" 
+                className="w-full" 
+                size="lg"
                 disabled={loading || (restriction && !restriction.can_create_dinner)}
               >
                 {loading ? t('dinner.publishing') : 
