@@ -56,25 +56,25 @@ export const GuestBrowsePrompt = ({ show, onClose }: GuestBrowsePromptProps) => 
                 {t('guest.promptDesc', '登录后即可参加饭局，认识更多饭友')}
               </p>
               
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={() => navigate("/auth")}
-                  className="bg-gradient-to-r from-primary to-accent text-white hover:opacity-90"
-                >
-                  <LogIn className="w-4 h-4 mr-1" />
-                  {t('auth.signIn', '登录')}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => navigate("/auth")}
-                  className="border-primary/50 text-primary"
-                >
-                  <UserPlus className="w-4 h-4 mr-1" />
-                  {t('auth.signUp', '注册')}
-                </Button>
-              </div>
+               <div className="flex gap-2">
+                 <Button 
+                   size="sm" 
+                   onClick={() => navigate("/auth")}
+                   className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+                 >
+                   <LogIn className="w-4 h-4 mr-1" />
+                   {t('auth.signIn', '登录')}
+                 </Button>
+                 <Button 
+                   size="sm" 
+                   variant="outline"
+                   onClick={() => navigate("/auth")}
+                   className="border-primary/50 text-primary"
+                 >
+                   <UserPlus className="w-4 h-4 mr-1" />
+                   {t('auth.signUp', '注册')}
+                 </Button>
+               </div>
             </div>
           </div>
         </div>
