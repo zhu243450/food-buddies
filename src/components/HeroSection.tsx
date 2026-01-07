@@ -151,7 +151,7 @@ export const HeroSection = () => {
           <Button 
             size="lg"
             onClick={() => navigate("/auth")}
-            className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            className="w-full sm:w-auto h-14 px-8 text-lg font-bold bg-gradient-primary text-primary-foreground hover:opacity-90 transition-all shadow-lg hover:shadow-xl hover:scale-105"
           >
             <Sparkles className="w-5 h-5 mr-2" />
             {t('hero.startNow', '立即开始')}
