@@ -118,7 +118,7 @@ export const RandomMatchButton = () => {
         onClick={handleRandomMatch}
         disabled={isMatching}
         size="lg"
-        className="relative overflow-hidden bg-gradient-to-r from-primary via-secondary to-accent text-white hover:opacity-90 shadow-lg hover:shadow-xl transition-all hover:scale-105 h-14 px-6"
+        className="relative overflow-hidden bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-lg hover:shadow-xl transition-all hover:scale-105 h-14 px-6"
       >
         <div className={`flex items-center gap-2 ${isMatching ? 'animate-pulse' : ''}`}>
           <Shuffle className={`w-5 h-5 ${isMatching ? 'animate-spin' : ''}`} />

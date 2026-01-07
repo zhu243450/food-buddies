@@ -79,7 +79,7 @@ const Navigation = () => {
               disabled={isNavigating}
               className={
                 isSpecial 
-                  ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg scale-110 disabled:opacity-70" 
+                  ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-lg scale-110 disabled:opacity-70" 
                   : isActive 
                     ? "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-primary bg-primary/10 font-semibold disabled:opacity-70" 
                     : "flex flex-col items-center gap-1 h-auto py-2 px-3 rounded-xl transition-all duration-200 min-w-0 flex-1 max-w-[80px] text-foreground hover:text-primary hover:bg-primary/10 disabled:opacity-70"
