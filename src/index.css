@@ -16,47 +16,47 @@
     --popover: 280 30% 98%;
     --popover-foreground: 230 15% 15%;
 
-    /* 主色调：活力紫红渐变 */
-    --primary: 315 85% 55%;
+    /* 主色调：活力紫红渐变 - 加深确保对比度 */
+    --primary: 315 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* 次要色：明亮青蓝 */
-    --secondary: 195 80% 45%;
+    /* 次要色：明亮青蓝 - 加深 */
+    --secondary: 195 85% 35%;
     --secondary-foreground: 0 0% 100%;
 
     /* 静音色：浅紫灰 */
     --muted: 280 20% 92%;
     --muted-foreground: 230 25% 45%;
 
-    /* 强调色：霓虹橙 */
-    --accent: 25 95% 55%;
+    /* 强调色：霓虹橙 - 加深 */
+    --accent: 25 95% 45%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 55%;
+    --destructive: 0 84% 45%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 280 20% 85%;
     --input: 280 20% 90%;
-    --ring: 315 85% 55%;
+    --ring: 315 85% 45%;
 
     --radius: 1rem;
 
-    /* 性能优化的渐变和阴影 */
-    --gradient-primary: linear-gradient(135deg, hsl(315 85% 55%), hsl(25 95% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 80% 75%), hsl(280 70% 75%));
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 55%), hsl(315 85% 55%));
+    /* 性能优化的渐变和阴影 - 使用更深的颜色 */
+    --gradient-primary: linear-gradient(135deg, hsl(315 85% 45%), hsl(25 95% 45%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 85% 35%), hsl(280 70% 45%));
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 45%), hsl(315 85% 45%));
     
-    --shadow-glow: 0 0 30px hsl(315 85% 55% / 0.3);
-    --shadow-card: 0 10px 40px hsl(315 85% 55% / 0.1);
+    --shadow-glow: 0 0 30px hsl(315 85% 45% / 0.3);
+    --shadow-card: 0 10px 40px hsl(315 85% 45% / 0.1);
 
     --sidebar-background: 280 30% 98%;
     --sidebar-foreground: 230 15% 15%;
-    --sidebar-primary: 315 85% 55%;
+    --sidebar-primary: 315 85% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 280 20% 92%;
     --sidebar-accent-foreground: 230 15% 15%;
     --sidebar-border: 280 20% 85%;
-    --sidebar-ring: 315 85% 55%;
+    --sidebar-ring: 315 85% 45%;
   }
 
   .dark {
