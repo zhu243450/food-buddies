@@ -204,7 +204,7 @@ const DinnerMediaUploader = ({ dinnerId, onUploadSuccess, onPhotoUploaded }: Din
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white">
+        <Button className="w-full">
           <Camera className="w-4 h-4 mr-2" />
           {dinnerId ? '分享美食媒体' : '分享媒体'}
         </Button>

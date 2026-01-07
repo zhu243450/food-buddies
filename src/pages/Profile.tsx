@@ -480,10 +480,9 @@ const Profile = () => {
                   </Button>
                 )}
 
-                {/* 提交按钮 */}
                 <Button 
                   type="submit" 
-                  className="w-full h-11 bg-primary text-black hover:bg-primary/90 hover:text-black font-semibold rounded-lg shadow-md"
+                  className="w-full"
                   disabled={loading}
                 >
                   {loading ? (
