@@ -19,6 +19,8 @@ import { FastSkeletonCard } from "@/components/FastSkeletonCard";
 import { OptimizedMyDinnersCard } from "@/components/OptimizedMyDinnersCard";
 import { useOptimizedDinners } from "@/hooks/useOptimizedDinners";
 import { useAuth } from '@/contexts/AuthContext';
+import { RandomMatchButton } from "@/components/RandomMatchButton";
+import { GuestBrowsePrompt } from "@/components/GuestBrowsePrompt";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
@@ -151,12 +153,16 @@ const Discover = () => {
     setSearchParams(newParams);
   };
 
-  // Authentication check
+  // Guest mode check
+  const isGuestMode = searchParams.get('guest') === 'true';
+  const showGuestPrompt = !user && isGuestMode;
+
+  // Authentication check - allow guest browsing
   useEffect(() => {
-    if (!user) {
+    if (!user && !isGuestMode) {
       navigate("/auth");
     }
-  }, [user, navigate]);
+  }, [user, navigate, isGuestMode]);
 
   const handleJoinDinner = async (dinnerId: string) => {
     if (!user) {
@@ -434,10 +440,15 @@ const Discover = () => {
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
               {t('nav.dinners')}
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg mb-6">
               {t('dinner.description')}
             </p>
+            {/* 随机匹配按钮 */}
+            {user && <RandomMatchButton />}
           </div>
+          
+          {/* 游客提示 */}
+          <GuestBrowsePrompt show={showGuestPrompt} />
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
