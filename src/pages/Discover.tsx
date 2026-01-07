@@ -610,7 +610,11 @@ const Discover = () => {
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-2xl font-bold mb-2">{t('dinner.noDinners')}</h3>
                 <p className="text-muted-foreground mb-6">{t('dinner.noFilterResults')}</p>
-                <Button onClick={() => navigate('/create-dinner')}>
+                <Button
+                  onClick={() => navigate('/create-dinner')}
+                  size="lg"
+                  className="bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-lg hover:shadow-xl transition-all h-14 px-8"
+                >
                   {t('dinner.create')}
                 </Button>
               </div>
