@@ -452,22 +452,22 @@ const Discover = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-2 mb-8 h-14 p-1 bg-gradient-primary rounded-xl shadow-lg">
             <TabsTrigger 
               value="discover" 
-              className="flex items-center gap-2 text-lg font-semibold"
+              className="flex items-center gap-2 text-lg font-semibold h-full rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md text-primary-foreground transition-all"
             >
               <Search className="w-4 h-4" />
               {t('dinnerTabs.discover')}
             </TabsTrigger>
             <TabsTrigger 
               value="myDinners" 
-              className="flex items-center gap-2 text-lg font-semibold"
+              className="flex items-center gap-2 text-lg font-semibold h-full rounded-lg data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md text-primary-foreground transition-all"
             >
               <Users className="w-4 h-4" />
               {t('dinnerTabs.myDinners')}
               {(joinedDinners.length + createdDinners.length) > 0 && (
-                <span className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center">
+                <span className="bg-background text-primary px-2 py-1 rounded-full text-xs min-w-[20px] h-5 flex items-center justify-center font-bold">
                   {joinedDinners.length + createdDinners.length}
                 </span>
               )}
