@@ -1063,20 +1063,11 @@ export type Database = {
           restriction_reason: string
         }[]
       }
-      cleanup_all_expired_chats: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_resolved_report_data: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      delete_expired_chats: {
-        Args: { user_id_param: string }
-        Returns: number
-      }
+      cleanup_all_expired_chats: { Args: never; Returns: number }
+      cleanup_resolved_report_data: { Args: never; Returns: number }
+      delete_expired_chats: { Args: { user_id_param: string }; Returns: number }
       get_admin_cancellation_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           cancellation_rate: number
           late_cancellations: number
@@ -1084,7 +1075,7 @@ export type Database = {
         }[]
       }
       get_admin_dinner_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_dinners: number
           cancelled_dinners: number
@@ -1093,17 +1084,14 @@ export type Database = {
         }[]
       }
       get_admin_user_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_users: number
           new_users_this_month: number
           total_users: number
         }[]
       }
-      get_city_ancestor: {
-        Args: { _division_id: string }
-        Returns: string
-      }
+      get_city_ancestor: { Args: { _division_id: string }; Returns: string }
       get_division_descendants: {
         Args: { division_id_param: string }
         Returns: {
@@ -1137,14 +1125,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_user_banned: {
-        Args: { user_id_param: string }
-        Returns: boolean
-      }
-      make_user_admin: {
-        Args: { _user_email: string }
-        Returns: string
-      }
+      is_user_banned: { Args: { user_id_param: string }; Returns: boolean }
+      make_user_admin: { Args: { _user_email: string }; Returns: string }
       manage_user_permissions: {
         Args: {
           action: string
