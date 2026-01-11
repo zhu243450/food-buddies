@@ -1,25 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
+import { Gift, X } from 'lucide-react';
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
+
+  // 从URL获取邀请码
+  useEffect(() => {
+    const urlInviteCode = searchParams.get('invite');
+    if (urlInviteCode) {
+      setInviteCode(urlInviteCode);
+    }
+  }, [searchParams]);
 
   // 如果用户已登录，不显示认证页面
   if (user) {
@@ -43,11 +55,14 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            invite_code: inviteCode || undefined
+          }
         }
       });
 
@@ -75,10 +90,39 @@ const Auth = () => {
           });
         }
       } else {
-        toast({
-          title: t('auth.signUpSuccess'),
-          description: t('auth.checkEmailConfirmation'),
-        });
+        // 如果有邀请码，处理邀请注册
+        if (inviteCode && data.user) {
+          try {
+            const { data: inviteResult } = await supabase.rpc('process_invite_registration', {
+              invitee_user_id: data.user.id,
+              used_invite_code: inviteCode
+            });
+            
+            if (inviteResult?.success) {
+              toast({
+                title: i18n.language === 'zh' ? '注册成功！' : 'Sign up successful!',
+                description: i18n.language === 'zh' 
+                  ? `恭喜获得 ${inviteResult.invitee_reward} 积分奖励！请检查邮箱确认注册。`
+                  : `Congratulations! You earned ${inviteResult.invitee_reward} bonus points! Please check your email.`,
+              });
+            } else {
+              toast({
+                title: t('auth.signUpSuccess'),
+                description: t('auth.checkEmailConfirmation'),
+              });
+            }
+          } catch {
+            toast({
+              title: t('auth.signUpSuccess'),
+              description: t('auth.checkEmailConfirmation'),
+            });
+          }
+        } else {
+          toast({
+            title: t('auth.signUpSuccess'),
+            description: t('auth.checkEmailConfirmation'),
+          });
+        }
       }
     } catch (error: any) {
       toast({
@@ -163,6 +207,33 @@ const Auth = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                {/* 邀请码提示 */}
+                {inviteCode && (
+                  <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                    <Gift className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-primary">
+                        {i18n.language === 'zh' ? '使用邀请码注册' : 'Register with invite code'}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {i18n.language === 'zh' ? '注册成功后可获得50积分奖励！' : 'Get 50 bonus points after registration!'}
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="font-mono">
+                      {inviteCode}
+                    </Badge>
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6"
+                      onClick={() => setInviteCode('')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">{t('auth.email')}</Label>
                   <Input
@@ -184,6 +255,24 @@ const Auth = () => {
                     minLength={6}
                   />
                 </div>
+
+                {/* 邀请码输入框（如果没有从URL获取） */}
+                {!inviteCode && (
+                  <div className="space-y-2">
+                    <Label htmlFor="invite-code" className="text-muted-foreground">
+                      {i18n.language === 'zh' ? '邀请码（可选）' : 'Invite Code (optional)'}
+                    </Label>
+                    <Input
+                      id="invite-code"
+                      type="text"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                      placeholder={i18n.language === 'zh' ? '输入好友的邀请码' : 'Enter friend\'s invite code'}
+                      className="font-mono tracking-wider"
+                      maxLength={8}
+                    />
+                  </div>
+                )}
                 
                 <div className="flex items-start space-x-2">
                   <Checkbox 
