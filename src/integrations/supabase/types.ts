@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_color: string
+          category: string
+          created_at: string
+          description: string
+          description_en: string | null
+          display_order: number
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          name_en: string | null
+          points_reward: number
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          badge_color?: string
+          category: string
+          created_at?: string
+          description: string
+          description_en?: string | null
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          name_en?: string | null
+          points_reward?: number
+          requirement_type: string
+          requirement_value: number
+        }
+        Update: {
+          badge_color?: string
+          category?: string
+          created_at?: string
+          description?: string
+          description_en?: string | null
+          display_order?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_en?: string | null
+          points_reward?: number
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
       admin_access_logs: {
         Row: {
           access_type: string
@@ -583,6 +634,42 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_records: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          invite_code: string
+          invitee_id: string
+          invitee_rewarded: boolean
+          inviter_id: string
+          inviter_rewarded: boolean
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          invite_code: string
+          invitee_id: string
+          invitee_rewarded?: boolean
+          inviter_id: string
+          inviter_rewarded?: boolean
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          invite_code?: string
+          invitee_id?: string
+          invitee_rewarded?: boolean
+          inviter_id?: string
+          inviter_rewarded?: boolean
+          status?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           category: string
@@ -702,6 +789,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      point_transactions: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          points: number
+          related_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          points: number
+          related_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          points?: number
+          related_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -973,6 +1090,140 @@ export type Database = {
         }
         Relationships: []
       }
+      share_records: {
+        Row: {
+          click_count: number
+          created_at: string
+          id: string
+          platform: string | null
+          related_id: string | null
+          share_type: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          id?: string
+          platform?: string | null
+          related_id?: string | null
+          share_type: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          id?: string
+          platform?: string | null
+          related_id?: string | null
+          share_type?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          is_shared: boolean
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          is_shared?: boolean
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          is_shared?: boolean
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_invite_codes: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          is_active: boolean
+          successful_invites: number
+          total_invites: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code: string
+          is_active?: boolean
+          successful_invites?: number
+          total_invites?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_active?: boolean
+          successful_invites?: number
+          total_invites?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_rewards: {
+        Row: {
+          achievement_points: number
+          created_at: string
+          dinner_points: number
+          id: string
+          invite_points: number
+          level: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_points?: number
+          created_at?: string
+          dinner_points?: number
+          id?: string
+          invite_points?: number
+          level?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_points?: number
+          created_at?: string
+          dinner_points?: number
+          id?: string
+          invite_points?: number
+          level?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -1065,7 +1316,12 @@ export type Database = {
       }
       cleanup_all_expired_chats: { Args: never; Returns: number }
       cleanup_resolved_report_data: { Args: never; Returns: number }
+      create_user_invite_code: {
+        Args: { target_user_id: string }
+        Returns: string
+      }
       delete_expired_chats: { Args: { user_id_param: string }; Returns: number }
+      generate_invite_code: { Args: never; Returns: string }
       get_admin_cancellation_stats: {
         Args: never
         Returns: {
@@ -1112,6 +1368,17 @@ export type Database = {
           name: string
         }[]
       }
+      get_invite_leaderboard: {
+        Args: { limit_count?: number }
+        Returns: {
+          avatar_url: string
+          invite_count: number
+          nickname: string
+          rank: number
+          total_points: number
+          user_id: string
+        }[]
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: {
@@ -1138,6 +1405,10 @@ export type Database = {
           message: string
           success: boolean
         }[]
+      }
+      process_invite_registration: {
+        Args: { invitee_user_id: string; used_invite_code: string }
+        Returns: Json
       }
       reactivate_chat_session: {
         Args: { session_id_param: string }

@@ -32,6 +32,7 @@ const Feedback = lazy(() => import("./pages/Feedback"));
 const CampaignDetail = lazy(() => import("./pages/CampaignDetail").then(module => ({ default: module.CampaignDetail })));
 const CombinedFoodGuide = lazy(() => import("./pages/CombinedFoodGuide").then(module => ({ default: module.CombinedFoodGuide })));
 const FAQ = lazy(() => import("./pages/FAQ").then(module => ({ default: module.FAQ })));
+const GrowthCenter = lazy(() => import("./pages/GrowthCenter"));
 
 import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
@@ -175,6 +176,11 @@ const App = () => (
             <Route path="/faq" element={
               <Suspense fallback={<OptimizedLoader />}>
                 <FAQ />
+              </Suspense>
+            } />
+            <Route path="/growth" element={
+              <Suspense fallback={<OptimizedLoader />}>
+                <GrowthCenter />
               </Suspense>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

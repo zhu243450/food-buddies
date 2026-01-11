@@ -12,7 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import Navigation from "@/components/Navigation";
-import { User as UserIcon, Camera, Shield, LogOut } from "lucide-react";
+import { User as UserIcon, Camera, Shield, LogOut, Gift } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import DinnerMediaUploader from "@/components/DinnerPhotoUploader";
