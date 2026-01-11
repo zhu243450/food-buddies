@@ -12,12 +12,14 @@ import { useToast } from "@/hooks/use-toast";
 import { ChatMediaUploader } from "@/components/ChatMediaUploader";
 import { ChatMessage } from "@/components/ChatMessage";
 import { EvidenceImageViewer } from "@/components/EvidenceImageViewer";
+import { MultiImageUploader } from "@/components/chat/MultiImageUploader";
+import { LocationPicker, LocationData } from "@/components/chat/LocationPicker";
 import type { User } from '@supabase/supabase-js';
 import type { ChatSession, ChatMessage as ChatMessageType, Profile } from '@/types/database';
 
 interface MessageWithProfile extends ChatMessageType {
   sender?: Profile;
-  message_type: 'text' | 'image' | 'video'; // 明确定义消息类型
+  message_type: 'text' | 'image' | 'video' | 'location';
 }
 
 const Chat = () => {
@@ -103,7 +105,7 @@ const Chat = () => {
         // 合并消息和profile数据
         const messagesWithProfiles = messagesData?.map(message => ({
           ...message,
-          message_type: message.message_type as 'text' | 'image' | 'video',
+          message_type: message.message_type as 'text' | 'image' | 'video' | 'location',
           sender: profilesData?.find(profile => profile.user_id === message.sender_id) || null
         })) || [];
 
@@ -131,7 +133,7 @@ const Chat = () => {
     fetchChatData();
   }, [user, sessionId, navigate, toast, t]);
 
-  // 实时监听新消息
+  // 实时监听新消息和消息更新
   useEffect(() => {
     if (!sessionId) return;
 
@@ -157,7 +159,7 @@ const Chat = () => {
 
           const messageWithProfile: MessageWithProfile = {
             ...newMessage,
-            message_type: newMessage.message_type as 'text' | 'image' | 'video',
+            message_type: newMessage.message_type as 'text' | 'image' | 'video' | 'location',
             sender: senderProfile
           };
 
@@ -172,6 +174,23 @@ const Chat = () => {
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `session_id=eq.${sessionId}`
+        },
+        (payload) => {
+          const updatedMessage = payload.new as ChatMessageType;
+          setMessages(prev => prev.map(msg => 
+            msg.id === updatedMessage.id 
+              ? { ...msg, content: updatedMessage.content, message_type: updatedMessage.message_type as 'text' | 'image' | 'video' | 'location' }
+              : msg
+          ));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -184,7 +203,7 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (messageType: 'text' | 'image' | 'video' = 'text', content?: string) => {
+  const handleSendMessage = async (messageType: 'text' | 'image' | 'video' | 'location' = 'text', content?: string) => {
     const messageContent = content || newMessage.trim();
     if (!messageContent || !user || !sessionId) return;
 
@@ -197,9 +216,7 @@ const Chat = () => {
 
       if (banCheckError) {
         console.error('Ban check failed:', banCheckError);
-        // 如果检查失败，仍然允许发送（避免因为检查错误影响正常用户）
       } else if (banCheckResult === true) {
-        // 用户被禁言，阻止发送消息
         toast({
           title: "无法发送消息",
           description: "您的账户已被禁言，暂时无法发送消息。如有疑问请联系管理员。",
@@ -254,10 +271,8 @@ const Chat = () => {
 
   const handleSendMedia = () => {
     if (pendingMediaUrl && pendingMediaType) {
-      // 如果有文字说明，发送媒体和文字作为单独的消息
       if (newMessage.trim()) {
         handleSendMessage(pendingMediaType, pendingMediaUrl);
-        // 发送文字说明作为单独的消息
         setTimeout(() => {
           handleSendMessage('text', newMessage.trim());
         }, 100);
@@ -265,6 +280,28 @@ const Chat = () => {
         handleSendMessage(pendingMediaType, pendingMediaUrl);
       }
     }
+  };
+
+  // 处理多图发送
+  const handleMultiImagesUploaded = async (urls: string[]) => {
+    for (const url of urls) {
+      await handleSendMessage('image', url);
+    }
+  };
+
+  // 处理位置发送
+  const handleLocationSelect = (location: LocationData) => {
+    const locationContent = JSON.stringify(location);
+    handleSendMessage('location', locationContent);
+  };
+
+  // 处理消息撤回
+  const handleMessageRecall = (messageId: string) => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, content: '[消息已撤回]', message_type: 'text' as const }
+        : msg
+    ));
   };
 
   const { i18n } = useTranslation();
@@ -353,6 +390,7 @@ const Chat = () => {
               message={message}
               user={user}
               formatTime={formatTime}
+              onRecall={handleMessageRecall}
             />
           ))
         )}
@@ -381,7 +419,6 @@ const Chat = () => {
                           title: t('chat.reactivated'),
                           description: t('chat.reactivatedDesc'),
                         });
-                        // 重新获取会话数据
                         window.location.reload();
                       }
                     } catch (error: any) {
@@ -444,6 +481,15 @@ const Chat = () => {
                 <ChatMediaUploader
                   userId={user.id}
                   onMediaUploaded={handleMediaUploaded}
+                  disabled={sending}
+                />
+                <MultiImageUploader
+                  userId={user.id}
+                  onImagesUploaded={handleMultiImagesUploaded}
+                  disabled={sending}
+                />
+                <LocationPicker
+                  onLocationSelect={handleLocationSelect}
                   disabled={sending}
                 />
                 <Input
