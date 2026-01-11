@@ -73,6 +73,70 @@ export const CombinedFoodGuide: React.FC = () => {
   );
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
+  const [hasAutoLocated, setHasAutoLocated] = useState(false);
+
+  // Auto-locate user's current location on first load
+  useEffect(() => {
+    // Skip if URL already has divisionId or already auto-located
+    if (searchParams.get('divisionId') || hasAutoLocated) return;
+    
+    const autoLocateUser = async () => {
+      if (!navigator.geolocation) {
+        console.debug('Geolocation not supported');
+        return;
+      }
+
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 1000 * 60 * 30 // Cache for 30 minutes
+          });
+        });
+
+        const { latitude, longitude } = position.coords;
+        
+        // Use reverse geocoding to get city name
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=zh`
+        );
+        
+        if (!response.ok) throw new Error('Geocoding failed');
+        
+        const data = await response.json();
+        const address = data.address;
+        
+        // Try to match city or province from the geocoding result
+        const cityName = address.city || address.county || address.state;
+        
+        if (cityName) {
+          // Search for matching division in database
+          const { data: divisions, error } = await supabase
+            .from('administrative_divisions')
+            .select('id, name, level')
+            .or(`name.ilike.%${cityName}%,name.ilike.%${cityName.replace(/市|省|区|县/g, '')}%`)
+            .eq('is_active', true)
+            .order('level', { ascending: true })
+            .limit(1);
+
+          if (!error && divisions && divisions.length > 0) {
+            const matchedDivision = divisions[0];
+            console.debug('Auto-located to:', matchedDivision.name);
+            setSelectedDivisionId(matchedDivision.id);
+            navigate(`/food-guide?divisionId=${matchedDivision.id}`, { replace: true });
+          }
+        }
+      } catch (error) {
+        // Silently fail - user will see default Beijing
+        console.debug('Auto-location failed:', error);
+      } finally {
+        setHasAutoLocated(true);
+      }
+    };
+
+    autoLocateUser();
+  }, [searchParams, hasAutoLocated, navigate]);
   
   // Get translations for async functions
   const translations = useMemo(() => ({
