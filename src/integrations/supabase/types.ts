@@ -429,6 +429,71 @@ export type Database = {
         }
         Relationships: []
       }
+      coupons: {
+        Row: {
+          created_at: string
+          current_redemptions: number | null
+          description: string
+          description_en: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_redemptions: number | null
+          min_spend: number | null
+          name: string
+          name_en: string | null
+          points_required: number
+          restaurant_id: string | null
+          updated_at: string
+          valid_days: number
+        }
+        Insert: {
+          created_at?: string
+          current_redemptions?: number | null
+          description: string
+          description_en?: string | null
+          discount_type?: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_redemptions?: number | null
+          min_spend?: number | null
+          name: string
+          name_en?: string | null
+          points_required?: number
+          restaurant_id?: string | null
+          updated_at?: string
+          valid_days?: number
+        }
+        Update: {
+          created_at?: string
+          current_redemptions?: number | null
+          description?: string
+          description_en?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_redemptions?: number | null
+          min_spend?: number | null
+          name?: string
+          name_en?: string | null
+          points_required?: number
+          restaurant_id?: string | null
+          updated_at?: string
+          valid_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cuisine_guides: {
         Row: {
           characteristics: string[]
@@ -1155,6 +1220,47 @@ export type Database = {
           },
         ]
       }
+      user_coupons: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          redeemed_at: string
+          status: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          redeemed_at?: string
+          status?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          redeemed_at?: string
+          status?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_coupons_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_invite_codes: {
         Row: {
           created_at: string
@@ -1413,6 +1519,10 @@ export type Database = {
       reactivate_chat_session: {
         Args: { session_id_param: string }
         Returns: boolean
+      }
+      redeem_coupon: {
+        Args: { coupon_id_param: string; user_id_param: string }
+        Returns: Json
       }
       send_dinner_cancellation_notifications: {
         Args: {
