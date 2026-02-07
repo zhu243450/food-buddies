@@ -273,7 +273,7 @@ const Profile = () => {
         title: t('profile.saveSuccess'),
         description: t('profile.profileUpdated'),
       });
-      navigate("/my-dinners");
+      navigate("/discover?tab=myDinners");
     }
     
     setLoading(false);

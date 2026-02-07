@@ -659,7 +659,14 @@
     "cleanupDesc": "已删除 {{count}} 个过期聊天",
     "cleanupFailed": "清理失败",
     "noChats": "还没有聊天",
-    "noChatsDesc": "参与饭局后就可以和其他成员聊天了"
+    "noChatsDesc": "参与饭局后就可以和其他成员聊天了",
+    "bannedTitle": "无法发送消息",
+    "bannedDesc": "您的账户已被禁言，暂时无法发送消息。如有疑问请联系管理员。",
+    "messageRecalled": "[消息已撤回]",
+    "videoReady": "视频已准备发送",
+    "imageReady": "图片已准备发送",
+    "sendOrCancel": "点击发送按钮或选择取消",
+    "addCaptionOptional": "添加文字说明（可选）"
   },
   "campaign": {
     "types": {
@@ -790,7 +797,9 @@
         "label": "异性优先",
         "desc": "偏好异性饭友"
       }
-    }
+    },
+    "pastTimeError": "时间选择错误",
+    "pastTimeErrorDesc": "饭局时间不能是过去的时间，请选择一个将来的时间"
   },
   "mealTimes": {
     "breakfast": "早餐",

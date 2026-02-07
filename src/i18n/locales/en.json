@@ -310,7 +310,14 @@
     "deleteExpired": "Clean Expired Chats",
     "cleanupComplete": "Cleanup Complete",
     "cleanupDesc": "Deleted {{count}} expired chats",
-    "cleanupFailed": "Cleanup failed"
+    "cleanupFailed": "Cleanup failed",
+    "bannedTitle": "Cannot Send Messages",
+    "bannedDesc": "Your account has been suspended. You cannot send messages at this time. Please contact an admin for assistance.",
+    "messageRecalled": "[Message recalled]",
+    "videoReady": "Video ready to send",
+    "imageReady": "Image ready to send",
+    "sendOrCancel": "Click send or cancel",
+    "addCaptionOptional": "Add a caption (optional)"
   },
   "campaign": {
     "types": {
@@ -795,7 +802,9 @@
         "label": "Opposite Gender Preferred", 
         "desc": "Prefer opposite gender dining companions"
       }
-    }
+    },
+    "pastTimeError": "Invalid Time",
+    "pastTimeErrorDesc": "Dinner time cannot be in the past. Please select a future time."
   },
   "admin": {
     "dashboard": "Admin Dashboard",
