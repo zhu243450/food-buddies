@@ -43,6 +43,7 @@ const Discover = () => {
   const [joinedDinnerIds, setJoinedDinnerIds] = useState<string[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [creatorProfiles, setCreatorProfiles] = useState<Record<string, CreatorProfile>>({});
+  const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   // Search & filter state
@@ -80,12 +81,23 @@ const Discover = () => {
   }, [user, navigate, isGuestMode]);
 
   // Recommendation engine
-  const { matchScores, isReady: recommendationReady } = useRecommendation(user, allDinners);
+  const { matchScores, matchReasons, isReady: recommendationReady } = useRecommendation(user, allDinners);
 
   // Filtered dinners with search + mode + time filters + recommendation sorting
   const filteredDinners = useMemo(() => {
     let result = allDinners.filter(d => new Date(d.dinner_time) > new Date());
 
+    // Filter friends_only dinners: only show if user is creator or friend of creator
+    if (user) {
+      result = result.filter(d => {
+        if (!d.friends_only) return true;
+        if (d.created_by === user.id) return true;
+        return friendIds.has(d.created_by);
+      });
+    } else {
+      // Guests can't see friends_only dinners
+      result = result.filter(d => !d.friends_only);
+    }
     // Text search
     if (filters.searchQuery) {
       const q = filters.searchQuery.toLowerCase();
@@ -315,12 +327,30 @@ const Discover = () => {
       }
 
       if (user) {
-        const { data: joinedData, error: joinedError } = await supabase
-          .from("dinner_participants")
-          .select("dinner_id")
-          .eq("user_id", user.id);
-        if (!joinedError) {
-          setJoinedDinnerIds(joinedData?.map(item => item.dinner_id) || []);
+        // Fetch joined dinner IDs and friend IDs in parallel
+        const [joinedRes, friendsRes] = await Promise.all([
+          supabase
+            .from("dinner_participants")
+            .select("dinner_id")
+            .eq("user_id", user.id),
+          supabase
+            .from("friendships")
+            .select("requester_id, addressee_id")
+            .eq("status", "accepted")
+            .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+        ]);
+
+        if (!joinedRes.error) {
+          setJoinedDinnerIds(joinedRes.data?.map(item => item.dinner_id) || []);
+        }
+
+        if (!friendsRes.error && friendsRes.data) {
+          const fIds = new Set<string>();
+          friendsRes.data.forEach(f => {
+            if (f.requester_id === user.id) fIds.add(f.addressee_id);
+            else fIds.add(f.requester_id);
+          });
+          setFriendIds(fIds);
         }
       }
 
@@ -418,6 +448,7 @@ const Discover = () => {
                       hasExpired={hasExpired}
                       creatorProfile={creatorProfiles[dinner.created_by]}
                       matchScore={user ? matchScores[dinner.id] : undefined}
+                      matchReasons={user ? matchReasons[dinner.id] : undefined}
                       onJoin={handleJoinDinner}
                       onLeave={handleLeaveDinner}
                       onClick={() => navigate(`/dinner/${dinner.id}`)}

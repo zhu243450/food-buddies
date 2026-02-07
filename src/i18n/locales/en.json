@@ -209,6 +209,8 @@
     "full": "Full",
     "foodPreferences": "Food Preferences",
     "friendsOnly": "Friends only",
+    "friendsOnlyRestricted": "Friends only",
+    "friendsOnlyDesc": "This dinner is only open to the host's friends. Please add them as a friend first.",
     "participants": "Participants",
     "joining": "Joining...",
     "joinDinner": "Join Dinner",
@@ -1054,6 +1056,20 @@
   "recommend": {
     "match": "Match",
     "forYou": "Recommended for You",
-    "basedOnPreferences": "Based on your dining preferences and history"
+    "basedOnPreferences": "Based on your dining preferences and history",
+    "because": "You like"
+  },
+  "review": {
+    "title": "Post-Dinner Review",
+    "ratePrompt": "Rate your dining companions!",
+    "rating": "Rating",
+    "commentPlaceholder": "Write something (optional)...",
+    "submit": "Submit Review",
+    "submitted": "Review submitted",
+    "submitFailed": "Submission failed",
+    "alreadyReviewed": "Already reviewed this user",
+    "myReviews": "My Reviews",
+    "otherReviews": "Other Reviews",
+    "noReviews": "No reviews yet"
   }
 }

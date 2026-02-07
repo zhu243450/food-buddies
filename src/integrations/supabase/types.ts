@@ -639,6 +639,47 @@ export type Database = {
           },
         ]
       }
+      dinner_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          dinner_id: string
+          id: string
+          rating: number
+          reviewed_user_id: string
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          dinner_id: string
+          id?: string
+          rating: number
+          reviewed_user_id: string
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          dinner_id?: string
+          id?: string
+          rating?: number
+          reviewed_user_id?: string
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dinner_reviews_dinner_id_fkey"
+            columns: ["dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dinners: {
         Row: {
           created_at: string

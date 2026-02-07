@@ -208,6 +208,8 @@
     "full": "已满员",
     "foodPreferences": "饮食偏好",
     "friendsOnly": "仅限熟人参与",
+    "friendsOnlyRestricted": "仅限好友参与",
+    "friendsOnlyDesc": "该饭局仅限发起人的好友加入，请先添加好友",
     "participants": "参与者",
     "joining": "加入中...",
     "joinDinner": "加入饭局",
@@ -1063,6 +1065,20 @@
   "recommend": {
     "match": "匹配",
     "forYou": "为你推荐",
-    "basedOnPreferences": "根据你的饮食偏好和历史记录推荐"
+    "basedOnPreferences": "根据你的饮食偏好和历史记录推荐",
+    "because": "因为你喜欢"
+  },
+  "review": {
+    "title": "饭后评价",
+    "ratePrompt": "为饭友打个分吧！",
+    "rating": "评分",
+    "commentPlaceholder": "写点什么吧（选填）...",
+    "submit": "提交评价",
+    "submitted": "评价已提交",
+    "submitFailed": "提交失败",
+    "alreadyReviewed": "已评价过该用户",
+    "myReviews": "我的评价",
+    "otherReviews": "其他评价",
+    "noReviews": "暂无评价"
   }
 }
