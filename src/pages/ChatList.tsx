@@ -147,6 +147,60 @@ const ChatList = () => {
     fetchChatSessions();
   }, [user]);
 
+  // 增量刷新聊天会话数据（不整页刷新）
+  const refreshChatSessions = async () => {
+    if (!user) return;
+    try {
+      const { data: sessions, error: sessionsError } = await supabase
+        .from("chat_sessions")
+        .select("*")
+        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+        .order("updated_at", { ascending: false });
+
+      if (sessionsError) throw sessionsError;
+
+      const sessionsWithData = await Promise.all(
+        (sessions || []).map(async (session) => {
+          const otherUserId = session.participant1_id === user.id 
+            ? session.participant2_id 
+            : session.participant1_id;
+
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", otherUserId)
+            .single();
+
+          const { data: lastMessage } = await supabase
+            .from("chat_messages")
+            .select("content, created_at, sender_id")
+            .eq("session_id", session.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          const { count: unreadCount } = await supabase
+            .from("chat_messages")
+            .select("*", { count: "exact", head: true })
+            .eq("session_id", session.id)
+            .neq("sender_id", user.id)
+            .eq("is_read", false);
+
+          return {
+            ...session,
+            otherUser: profile,
+            lastMessage,
+            unreadCount: unreadCount || 0
+          };
+        })
+      );
+
+      setChatSessions(sessionsWithData);
+    } catch (error) {
+      console.error("Failed to refresh chat sessions:", error);
+    }
+  };
+
   // 实时监听新消息和会话更新
   useEffect(() => {
     if (!user) return;
@@ -161,8 +215,8 @@ const ChatList = () => {
           table: 'chat_messages'
         },
         () => {
-          // 重新获取聊天会话数据
-          window.location.reload();
+          // 增量刷新，不整页刷新
+          refreshChatSessions();
         }
       )
       .subscribe();
@@ -235,8 +289,8 @@ const ChatList = () => {
                   description: t('chat.cleanupDesc', { count: data || 0 }),
                 });
                 
-                // 重新加载页面以刷新聊天列表
-                window.location.reload();
+                // 增量刷新聊天列表
+                refreshChatSessions();
               } catch (error: any) {
                 toast({
                   title: t('chat.cleanupFailed'),
