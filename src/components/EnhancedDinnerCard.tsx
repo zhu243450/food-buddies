@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, MapPin, Users, Zap, Clock, Users2, Lock } from "lucide-react";
+import { CalendarDays, MapPin, Users, Zap, Clock, Users2, Lock, Sparkles } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import type { Dinner } from '@/types/database';
 
@@ -32,6 +32,7 @@ interface EnhancedDinnerCardProps {
   isFull: boolean;
   hasExpired: boolean;
   creatorProfile?: CreatorProfile | null;
+  matchScore?: number;
   onJoin: (dinnerId: string) => void;
   onLeave: (dinnerId: string) => void;
   onClick: () => void;
@@ -67,15 +68,23 @@ const getModeConfig = (mode: string | undefined) => {
   }
 };
 
+const getMatchScoreConfig = (score: number | undefined) => {
+  if (score === undefined || score <= 0) return null;
+  if (score >= 70) return { emoji: '🔥', colorClass: 'bg-destructive/10 text-destructive border-destructive/30', label: 'excellent' };
+  if (score >= 40) return { emoji: '✨', colorClass: 'bg-accent/10 text-accent border-accent/30', label: 'good' };
+  return { emoji: '💡', colorClass: 'bg-muted text-muted-foreground border-border', label: 'fair' };
+};
+
 export const EnhancedDinnerCard = memo<EnhancedDinnerCardProps>(({
   dinner, participantCount, isJoined, isCreator, isFull, hasExpired,
-  creatorProfile, onJoin, onLeave, onClick, userId
+  creatorProfile, matchScore, onJoin, onLeave, onClick, userId
 }) => {
   const { t } = useTranslation();
   const timeInfo = getTimeLabel(dinner.dinner_time, t);
   const modeConfig = getModeConfig(dinner.dinner_mode);
   const fillPercent = Math.min((participantCount / dinner.max_participants) * 100, 100);
   const primaryFood = dinner.food_preferences?.[0];
+  const scoreConfig = getMatchScoreConfig(matchScore);
 
   const handleJoinClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -93,8 +102,18 @@ export const EnhancedDinnerCard = memo<EnhancedDinnerCardProps>(({
       className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border/60 hover:border-primary/40"
       onClick={onClick}
     >
-      {/* Top accent bar */}
-      <div className="h-1 w-full bg-gradient-primary" />
+      {/* Top accent bar - enhanced for high match */}
+      <div className={`h-1 w-full ${scoreConfig && matchScore && matchScore >= 70 ? 'bg-gradient-to-r from-destructive via-accent to-primary' : 'bg-gradient-primary'}`} />
+
+      {/* Match score badge */}
+      {scoreConfig && matchScore && matchScore > 0 && (
+        <div className="absolute top-3 right-3 z-10">
+          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border backdrop-blur-sm ${scoreConfig.colorClass}`}>
+            <Sparkles className="w-3 h-3" />
+            {t('recommend.match', '匹配')} {matchScore}%
+          </div>
+        </div>
+      )}
 
       <CardContent className="p-4 space-y-3">
         {/* Row 1: Mode + Time + Status badges */}

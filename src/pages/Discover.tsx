@@ -20,6 +20,7 @@ import { GuestBrowsePrompt } from "@/components/GuestBrowsePrompt";
 import { useToast } from "@/hooks/use-toast";
 import { EnhancedDinnerCard } from "@/components/EnhancedDinnerCard";
 import { DinnerSearchFilter } from "@/components/DinnerSearchFilter";
+import { useRecommendation } from "@/hooks/useRecommendation";
 import type { Dinner } from '@/types/database';
 
 interface CreatorProfile {
@@ -78,7 +79,10 @@ const Discover = () => {
     }
   }, [user, navigate, isGuestMode]);
 
-  // Filtered dinners with search + mode + time filters
+  // Recommendation engine
+  const { matchScores, isReady: recommendationReady } = useRecommendation(user, allDinners);
+
+  // Filtered dinners with search + mode + time filters + recommendation sorting
   const filteredDinners = useMemo(() => {
     let result = allDinners.filter(d => new Date(d.dinner_time) > new Date());
 
@@ -107,11 +111,6 @@ const Discover = () => {
       
       switch (filters.timeRange) {
         case 'today':
-          result = result.filter(d => {
-            const t = new Date(d.dinner_time);
-            return t >= now && t < tomorrow;
-          });
-          // Actually today means from now to end of today
           result = result.filter(d => {
             const t = new Date(d.dinner_time);
             return t >= now && t < new Date(today.getTime() + 24 * 60 * 60 * 1000);
@@ -147,8 +146,18 @@ const Discover = () => {
       }
     }
 
+    // Sort by match score (descending) when user is logged in, then by time
+    if (user && Object.keys(matchScores).length > 0) {
+      result.sort((a, b) => {
+        const scoreA = matchScores[a.id] || 0;
+        const scoreB = matchScores[b.id] || 0;
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return new Date(a.dinner_time).getTime() - new Date(b.dinner_time).getTime();
+      });
+    }
+
     return result;
-  }, [allDinners, filters]);
+  }, [allDinners, filters, matchScores, user]);
 
   const handleJoinDinner = async (dinnerId: string) => {
     if (!user) {
@@ -408,6 +417,7 @@ const Discover = () => {
                       isFull={isFull}
                       hasExpired={hasExpired}
                       creatorProfile={creatorProfiles[dinner.created_by]}
+                      matchScore={user ? matchScores[dinner.id] : undefined}
                       onJoin={handleJoinDinner}
                       onLeave={handleLeaveDinner}
                       onClick={() => navigate(`/dinner/${dinner.id}`)}

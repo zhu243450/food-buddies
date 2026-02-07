@@ -1050,5 +1050,10 @@
     "removed": "Friend removed",
     "removeFailed": "Operation failed",
     "noFriends": "No friends yet, go discover and find dining buddies!"
+  },
+  "recommend": {
+    "match": "Match",
+    "forYou": "Recommended for You",
+    "basedOnPreferences": "Based on your dining preferences and history"
   }
 }
