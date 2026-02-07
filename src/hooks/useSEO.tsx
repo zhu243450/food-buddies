@@ -6,7 +6,7 @@ export const useSEO = () => {
   const location = useLocation();
   
   const getPageSEO = (pageType: string, data?: any) => {
-    const baseUrl = window.location.origin;
+    const baseUrl = 'https://food-buddies.lovable.app';
     const currentUrl = `${baseUrl}${location.pathname}`;
     
     switch (pageType) {

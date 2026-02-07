@@ -15,7 +15,7 @@ export const SEO = ({
   title,
   description,
   keywords,
-  image = "https://lovable.dev/opengraph-image-p98pqg.png",
+  image = "https://food-buddies.lovable.app/og-image.jpg",
   url,
   type = 'website',
   structuredData
@@ -23,21 +23,20 @@ export const SEO = ({
   const { t, i18n } = useTranslation();
   
   const siteTitle = t('common.appName', '饭约社');
+  const siteTitleEn = 'DineMate';
   const defaultDescription = t('common.appDescription', '饭约社是一款社交拼饭应用，帮助你找到志趣相投的饭友，一起享受美食时光。支持闪约、预约、团饭等多种模式。');
-  const defaultKeywords = t('common.keywords', '饭约社,拼饭,美食,社交,饭友,聚餐,约饭,找饭友');
+  const defaultKeywords = t('common.keywords', '饭约社,拼饭,美食,社交,饭友,聚餐,约饭,找饭友,DineMate,social dining,food buddy,group meals');
   
-  const fullTitle = title ? `${title} - ${siteTitle}` : siteTitle;
+  const fullTitle = title ? `${title} - ${siteTitle}` : `${siteTitle} | ${siteTitleEn}`;
   const metaDescription = description || defaultDescription;
   const metaKeywords = keywords || defaultKeywords;
   
-  // 生成清洁的规范URL，移除查询参数和片段
   const getCanonicalUrl = () => {
     if (url) return url;
     
-    const baseUrl = 'https://dinemate.xyz';
+    const baseUrl = 'https://food-buddies.lovable.app';
     const pathname = window.location.pathname;
     
-    // 处理特殊路由映射
     if (pathname === '/my-dinners') {
       return `${baseUrl}/discover`;
     }
@@ -47,12 +46,14 @@ export const SEO = ({
   
   const canonicalUrl = getCanonicalUrl();
   
-  // 生成语言特定的URL
   const getLocalizedUrl = (lang: string) => {
-    const baseUrl = canonicalUrl;
-    // 根据需要可以添加语言路径前缀
-    return baseUrl;
+    return canonicalUrl;
   };
+
+  // English description for international social media
+  const socialDescription = i18n.language === 'zh' 
+    ? metaDescription 
+    : 'Find your perfect dining buddy! A social dining app to join group meals, explore cuisines, and make friends over food. 🍜';
   
   return (
     <Helmet>
@@ -60,7 +61,7 @@ export const SEO = ({
       <title>{fullTitle}</title>
       <meta name="description" content={metaDescription} />
       <meta name="keywords" content={metaKeywords} />
-      <meta name="author" content="饭约社团队" />
+      <meta name="author" content="饭约社团队 DineMate Team" />
       <link rel="canonical" href={canonicalUrl} />
 
       {/* Hreflang alternates */}
@@ -71,23 +72,26 @@ export const SEO = ({
       {/* Language */}
       <html lang={i18n.language === 'zh' ? 'zh-CN' : 'en-US'} />
       
-      {/* Open Graph */}
+      {/* Open Graph - Facebook, Instagram, LinkedIn */}
       <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={metaDescription} />
+      <meta property="og:description" content={socialDescription} />
       <meta property="og:type" content={type} />
       <meta property="og:image" content={image} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="640" />
+      <meta property="og:image:alt" content="饭约社 DineMate - Social Dining App" />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:site_name" content={siteTitle} />
+      <meta property="og:site_name" content={`${siteTitle} | ${siteTitleEn}`} />
       <meta property="og:locale" content={i18n.language === 'zh' ? 'zh_CN' : 'en_US'} />
       <meta property="og:locale:alternate" content="en_US" />
       <meta property="og:locale:alternate" content="zh_CN" />
       
-      {/* Twitter Card */}
+      {/* Twitter/X Card */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content="@lovable_dev" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={metaDescription} />
+      <meta name="twitter:title" content={`${siteTitle} | ${siteTitleEn}`} />
+      <meta name="twitter:description" content="Find your perfect dining buddy! Join group meals, explore cuisines & make friends over food 🍜" />
       <meta name="twitter:image" content={image} />
+      <meta name="twitter:image:alt" content="DineMate - Social Dining App" />
       
       {/* Mobile */}
       <meta name="theme-color" content="#e91e63" />
