@@ -1033,5 +1033,14 @@
     "cityGuide": "城市指南",
     "admin": "管理后台",
     "logout": "退出登录"
+  },
+  "discover": {
+    "searchPlaceholder": "搜索饭局标题、地点..."
+  },
+  "myDinners": {
+    "joined": "参与的饭局",
+    "created": "创建的饭局",
+    "empty": "还没有饭局",
+    "emptyDesc": "创建你的第一个饭局或者浏览其他饭局加入吧！"
   }
 }
