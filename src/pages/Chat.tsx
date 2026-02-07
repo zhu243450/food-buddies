@@ -138,7 +138,7 @@ const Chat = () => {
     if (!sessionId) return;
 
     const channel = supabase
-      .channel('chat_messages')
+      .channel(`chat:${sessionId}`)
       .on(
         'postgres_changes',
         {
@@ -164,8 +164,24 @@ const Chat = () => {
           };
 
           setMessages(prev => {
-            // 防止与乐观更新重复
+            // 如果 Realtime 推送的消息 ID 已存在，跳过
             if (prev.some(m => m.id === messageWithProfile.id)) return prev;
+            
+            // 如果是自己发的消息，替换乐观消息（匹配 content + sender_id + message_type）
+            if (newMessage.sender_id === user?.id) {
+              const optimisticIndex = prev.findIndex(m => 
+                m.sender_id === newMessage.sender_id && 
+                m.content === newMessage.content && 
+                m.message_type === (newMessage.message_type as string) &&
+                !prev.some(existing => existing.id === newMessage.id)
+              );
+              if (optimisticIndex !== -1) {
+                const updated = [...prev];
+                updated[optimisticIndex] = messageWithProfile;
+                return updated;
+              }
+            }
+            
             return [...prev, messageWithProfile];
           });
 
@@ -230,31 +246,35 @@ const Chat = () => {
         return;
       }
 
-      const { data: insertedMessage, error } = await supabase
+      // 先构建乐观消息，确保即使 Realtime 失败也能显示
+      const optimisticId = crypto.randomUUID();
+      const optimisticMessage: MessageWithProfile = {
+        id: optimisticId,
+        session_id: sessionId,
+        sender_id: user.id,
+        content: messageContent,
+        message_type: messageType,
+        is_read: false,
+        created_at: new Date().toISOString(),
+        sender: null,
+      };
+
+      // 立即在 UI 中显示消息
+      setMessages(prev => [...prev, optimisticMessage]);
+
+      const { error } = await supabase
         .from("chat_messages")
         .insert({
           session_id: sessionId,
           sender_id: user.id,
           content: messageContent,
           message_type: messageType
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // 乐观更新：立即将消息添加到本地状态，不依赖 Realtime
-      if (insertedMessage) {
-        const optimisticMessage: MessageWithProfile = {
-          ...insertedMessage,
-          message_type: insertedMessage.message_type as 'text' | 'image' | 'video' | 'location',
-          sender: null // 自己发的消息，sender 信息非关键
-        };
-        setMessages(prev => {
-          // 防止重复（Realtime 可能也会推送）
-          if (prev.some(m => m.id === insertedMessage.id)) return prev;
-          return [...prev, optimisticMessage];
         });
+
+      if (error) {
+        // 插入失败，移除乐观消息
+        setMessages(prev => prev.filter(m => m.id !== optimisticId));
+        throw error;
       }
       
       if (messageType === 'text') {
