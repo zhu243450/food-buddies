@@ -163,7 +163,11 @@ const Chat = () => {
             sender: senderProfile
           };
 
-          setMessages(prev => [...prev, messageWithProfile]);
+          setMessages(prev => {
+            // 防止与乐观更新重复
+            if (prev.some(m => m.id === messageWithProfile.id)) return prev;
+            return [...prev, messageWithProfile];
+          });
 
           // 如果不是自己发的消息，标记为已读
           if (newMessage.sender_id !== user?.id) {
@@ -226,16 +230,32 @@ const Chat = () => {
         return;
       }
 
-      const { error } = await supabase
+      const { data: insertedMessage, error } = await supabase
         .from("chat_messages")
         .insert({
           session_id: sessionId,
           sender_id: user.id,
           content: messageContent,
           message_type: messageType
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // 乐观更新：立即将消息添加到本地状态，不依赖 Realtime
+      if (insertedMessage) {
+        const optimisticMessage: MessageWithProfile = {
+          ...insertedMessage,
+          message_type: insertedMessage.message_type as 'text' | 'image' | 'video' | 'location',
+          sender: null // 自己发的消息，sender 信息非关键
+        };
+        setMessages(prev => {
+          // 防止重复（Realtime 可能也会推送）
+          if (prev.some(m => m.id === insertedMessage.id)) return prev;
+          return [...prev, optimisticMessage];
+        });
+      }
       
       if (messageType === 'text') {
         setNewMessage("");
