@@ -1059,5 +1059,10 @@
     "removed": "已删除好友",
     "removeFailed": "操作失败",
     "noFriends": "还没有好友，去发现页找饭友吧！"
+  },
+  "recommend": {
+    "match": "匹配",
+    "forYou": "为你推荐",
+    "basedOnPreferences": "根据你的饮食偏好和历史记录推荐"
   }
 }
