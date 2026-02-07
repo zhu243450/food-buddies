@@ -18,18 +18,18 @@ const Notifications = () => {
 
   const getNotificationIcon = (type: string, category: string) => {
     if (category === 'dinner_cancelled') {
-      return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+      return <AlertTriangle className="w-5 h-5 text-warning" />;
     }
     
     switch (type) {
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       case 'error':
-        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+        return <AlertTriangle className="w-5 h-5 text-destructive" />;
       case 'success':
-        return <Check className="w-5 h-5 text-green-500" />;
+        return <Check className="w-5 h-5 text-success" />;
       default:
-        return <Info className="w-5 h-5 text-blue-500" />;
+        return <Info className="w-5 h-5 text-info" />;
     }
   };
 

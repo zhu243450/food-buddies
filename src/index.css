@@ -49,6 +49,14 @@
     --shadow-glow: 0 0 30px hsl(315 85% 45% / 0.3);
     --shadow-card: 0 10px 40px hsl(315 85% 45% / 0.1);
 
+    /* 状态语义色 */
+    --warning: 35 95% 50%;
+    --warning-foreground: 0 0% 100%;
+    --success: 142 70% 38%;
+    --success-foreground: 0 0% 100%;
+    --info: 210 80% 50%;
+    --info-foreground: 0 0% 100%;
+
     --sidebar-background: 280 30% 98%;
     --sidebar-foreground: 230 15% 15%;
     --sidebar-primary: 315 85% 45%;
@@ -100,6 +108,14 @@
     
     --shadow-glow: 0 0 40px hsl(315 100% 65% / 0.4);
     --shadow-card: 0 10px 40px hsl(315 100% 65% / 0.2);
+
+    /* 状态语义色 - 暗色模式 */
+    --warning: 35 100% 55%;
+    --warning-foreground: 0 0% 5%;
+    --success: 142 70% 50%;
+    --success-foreground: 0 0% 5%;
+    --info: 210 80% 60%;
+    --info-foreground: 0 0% 5%;
 
     --sidebar-background: 230 40% 8%;
     --sidebar-foreground: 0 0% 95%;
