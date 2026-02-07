@@ -12,29 +12,20 @@ interface UserProfile {
   location_longitude: number | null;
 }
 
+export interface MatchReason {
+  type: 'food' | 'history' | 'location' | 'personality' | 'dietary';
+  label: string;
+  emoji: string;
+}
+
 interface RecommendationData {
   matchScores: Record<string, number>;
+  matchReasons: Record<string, MatchReason[]>;
   isReady: boolean;
 }
 
-// Calculate distance between two coordinates in km (Haversine formula)
-const haversineDistance = (
-  lat1: number, lon1: number,
-  lat2: number, lon2: number
-): number => {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
-
 // Normalize Chinese location strings for matching
 const extractCityFromLocation = (location: string): string => {
-  // Try to extract city name from a location string like "北京市朝阳区xxx"
   const cityPatterns = ['市', '区', '县'];
   for (const pattern of cityPatterns) {
     const idx = location.indexOf(pattern);
@@ -63,7 +54,6 @@ export const useRecommendation = (
 
     const fetchData = async () => {
       try {
-        // Parallel fetch: profile + participation history
         const [profileRes, historyRes] = await Promise.all([
           supabase
             .from('profiles')
@@ -90,7 +80,6 @@ export const useRecommendation = (
           });
         }
 
-        // Build cuisine & location frequency maps from history
         if (historyRes.data) {
           const cuisineFreq: Record<string, number> = {};
           const locationFreq: Record<string, number> = {};
@@ -98,15 +87,11 @@ export const useRecommendation = (
           historyRes.data.forEach((item: any) => {
             const dinner = item.dinners;
             if (!dinner) return;
-
-            // Count cuisine preferences from past dinners
             if (dinner.food_preferences) {
               dinner.food_preferences.forEach((pref: string) => {
                 cuisineFreq[pref] = (cuisineFreq[pref] || 0) + 1;
               });
             }
-
-            // Count location patterns
             if (dinner.location) {
               const city = extractCityFromLocation(dinner.location);
               locationFreq[city] = (locationFreq[city] || 0) + 1;
@@ -126,26 +111,36 @@ export const useRecommendation = (
     fetchData();
   }, [user]);
 
-  // Calculate match scores for all dinners
-  const matchScores = useMemo(() => {
+  // Calculate match scores AND reasons for all dinners
+  const { matchScores, matchReasons } = useMemo(() => {
     const scores: Record<string, number> = {};
+    const reasons: Record<string, MatchReason[]> = {};
 
     if (!user || !profile) {
-      return scores;
+      return { matchScores: scores, matchReasons: reasons };
     }
 
     dinners.forEach(dinner => {
       let score = 0;
       let maxScore = 0;
+      const dinnerReasons: MatchReason[] = [];
 
       // 1. Food preference overlap (weight: 35)
       maxScore += 35;
       if (profile.food_preferences.length > 0 && dinner.food_preferences && dinner.food_preferences.length > 0) {
         const userPrefs = new Set(profile.food_preferences.map(p => p.toLowerCase()));
         const dinnerPrefs = dinner.food_preferences.map(p => p.toLowerCase());
-        const overlap = dinnerPrefs.filter(p => userPrefs.has(p)).length;
-        const overlapRatio = overlap / Math.max(dinnerPrefs.length, 1);
-        score += Math.round(overlapRatio * 35);
+        const matchedFoods = dinner.food_preferences.filter(p => userPrefs.has(p.toLowerCase()));
+        const overlapRatio = matchedFoods.length / Math.max(dinnerPrefs.length, 1);
+        const foodScore = Math.round(overlapRatio * 35);
+        score += foodScore;
+        if (matchedFoods.length > 0) {
+          dinnerReasons.push({
+            type: 'food',
+            label: matchedFoods.slice(0, 2).join('、'),
+            emoji: '🍽️'
+          });
+        }
       }
 
       // 2. Historical cuisine match (weight: 25)
@@ -153,13 +148,22 @@ export const useRecommendation = (
       if (Object.keys(historyCuisines).length > 0 && dinner.food_preferences && dinner.food_preferences.length > 0) {
         const maxFreq = Math.max(...Object.values(historyCuisines), 1);
         let historyScore = 0;
+        const matchedHistory: string[] = [];
         dinner.food_preferences.forEach(pref => {
           if (historyCuisines[pref]) {
             historyScore += historyCuisines[pref] / maxFreq;
+            matchedHistory.push(pref);
           }
         });
         const avgHistoryScore = historyScore / dinner.food_preferences.length;
         score += Math.round(avgHistoryScore * 25);
+        if (matchedHistory.length > 0 && !dinnerReasons.some(r => r.type === 'food')) {
+          dinnerReasons.push({
+            type: 'history',
+            label: matchedHistory[0],
+            emoji: '📊'
+          });
+        }
       }
 
       // 3. Location match (weight: 20)
@@ -167,17 +171,18 @@ export const useRecommendation = (
       if (dinner.location) {
         const dinnerCity = extractCityFromLocation(dinner.location);
         
-        // Check location history match
         if (historyLocations[dinnerCity]) {
           const maxLocFreq = Math.max(...Object.values(historyLocations), 1);
           score += Math.round((historyLocations[dinnerCity] / maxLocFreq) * 12);
+          dinnerReasons.push({
+            type: 'location',
+            label: dinnerCity,
+            emoji: '📍'
+          });
         }
 
-        // Check profile location keywords match
         if (profile.location_latitude && profile.location_longitude) {
-          // If user has coordinates, we give a bonus for same-city dinners
-          // Since dinners don't have lat/lng, we use string matching
-          score += 8; // Base proximity bonus for having location data
+          score += 8;
         }
       }
 
@@ -185,10 +190,16 @@ export const useRecommendation = (
       maxScore += 10;
       if (profile.personality_tags.length > 0 && dinner.personality_tags && dinner.personality_tags.length > 0) {
         const userTags = new Set(profile.personality_tags.map(t => t.toLowerCase()));
-        const dinnerTags = dinner.personality_tags.map(t => t.toLowerCase());
-        const overlap = dinnerTags.filter(t => userTags.has(t)).length;
-        const overlapRatio = overlap / Math.max(dinnerTags.length, 1);
+        const matchedTags = dinner.personality_tags.filter(t => userTags.has(t.toLowerCase()));
+        const overlapRatio = matchedTags.length / Math.max(dinner.personality_tags.length, 1);
         score += Math.round(overlapRatio * 10);
+        if (matchedTags.length > 0) {
+          dinnerReasons.push({
+            type: 'personality',
+            label: matchedTags[0],
+            emoji: '🎭'
+          });
+        }
       }
 
       // 5. Dietary restriction compatibility (weight: 10)
@@ -198,19 +209,24 @@ export const useRecommendation = (
         const dinnerRestrictions = dinner.dietary_restrictions.map(r => r.toLowerCase());
         const overlap = dinnerRestrictions.filter(r => userRestrictions.has(r)).length;
         if (overlap > 0) {
-          score += 10; // Full score if dietary needs are met
+          score += 10;
+          dinnerReasons.push({
+            type: 'dietary',
+            label: dinner.dietary_restrictions[0],
+            emoji: '✅'
+          });
         }
       } else if (profile.dietary_restrictions.length === 0) {
-        score += 5; // Partial score if no restrictions (compatible with anything)
+        score += 5;
       }
 
-      // Normalize to 0-100
       const normalizedScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
-      scores[dinner.id] = Math.min(normalizedScore, 99); // Cap at 99 to be realistic
+      scores[dinner.id] = Math.min(normalizedScore, 99);
+      reasons[dinner.id] = dinnerReasons.slice(0, 3); // Max 3 reasons
     });
 
-    return scores;
+    return { matchScores: scores, matchReasons: reasons };
   }, [user, profile, dinners, historyCuisines, historyLocations]);
 
-  return { matchScores, isReady };
+  return { matchScores, matchReasons, isReady };
 };

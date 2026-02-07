@@ -12,6 +12,7 @@ import ShareDinner from "@/components/ShareDinner";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
+import { DinnerReviewSection } from "@/components/DinnerReviewSection";
 import type { User } from '@supabase/supabase-js';
 import type { Dinner } from '@/types/database';
 
@@ -137,6 +138,22 @@ const DinnerDetail = () => {
 
   const handleJoinDinner = async () => {
     if (!user || !dinner) return;
+
+    // Check friends_only restriction
+    if (dinner.friends_only && dinner.created_by !== user.id) {
+      const { data: isFriend } = await supabase.rpc('are_friends', {
+        user1_id: user.id,
+        user2_id: dinner.created_by
+      });
+      if (!isFriend) {
+        toast({
+          title: t('dinnerDetail.friendsOnlyRestricted', '仅限好友参与'),
+          description: t('dinnerDetail.friendsOnlyDesc', '该饭局仅限发起人的好友加入，请先添加好友'),
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
 
     setJoining(true);
 
@@ -530,6 +547,8 @@ const DinnerDetail = () => {
                 </Button>
               </div>
             )}
+            {/* Review section - shows after dinner completes */}
+            <DinnerReviewSection dinnerId={dinner.id} userId={user?.id} />
           </CardContent>
         </Card>
       </div>

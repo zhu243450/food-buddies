@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CalendarDays, MapPin, Users, Zap, Clock, Users2, Lock, Sparkles } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import type { Dinner } from '@/types/database';
+import type { MatchReason } from '@/hooks/useRecommendation';
 
 // Food preference to emoji mapping
 const foodEmojiMap: Record<string, string> = {
@@ -33,6 +34,7 @@ interface EnhancedDinnerCardProps {
   hasExpired: boolean;
   creatorProfile?: CreatorProfile | null;
   matchScore?: number;
+  matchReasons?: MatchReason[];
   onJoin: (dinnerId: string) => void;
   onLeave: (dinnerId: string) => void;
   onClick: () => void;
@@ -77,7 +79,7 @@ const getMatchScoreConfig = (score: number | undefined) => {
 
 export const EnhancedDinnerCard = memo<EnhancedDinnerCardProps>(({
   dinner, participantCount, isJoined, isCreator, isFull, hasExpired,
-  creatorProfile, matchScore, onJoin, onLeave, onClick, userId
+  creatorProfile, matchScore, matchReasons, onJoin, onLeave, onClick, userId
 }) => {
   const { t } = useTranslation();
   const timeInfo = getTimeLabel(dinner.dinner_time, t);
@@ -191,6 +193,20 @@ export const EnhancedDinnerCard = memo<EnhancedDinnerCardProps>(({
             {dinner.food_preferences.length > 4 && (
               <span className="text-xs text-muted-foreground">+{dinner.food_preferences.length - 4}</span>
             )}
+          </div>
+        )}
+
+        {/* Row 6.5: Match reasons */}
+        {matchReasons && matchReasons.length > 0 && matchScore && matchScore > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {matchReasons.map((reason, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full bg-primary/8 text-primary border border-primary/20"
+              >
+                {reason.emoji} {t('recommend.because', '因为你喜欢')} {reason.label}
+              </span>
+            ))}
           </div>
         )}
 
