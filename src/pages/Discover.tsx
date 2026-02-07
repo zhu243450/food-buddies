@@ -231,8 +231,8 @@ const Discover = () => {
         });
       } else {
         toast({
-          title: t('dinnerDetail.joinSuccess'),
-          description: t('dinnerDetail.joinSuccessDesc'),
+          title: t('dinner.leaveSuccess', '已退出饭局'),
+          description: t('dinner.leaveSuccessDesc', '你已成功退出该饭局'),
         });
         setJoinedDinnerIds(prev => prev.filter(id => id !== dinnerId));
         setParticipantCounts(prev => {
@@ -348,8 +348,6 @@ const Discover = () => {
 
   useEffect(() => {
     const fetchDinners = async () => {
-      if (!user) return;
-
       const { data, error } = await supabase
         .from("dinners")
         .select("*")
@@ -364,46 +362,40 @@ const Discover = () => {
         
         setAllDinners(activeDinners);
         setFilteredDinners(activeDinners);
+
+        // Fetch participant counts
+        if (activeDinners.length > 0) {
+          const dinnerIds = activeDinners.map(dinner => dinner.id);
+          const { data: participantData, error: participantError } = await supabase
+            .from("dinner_participants")
+            .select("dinner_id")
+            .in("dinner_id", dinnerIds);
+
+          if (!participantError && participantData) {
+            const counts: Record<string, number> = {};
+            participantData.forEach(participant => {
+              counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
+            });
+
+            // Add creator count for each dinner
+            activeDinners.forEach(dinner => {
+              counts[dinner.id] = (counts[dinner.id] || 0) + 1;
+            });
+
+            setParticipantCounts(counts);
+          }
+        }
       }
 
-      // Fetch joined dinner IDs
-      const { data: joinedData, error: joinedError } = await supabase
-        .from("dinner_participants")
-        .select("dinner_id")
-        .eq("user_id", user.id);
-
-      if (joinedError) {
-        console.error("Error fetching joined dinners:", joinedError);
-      } else {
-        setJoinedDinnerIds(joinedData?.map(item => item.dinner_id) || []);
-      }
-
-      // Fetch participant counts
-      if (data && data.length > 0) {
-        const activeDinners = data?.filter(dinner => 
-          (dinner as any).status === 'active' || !(dinner as any).status
-        ) || [];
-        
-        const dinnerIds = activeDinners.map(dinner => dinner.id);
-        const { data: participantData, error: participantError } = await supabase
+      // Fetch joined dinner IDs (only for logged-in users)
+      if (user) {
+        const { data: joinedData, error: joinedError } = await supabase
           .from("dinner_participants")
           .select("dinner_id")
-          .in("dinner_id", dinnerIds);
+          .eq("user_id", user.id);
 
-        if (participantError) {
-          console.error("Error fetching participant counts:", participantError);
-        } else {
-          const counts: Record<string, number> = {};
-          participantData?.forEach(participant => {
-            counts[participant.dinner_id] = (counts[participant.dinner_id] || 0) + 1;
-          });
-
-          // Add creator count for each dinner
-          activeDinners.forEach(dinner => {
-            counts[dinner.id] = (counts[dinner.id] || 0) + 1;
-          });
-
-          setParticipantCounts(counts);
+        if (!joinedError) {
+          setJoinedDinnerIds(joinedData?.map(item => item.dinner_id) || []);
         }
       }
 
@@ -419,7 +411,7 @@ const Discover = () => {
     setFilteredDinners(allDinners.filter(dinner => new Date(dinner.dinner_time) > new Date()));
   }, [allDinners]);
 
-  if (!user) {
+  if (!user && !isGuestMode) {
     return null;
   }
 
