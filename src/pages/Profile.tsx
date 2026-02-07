@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import Navigation from "@/components/Navigation";
 import { User as UserIcon, Camera, Shield, LogOut, Gift } from "lucide-react";
+import { PendingRequestsCard, FriendsListCard } from "@/components/FriendshipComponents";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import DinnerMediaUploader from "@/components/DinnerPhotoUploader";
@@ -301,8 +302,9 @@ const Profile = () => {
         <div className="max-w-md mx-auto">
           
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="profile">{t('profile.profile')}</TabsTrigger>
+              <TabsTrigger value="friends">{t('friends.myFriends', '好友')}</TabsTrigger>
               <TabsTrigger value="photos">{t('profile.myPhotos')}</TabsTrigger>
             </TabsList>
             
@@ -509,6 +511,11 @@ const Profile = () => {
                   </form>
                 </CardContent>
               </Card>
+            </TabsContent>
+            
+            <TabsContent value="friends" className="space-y-4">
+              <PendingRequestsCard />
+              <FriendsListCard />
             </TabsContent>
             
             <TabsContent value="photos">

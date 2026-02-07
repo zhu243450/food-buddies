@@ -1033,5 +1033,22 @@
     "created": "Created Dinners",
     "empty": "No dinners yet",
     "emptyDesc": "Create your first dinner or browse others to join!"
+  },
+  "friends": {
+    "myFriends": "My Friends",
+    "addFriend": "Add Friend",
+    "isFriend": "Friends",
+    "pending": "Pending",
+    "pendingRequests": "Friend Requests",
+    "requestSent": "Friend request sent",
+    "alreadySent": "Request already sent",
+    "requestFailed": "Failed to send",
+    "accepted": "Friend request accepted",
+    "acceptFailed": "Operation failed",
+    "rejected": "Friend request rejected",
+    "rejectFailed": "Operation failed",
+    "removed": "Friend removed",
+    "removeFailed": "Operation failed",
+    "noFriends": "No friends yet, go discover and find dining buddies!"
   }
 }
