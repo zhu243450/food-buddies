@@ -242,7 +242,7 @@ const DinnerDetail = () => {
         });
 
         // 如果是创建者取消，或者是参与者退出，都跳转到我的饭局页面
-        navigate("/my-dinners");
+        navigate("/discover?tab=myDinners");
       } else {
         toast({
           title: t('dinnerDetail.operationFailed'),
