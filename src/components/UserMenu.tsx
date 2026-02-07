@@ -14,7 +14,8 @@ import {
   Shield,
   HelpCircle,
   MapPin,
-  BookOpen
+  BookOpen,
+  Gift
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
@@ -252,6 +253,13 @@ export const UserMenu = () => {
               >
                 <BookOpen className="mr-2 h-4 w-4" />
                 <span>{t('userMenu.faq')}</span>
+              </button>
+              <button 
+                onClick={() => handleMenuItemClick('/growth')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <Gift className="mr-2 h-4 w-4" />
+                <span>{i18n.language === 'zh' ? '增长中心' : 'Growth Center'}</span>
               </button>
             </div>
             

@@ -1699,7 +1699,7 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
       <TableCell>
         <Badge 
           variant={currentRole === 'admin' ? 'default' : 'secondary'}
-          className={currentRole === 'admin' ? 'bg-primary text-black' : ''}
+          className={currentRole === 'admin' ? 'bg-primary text-primary-foreground' : ''}
         >
           {currentRole === 'admin' ? (
             <>
