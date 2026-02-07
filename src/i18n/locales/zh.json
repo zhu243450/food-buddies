@@ -1042,5 +1042,22 @@
     "created": "创建的饭局",
     "empty": "还没有饭局",
     "emptyDesc": "创建你的第一个饭局或者浏览其他饭局加入吧！"
+  },
+  "friends": {
+    "myFriends": "我的好友",
+    "addFriend": "加好友",
+    "isFriend": "已是好友",
+    "pending": "等待确认",
+    "pendingRequests": "好友请求",
+    "requestSent": "好友请求已发送",
+    "alreadySent": "已发送过好友请求",
+    "requestFailed": "发送失败",
+    "accepted": "已接受好友请求",
+    "acceptFailed": "操作失败",
+    "rejected": "已拒绝好友请求",
+    "rejectFailed": "操作失败",
+    "removed": "已删除好友",
+    "removeFailed": "操作失败",
+    "noFriends": "还没有好友，去发现页找饭友吧！"
   }
 }

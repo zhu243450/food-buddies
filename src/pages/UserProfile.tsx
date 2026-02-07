@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, User, Calendar, Heart, Utensils, Clock, Camera, MessageCircle, Send, X } from "lucide-react";
+import { FriendActionButton } from "@/components/FriendshipComponents";
 import Navigation from "@/components/Navigation";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -84,7 +85,7 @@ const UserProfile = () => {
 
       if (error) {
         console.error("Error fetching user profile:", error);
-        navigate("/my-dinners");
+        navigate("/discover");
         return;
       }
 
@@ -383,11 +384,16 @@ const UserProfile = () => {
                     </AvatarFallback>
                   </Avatar>
                   <CardTitle className="text-2xl font-bold text-primary-foreground">{userProfile.nickname}</CardTitle>
-                  {userProfile.gender && (
-                    <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-none">
-                      {userProfile.gender}
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {userProfile.gender && (
+                      <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-none">
+                        {userProfile.gender}
+                      </Badge>
+                    )}
+                    {currentUser && userId && currentUser.id !== userId && (
+                      <FriendActionButton targetUserId={userId} />
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               
