@@ -140,7 +140,7 @@ const Profile = () => {
                 toast({
                   title: t('photoGallery.newLike'),
                   description: t('photoGallery.someonelikedYourPhoto'),
-                  className: "border-red-500 bg-red-50 text-red-900",
+                  className: "border-destructive/50 bg-destructive/10 text-destructive",
                 });
                 // 刷新照片数据
                 fetchUserPhotos();
@@ -167,7 +167,7 @@ const Profile = () => {
                 toast({
                   title: t('photoGallery.newComment'),
                   description: t('photoGallery.someoneCommentedYourPhoto'),
-                  className: "border-red-500 bg-red-50 text-red-900",
+                  className: "border-destructive/50 bg-destructive/10 text-destructive",
                 });
                 // 刷新照片数据
                 fetchUserPhotos();
@@ -308,8 +308,8 @@ const Profile = () => {
             
             <TabsContent value="profile">
               <Card className="border-0 shadow-xl bg-card">
-                <CardHeader className="bg-primary text-black rounded-t-xl p-4">
-                  <CardTitle className="text-lg flex items-center gap-2 font-bold">
+                <CardHeader className="bg-gradient-primary text-primary-foreground rounded-t-xl p-4">
+                  <CardTitle className="text-lg flex items-center gap-2 font-bold text-primary-foreground">
                     <UserIcon className="w-5 h-5" />
                     {t('profile.profile')}
                   </CardTitle>
@@ -406,7 +406,7 @@ const Profile = () => {
                         key={preference} 
                         className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
                           formData.food_preferences.includes(preference)
-                            ? 'bg-primary text-black border-primary shadow-md'
+                            ? 'bg-primary text-primary-foreground border-primary shadow-md'
                             : 'bg-background border-border/30 hover:border-primary/50'
                         }`}
                       >
@@ -433,7 +433,7 @@ const Profile = () => {
                           key={mealTime.key} 
                           className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-all ${
                             isSelected
-                              ? 'bg-accent text-black border-accent shadow-md'
+                              ? 'bg-accent text-accent-foreground border-accent shadow-md'
                               : 'bg-background border-border/30 hover:border-accent/50'
                           }`}
                         >
@@ -453,7 +453,7 @@ const Profile = () => {
                 {/* 接受陌生人拼饭 */}
                 <div className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${
                   formData.accept_strangers
-                    ? 'bg-accent text-black border-accent shadow-md'
+                    ? 'bg-accent text-accent-foreground border-accent shadow-md'
                     : 'bg-background border-border/30 hover:border-accent/50'
                 }`}>
                   <div>
@@ -513,7 +513,7 @@ const Profile = () => {
             
             <TabsContent value="photos">
               <Card className="border-0 shadow-xl bg-card">
-                <CardHeader className="bg-primary text-black rounded-t-xl p-4">
+                <CardHeader className="bg-gradient-primary text-primary-foreground rounded-t-xl p-4">
                   <CardTitle className="text-lg flex items-center gap-2 font-bold">
                     <Camera className="w-5 h-5" />
                     {t('profile.myPhotos')}

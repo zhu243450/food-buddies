@@ -374,17 +374,17 @@ const UserProfile = () => {
           
           <TabsContent value="profile">
             <Card className="border-0 shadow-xl bg-card">
-              <CardHeader className="bg-primary text-black rounded-t-xl p-6 text-center">
+              <CardHeader className="bg-gradient-primary text-primary-foreground rounded-t-xl p-6 text-center">
                 <div className="flex flex-col items-center space-y-4">
-                  <Avatar className="w-20 h-20 ring-4 ring-white/20">
+                  <Avatar className="w-20 h-20 ring-4 ring-primary-foreground/20">
                     <AvatarImage src={userProfile.avatar_url} alt="头像" />
-                    <AvatarFallback className="text-2xl font-bold bg-white/20 text-black">
+                    <AvatarFallback className="text-2xl font-bold bg-primary-foreground/20 text-primary-foreground">
                       {userProfile.nickname ? userProfile.nickname[0] : <User className="w-8 h-8" />}
                     </AvatarFallback>
                   </Avatar>
-                  <CardTitle className="text-2xl font-bold text-black">{userProfile.nickname}</CardTitle>
+                  <CardTitle className="text-2xl font-bold text-primary-foreground">{userProfile.nickname}</CardTitle>
                   {userProfile.gender && (
-                    <Badge variant="secondary" className="bg-white/20 text-black border-none">
+                    <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-none">
                       {userProfile.gender}
                     </Badge>
                   )}
@@ -416,7 +416,7 @@ const UserProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Utensils className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-black">{t('profile.foodPreferences')}</h3>
+                  <h3 className="font-semibold text-foreground">{t('profile.foodPreferences')}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.food_preferences.map((preference) => (
@@ -437,7 +437,7 @@ const UserProfile = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-black">{t('profile.mealTimes')}</h3>
+                  <h3 className="font-semibold text-foreground">{t('profile.mealTimes')}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {userProfile.meal_times.map((mealTime) => (
@@ -455,7 +455,7 @@ const UserProfile = () => {
 
                 {/* 加入时间 */}
                 <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-black">
+                  <p className="text-sm text-foreground">
                     {t('profile.joinedOn', '加入时间')}: {new Date(userProfile.created_at).toLocaleDateString(t('common.locale'))}
                   </p>
                 </div>
@@ -465,7 +465,7 @@ const UserProfile = () => {
           
           <TabsContent value="photos">
             <Card className="border-0 shadow-xl bg-card">
-              <CardHeader className="bg-primary text-black rounded-t-xl p-4">
+              <CardHeader className="bg-gradient-primary text-primary-foreground rounded-t-xl p-4">
                 <CardTitle className="text-lg flex items-center gap-2 font-bold">
                   <Camera className="w-5 h-5" />
                   {userProfile.nickname} {t('profile.sharedPhotos')}

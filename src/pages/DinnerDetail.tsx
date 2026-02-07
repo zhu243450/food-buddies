@@ -340,16 +340,16 @@ const DinnerDetail = () => {
         </Button>
 
         <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent/10 relative">
-          <CardHeader className="bg-gradient-to-r from-primary to-accent text-black rounded-t-lg">
+          <CardHeader className="bg-gradient-primary text-primary-foreground rounded-t-lg">
             <div className="flex items-start justify-between gap-3">
-              <CardTitle className="text-2xl text-black font-bold flex-1 pr-2">{dinner.title}</CardTitle>
+              <CardTitle className="text-2xl text-primary-foreground font-bold flex-1 pr-2">{dinner.title}</CardTitle>
               <ShareDinner 
                 dinner={dinner} 
                 participantCount={participants.length}
               />
             </div>
             {dinner.description && (
-              <CardDescription className="text-black/90 text-base">
+              <CardDescription className="text-primary-foreground/90 text-base">
                 {dinner.description}
               </CardDescription>
             )}
@@ -449,7 +449,7 @@ const DinnerDetail = () => {
                     <Button 
                       onClick={() => navigate("/auth?mode=register")}
                       variant="outline"
-                      className="border-primary text-primary hover:bg-primary hover:text-white"
+                      className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       {t('common.register')}
                     </Button>
@@ -471,8 +471,8 @@ const DinnerDetail = () => {
 
             {isParticipant && (
               <div className="space-y-3">
-                <div className="text-center p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-                  <div className="flex items-center justify-center gap-2 text-green-700 font-semibold text-lg">
+                <div className="text-center p-4 rounded-lg bg-secondary/10 border border-secondary/30">
+                  <div className="flex items-center justify-center gap-2 text-secondary font-semibold text-lg">
                     <Heart className="w-5 h-5" />
                     {t('dinnerDetail.alreadyParticipating')}
                   </div>
@@ -480,7 +480,7 @@ const DinnerDetail = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <Button 
                     onClick={() => navigate("/chat-list")}
-                    className="bg-secondary text-black hover:bg-secondary/90 font-semibold"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
                     {t('dinnerDetail.enterChat')}
@@ -488,7 +488,7 @@ const DinnerDetail = () => {
                   <Button 
                     variant="outline"
                     onClick={() => setShowCancelDialog(true)}
-                    className="border-destructive text-destructive hover:bg-destructive hover:text-white"
+                    className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <X className="w-4 h-4 mr-2" />
                     {t('dinnerDetail.leaveDinner')}
@@ -499,8 +499,8 @@ const DinnerDetail = () => {
 
             {user && dinner.created_by === user.id && (
               <div className="space-y-3">
-                <div className="text-center p-4 rounded-lg bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200">
-                  <div className="flex items-center justify-center gap-2 text-blue-700 font-semibold text-lg">
+                <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/30">
+                  <div className="flex items-center justify-center gap-2 text-primary font-semibold text-lg">
                     <UserCheck className="w-5 h-5" />
                     {t('dinnerDetail.yourDinner')}
                   </div>
@@ -508,7 +508,7 @@ const DinnerDetail = () => {
                 <Button 
                   variant="outline"
                   onClick={() => setShowCancelDialog(true)}
-                  className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white"
+                  className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
                   <X className="w-4 h-4 mr-2" />
                   {t('dinnerDetail.cancelDinner')}

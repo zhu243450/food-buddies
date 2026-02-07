@@ -71,7 +71,7 @@ const DinnerCard: React.FC<DinnerCardProps> = memo(({ dinner, participantCount, 
             </Badge>
           )}
         </CardTitle>
-        <CardDescription className="text-gray-500">
+        <CardDescription className="text-muted-foreground">
           <div className="flex items-center gap-1">
             <CalendarDays className="w-4 h-4 mr-1" />
             {dinnerTime}
@@ -83,7 +83,7 @@ const DinnerCard: React.FC<DinnerCardProps> = memo(({ dinner, participantCount, 
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-700 mb-4">{dinner.description}</p>
+        <p className="text-sm text-muted-foreground mb-4">{dinner.description}</p>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <Users className="w-4 h-4 mr-1" />
