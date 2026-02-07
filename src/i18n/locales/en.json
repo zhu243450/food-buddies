@@ -1024,5 +1024,14 @@
     "cityGuide": "City Guide",
     "admin": "Admin Panel",
     "logout": "Logout"
+  },
+  "discover": {
+    "searchPlaceholder": "Search dinner title, location..."
+  },
+  "myDinners": {
+    "joined": "Joined Dinners",
+    "created": "Created Dinners",
+    "empty": "No dinners yet",
+    "emptyDesc": "Create your first dinner or browse others to join!"
   }
 }
