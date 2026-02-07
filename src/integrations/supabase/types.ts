@@ -699,6 +699,33 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invite_records: {
         Row: {
           completed_at: string | null
@@ -1390,6 +1417,10 @@ export type Database = {
           session_id: string
         }[]
       }
+      are_friends: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: boolean
+      }
       calculate_match_score: {
         Args: { dinner_id_param: string; user_id_param: string }
         Returns: number
@@ -1474,6 +1505,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_friend_count: { Args: { target_user_id: string }; Returns: number }
       get_invite_leaderboard: {
         Args: { limit_count?: number }
         Returns: {
