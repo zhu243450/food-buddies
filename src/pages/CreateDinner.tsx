@@ -131,6 +131,19 @@ const CreateDinner = () => {
     e.preventDefault();
     if (!user) return;
     
+    // 校验饭局时间不能是过去
+    if (formData.dinner_time) {
+      const selectedTime = new Date(formData.dinner_time);
+      if (selectedTime <= new Date()) {
+        toast({
+          title: t('createDinner.pastTimeError'),
+          description: t('createDinner.pastTimeErrorDesc'),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    
     // 检查是否有创建限制
     if (restriction && !restriction.can_create_dinner) {
       toast({

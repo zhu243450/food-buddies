@@ -124,7 +124,7 @@ const Chat = () => {
           description: error.message,
           variant: "destructive",
         });
-        navigate("/my-dinners");
+        navigate("/discover?tab=myDinners");
       } finally {
         setLoading(false);
       }
@@ -218,8 +218,8 @@ const Chat = () => {
         console.error('Ban check failed:', banCheckError);
       } else if (banCheckResult === true) {
         toast({
-          title: "无法发送消息",
-          description: "您的账户已被禁言，暂时无法发送消息。如有疑问请联系管理员。",
+          title: t('chat.bannedTitle'),
+          description: t('chat.bannedDesc'),
           variant: "destructive",
         });
         setSending(false);
@@ -299,7 +299,7 @@ const Chat = () => {
   const handleMessageRecall = (messageId: string) => {
     setMessages(prev => prev.map(msg => 
       msg.id === messageId 
-        ? { ...msg, content: '[消息已撤回]', message_type: 'text' as const }
+        ? { ...msg, content: t('chat.messageRecalled'), message_type: 'text' as const }
         : msg
     ));
   };
@@ -332,7 +332,7 @@ const Chat = () => {
             <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-lg font-semibold mb-2">{t('chat.notFound')}</h2>
             <p className="text-muted-foreground mb-4">{t('chat.notFoundDesc')}</p>
-            <Button onClick={() => navigate("/my-dinners")}>
+            <Button onClick={() => navigate("/discover?tab=myDinners")}>
               {t('common.back')}
             </Button>
           </CardContent>
@@ -351,7 +351,7 @@ const Chat = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate("/my-dinners")}
+            onClick={() => navigate("/chat-list")}
             className="p-2"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -414,12 +414,13 @@ const Chat = () => {
                       
                       if (error) throw error;
                       
-                      if (data) {
+                       if (data) {
                         toast({
                           title: t('chat.reactivated'),
                           description: t('chat.reactivatedDesc'),
                         });
-                        window.location.reload();
+                        // 重新加载聊天数据而非整页刷新
+                        window.location.href = `/chat/${sessionId}`;
                       }
                     } catch (error: any) {
                       toast({
@@ -458,9 +459,9 @@ const Chat = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">
-                      {pendingMediaType === 'video' ? '视频' : '图片'}已准备发送
+                      {pendingMediaType === 'video' ? t('chat.videoReady') : t('chat.imageReady')}
                     </p>
-                    <p className="text-xs text-muted-foreground">点击发送按钮或选择取消</p>
+                    <p className="text-xs text-muted-foreground">{t('chat.sendOrCancel')}</p>
                   </div>
                   <Button
                     variant="ghost"
@@ -495,8 +496,8 @@ const Chat = () => {
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={pendingMediaUrl ? "添加文字说明（可选）" : t('chat.inputPlaceholder')}
+                  onKeyDown={handleKeyPress}
+                  placeholder={pendingMediaUrl ? t('chat.addCaptionOptional') : t('chat.inputPlaceholder')}
                   className="flex-1"
                   disabled={sending}
                 />

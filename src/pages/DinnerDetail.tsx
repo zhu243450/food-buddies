@@ -478,8 +478,23 @@ const DinnerDetail = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    onClick={() => navigate("/chat-list")}
+                   <Button 
+                    onClick={async () => {
+                      if (!user || !dinner) return;
+                      // 查找该饭局相关的聊天会话
+                      const { data: sessions } = await supabase
+                        .from("chat_sessions")
+                        .select("id")
+                        .eq("dinner_id", dinner.id)
+                        .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
+                        .limit(1);
+                      
+                      if (sessions && sessions.length > 0) {
+                        navigate(`/chat/${sessions[0].id}`);
+                      } else {
+                        navigate("/chat-list");
+                      }
+                    }}
                     className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold"
                   >
                     <MessageSquare className="w-4 h-4 mr-2" />
