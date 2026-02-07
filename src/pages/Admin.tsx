@@ -760,13 +760,13 @@ const Admin = () => {
                     <p className="text-sm text-muted-foreground">{t('admin.totalCancellations')}</p>
                   </div>
                   <div className="text-center space-y-1">
-                    <p className="text-2xl font-bold text-orange-500">
+                    <p className="text-2xl font-bold text-warning">
                       {cancellationStats?.late_cancellations || 0}
                     </p>
                     <p className="text-sm text-muted-foreground">{t('admin.lateCancellations')}</p>
                   </div>
                   <div className="text-center space-y-1">
-                    <p className="text-2xl font-bold text-red-500">
+                    <p className="text-2xl font-bold text-destructive">
                       {cancellationStats?.cancellation_rate ? 
                         Math.round(cancellationStats.cancellation_rate * 100) / 100 : 0}%
                     </p>
@@ -1001,7 +1001,7 @@ const Admin = () => {
                                 <span className="font-medium truncate" title={r.title}>{r.title}</span>
                                 <span className="text-xs text-muted-foreground truncate md:hidden">{r.report_type}</span>
                                 {r.evidence_urls && r.evidence_urls.length > 0 && (
-                                  <div className="flex items-center gap-1 text-xs text-blue-600 mt-1">
+                                  <div className="flex items-center gap-1 text-xs text-info mt-1">
                                     <ImageIcon className="h-3 w-3" />
                                     <span>{r.evidence_urls.length} 张图片</span>
                                   </div>
@@ -1245,7 +1245,7 @@ const Admin = () => {
                             </div>
                             
                             {/* 访问记录提醒 */}
-                            <div className="mt-2 text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/20 p-2 rounded border border-amber-200 dark:border-amber-800">
+                            <div className="mt-2 text-xs text-muted-foreground bg-warning/10 p-2 rounded border border-warning/20">
                               ⚠️ 此次访问已记录到审计日志中，包含访问时间、理由和数据摘要
                             </div>
                           </div>
@@ -1420,11 +1420,11 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                   <div className="bg-success/10 p-4 rounded-lg border border-success/20">
+                    <div className="text-sm font-medium text-success mb-2">
                       🛡️ 隐私保护与合规说明
                     </div>
-                    <div className="text-xs text-green-700 dark:text-green-300 space-y-1">
+                    <div className="text-xs text-success/80 space-y-1">
                       <div>• 本系统严格遵循 GDPR、CCPA、《个人信息保护法》等法律法规</div>
                       <div>• 聊天记录仅在收到举报时基于合法利益进行访问，所有访问均记录审计日志</div>
                       <div>• 实施数据最小化原则，已解决举报的相关数据会在90天后自动清理</div>
@@ -1684,7 +1684,7 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
           </span>
           {/* 调试信息 */}
           {restrictionInfo && (
-            <span className="text-xs text-blue-600">
+            <span className="text-xs text-info">
               限制: {restrictionInfo.can_create_dinner ? '无' : restrictionInfo.restriction_reason}
             </span>
           )}
@@ -1769,7 +1769,7 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
                 size="sm"
                 variant="outline"
                 onClick={() => onRemoveRestriction(profile)}
-                className="h-7 px-2 text-xs text-green-600 hover:text-green-700"
+                className="h-7 px-2 text-xs text-success hover:text-success/80"
                 title="解除处罚"
               >
                 <Shield className="w-3 h-3" />
@@ -1778,7 +1778,7 @@ const UserRow: React.FC<UserRowProps> = ({ profile, onRoleChange, onBanUser, onU
                 size="sm"
                 variant="outline"
                 onClick={() => onDelayRestriction(profile)}
-                className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                className="h-7 px-2 text-xs text-info hover:text-info/80"
                 title="延迟处罚"
               >
                 <Clock className="w-3 h-3" />
