@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Share2, Copy, MessageCircle, Heart, Users } from "lucide-react";
+import { Share2, Copy, Image, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from 'react-i18next';
+import { DinnerSharePoster } from "@/components/DinnerSharePoster";
 
 interface ShareDinnerProps {
   dinner: {
@@ -15,18 +16,23 @@ interface ShareDinnerProps {
     location: string;
     max_participants: number;
     food_preferences?: string[];
+    dinner_category?: string | null;
   };
   participantCount: number;
+  hostName?: string;
 }
 
-const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
+const ShareDinner = ({ dinner, participantCount, hostName }: ShareDinnerProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showPoster, setShowPoster] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
+  const isZh = i18n.language === 'zh';
+
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString(i18n.language === 'zh' ? "zh-CN" : "en-US", {
+    return date.toLocaleString(isZh ? "zh-CN" : "en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -54,12 +60,10 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
     }
   };
 
-  const handleWeChatShare = () => {
-    handleCopyLink();
-    toast({
-      title: t('share.wechatShare'),
-      description: t('share.wechatShareDesc'),
-    });
+  const handleGeneratePoster = () => {
+    setIsOpen(false);
+    // Small delay so the first dialog closes before opening the poster
+    setTimeout(() => setShowPoster(true), 200);
   };
 
   const handleWeiboShare = () => {
@@ -68,116 +72,111 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
     setIsOpen(false);
   };
 
-  const handleQQShare = () => {
-    const qqUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`;
-    window.open(qqUrl, '_blank');
-    setIsOpen(false);
-  };
-
   const shareOptions = [
     {
-      name: t('share.wechat'),
-      icon: "💬",
-      color: "bg-green-500 hover:bg-green-600",
-      action: handleWeChatShare,
+      name: isZh ? '📸 生成海报' : '📸 Poster',
+      description: isZh ? '保存图片发朋友圈' : 'Save image to share',
+      color: "bg-gradient-primary text-white hover:opacity-90",
+      action: handleGeneratePoster,
+      featured: true,
     },
     {
-      name: "Instagram",
-      icon: "📸",
-      color: "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600",
+      name: isZh ? '💬 微信' : '💬 WeChat',
+      description: isZh ? '复制文案分享' : 'Copy text to share',
+      color: "bg-green-500 hover:bg-green-600 text-white",
       action: () => {
         handleCopyLink();
         toast({
-          title: t('share.instagramShare'),
-          description: t('share.instagramShareDesc'),
+          title: t('share.wechatShare'),
+          description: t('share.wechatShareDesc'),
         });
       },
+      featured: false,
     },
     {
       name: "X (Twitter)",
-      icon: "🐦",
-      color: "bg-black hover:bg-gray-800",
+      description: '',
+      color: "bg-foreground/90 hover:bg-foreground text-background",
       action: () => {
         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
         window.open(twitterUrl, '_blank');
         setIsOpen(false);
       },
+      featured: false,
     },
     {
       name: "Facebook",
-      icon: "📘",
-      color: "bg-blue-600 hover:bg-blue-700",
+      description: '',
+      color: "bg-blue-600 hover:bg-blue-700 text-white",
       action: () => {
         const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
         window.open(fbUrl, '_blank');
         setIsOpen(false);
       },
+      featured: false,
     },
     {
-      name: t('share.weibo'),
-      icon: "🔥",
-      color: "bg-red-500 hover:bg-red-600",
+      name: isZh ? '🔥 微博' : '🔥 Weibo',
+      description: '',
+      color: "bg-red-500 hover:bg-red-600 text-white",
       action: handleWeiboShare,
+      featured: false,
     },
     {
-      name: t('share.qzone'),
-      icon: "🌟",
-      color: "bg-blue-500 hover:bg-blue-600",
-      action: handleQQShare,
-    },
-    {
-      name: t('share.copyLink'),
-      icon: "📋",
-      color: "bg-gray-500 hover:bg-gray-600",
+      name: isZh ? '📋 复制链接' : '📋 Copy Link',
+      description: '',
+      color: "bg-muted hover:bg-muted/80 text-foreground",
       action: handleCopyLink,
+      featured: false,
     },
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 px-2 text-xs text-black/80 hover:text-black hover:bg-black/10 transition-all shrink-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Share2 className="w-3 h-3" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-primary" />
-            {t('share.shareDinner')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('share.shareDescription', 'Choose how you want to share this dinner event')}
-          </DialogDescription>
-        </DialogHeader>
-        
-        {/* 饭局预览卡片 */}
-        <div className="bg-gradient-to-br from-card to-accent/10 p-4 rounded-lg border border-accent/20 mb-4">
-          <h3 className="font-bold text-lg mb-2">{dinner.title}</h3>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span>📅</span>
-              <span>{formatDateTime(dinner.dinner_time)}</span>
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 transition-all shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Share2 className="w-3 h-3" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="w-5 h-5 text-primary" />
+              {t('share.shareDinner')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('share.shareDescription', 'Choose how you want to share this dinner event')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {/* Dinner preview card */}
+          <div className="bg-gradient-to-br from-card to-accent/10 p-4 rounded-lg border border-accent/20 mb-4">
+            <h3 className="font-bold text-lg text-foreground mb-2">{dinner.title}</h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span>📅</span>
+                <span>{formatDateTime(dinner.dinner_time)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>📍</span>
+                <span>{dinner.location}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span>{participantCount}/{dinner.max_participants}{t('share.people')}</span>
+                {participantCount >= dinner.max_participants && (
+                  <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive">
+                    {t('share.full')}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span>📍</span>
-              <span>{dinner.location}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span>{participantCount}/{dinner.max_participants}{t('share.people')}</span>
-              {participantCount >= dinner.max_participants && (
-                <Badge variant="secondary" className="text-xs bg-destructive/20 text-destructive">
-                  {t('share.full')}
-                </Badge>
-              )}
-            </div>
-          </div>
             {dinner.food_preferences && dinner.food_preferences.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-3">
                 {dinner.food_preferences.slice(0, 3).map((preference) => preference && (
@@ -194,34 +193,54 @@ const ShareDinner = ({ dinner, participantCount }: ShareDinnerProps) => {
                     +{dinner.food_preferences.length - 3}
                   </Badge>
                 )}
+              </div>
+            )}
+          </div>
+
+          {/* Share options - poster first and prominent */}
+          <div className="space-y-2">
+            {/* Featured: Generate Poster */}
+            {shareOptions.filter(o => o.featured).map((option) => (
+              <Button
+                key={option.name}
+                onClick={option.action}
+                className={`${option.color} w-full h-14 flex items-center justify-center gap-3 text-base font-bold shadow-lg`}
+              >
+                <Image className="w-5 h-5" />
+                <div className="flex flex-col items-start">
+                  <span>{option.name}</span>
+                  {option.description && (
+                    <span className="text-xs opacity-80 font-normal">{option.description}</span>
+                  )}
+                </div>
+              </Button>
+            ))}
+
+            {/* Other options grid */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {shareOptions.filter(o => !o.featured).map((option) => (
+                <Button
+                  key={option.name}
+                  onClick={option.action}
+                  className={`${option.color} h-11 flex items-center justify-center gap-1 text-sm`}
+                >
+                  <span>{option.name}</span>
+                </Button>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* 分享选项 */}
-        <div className="grid grid-cols-2 gap-2">
-          {shareOptions.map((option) => (
-            <Button
-              key={option.name}
-              onClick={option.action}
-              className={`${option.color} text-white h-14 flex flex-col items-center justify-center gap-1 hover:scale-105 transition-transform text-xs`}
-            >
-              <span className="text-lg">{option.icon}</span>
-              <span className="leading-tight text-center">{option.name}</span>
-            </Button>
-          ))}
-        </div>
-
-        {/* 分享预览文本 */}
-        <div className="mt-4 p-3 bg-muted rounded-lg">
-          <p className="text-xs text-muted-foreground mb-2">{t('share.sharePreview')}:</p>
-          <p className="text-sm leading-relaxed whitespace-pre-line">
-            {shareText}
-          </p>
-          <p className="text-xs text-primary mt-2 break-all">{shareUrl}</p>
-        </div>
-      </DialogContent>
-    </Dialog>
+      {/* Poster Dialog */}
+      <DinnerSharePoster
+        dinner={dinner}
+        participantCount={participantCount}
+        hostName={hostName}
+        open={showPoster}
+        onOpenChange={setShowPoster}
+      />
+    </>
   );
 };
 
