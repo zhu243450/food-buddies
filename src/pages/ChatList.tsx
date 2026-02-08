@@ -1,16 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, Clock, MessageSquareOff } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
 
-import type { User } from '@supabase/supabase-js';
 import type { ChatSession, Profile } from '@/types/database';
 
 interface ChatSessionWithProfile extends ChatSession {
@@ -25,7 +25,7 @@ interface ChatSessionWithProfile extends ChatSession {
 
 const ChatList = () => {
   const { t, i18n } = useTranslation();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [chatSessions, setChatSessions] = useState<ChatSessionWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBanned, setIsBanned] = useState(false);
@@ -33,122 +33,15 @@ const ChatList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Redirect if not logged in
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
-    };
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
-    getUser();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const checkBanStatus = async () => {
-      try {
-        // 检查用户是否被禁言
-        const { data: isBannedResult, error: banCheckError } = await supabase.rpc('is_user_banned', {
-          user_id_param: user.id
-        });
-
-        if (banCheckError) {
-          console.error('Ban check failed:', banCheckError);
-        } else if (isBannedResult === true) {
-          setIsBanned(true);
-          
-          // 获取禁言详细信息
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('ban_reason, banned_until')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (profile) {
-            setBanInfo({
-              reason: profile.ban_reason,
-              until: profile.banned_until
-            });
-          }
-        } else {
-          setIsBanned(false);
-          setBanInfo(null);
-        }
-      } catch (error) {
-        console.error('Failed to check ban status:', error);
-      }
-    };
-
-    checkBanStatus();
-
-    const fetchChatSessions = async () => {
-      try {
-        // 获取用户的聊天会话
-        const { data: sessions, error: sessionsError } = await supabase
-          .from("chat_sessions")
-          .select("*")
-          .or(`participant1_id.eq.${user.id},participant2_id.eq.${user.id}`)
-          .order("updated_at", { ascending: false });
-
-        if (sessionsError) throw sessionsError;
-
-        // 为每个会话获取对方用户信息和最后一条消息
-        const sessionsWithData = await Promise.all(
-          (sessions || []).map(async (session) => {
-            const otherUserId = session.participant1_id === user.id 
-              ? session.participant2_id 
-              : session.participant1_id;
-
-            // 获取对方用户资料
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("user_id", otherUserId)
-              .single();
-
-            // 获取最后一条消息
-            const { data: lastMessage } = await supabase
-              .from("chat_messages")
-              .select("content, created_at, sender_id")
-              .eq("session_id", session.id)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            // 获取未读消息数量
-            const { count: unreadCount } = await supabase
-              .from("chat_messages")
-              .select("*", { count: "exact", head: true })
-              .eq("session_id", session.id)
-              .neq("sender_id", user.id)
-              .eq("is_read", false);
-
-            return {
-              ...session,
-              otherUser: profile,
-              lastMessage,
-              unreadCount: unreadCount || 0
-            };
-          })
-        );
-
-        setChatSessions(sessionsWithData);
-      } catch (error) {
-        console.error("Failed to fetch chat sessions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChatSessions();
-  }, [user]);
-
-  // 增量刷新聊天会话数据（不整页刷新）
-  const refreshChatSessions = async () => {
+  // Shared fetch function for chat sessions (deduplication)
+  const fetchChatSessions = useCallback(async () => {
     if (!user) return;
     try {
       const { data: sessions, error: sessionsError } = await supabase
@@ -197,11 +90,55 @@ const ChatList = () => {
 
       setChatSessions(sessionsWithData);
     } catch (error) {
-      console.error("Failed to refresh chat sessions:", error);
+      console.error("Failed to fetch chat sessions:", error);
     }
-  };
+  }, [user]);
 
-  // 实时监听新消息和会话更新
+  // Check ban status and fetch chat sessions on mount
+  useEffect(() => {
+    if (!user) return;
+
+    const checkBanStatus = async () => {
+      try {
+        const { data: isBannedResult, error: banCheckError } = await supabase.rpc('is_user_banned', {
+          user_id_param: user.id
+        });
+
+        if (banCheckError) {
+          console.error('Ban check failed:', banCheckError);
+        } else if (isBannedResult === true) {
+          setIsBanned(true);
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('ban_reason, banned_until')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile) {
+            setBanInfo({
+              reason: profile.ban_reason,
+              until: profile.banned_until
+            });
+          }
+        } else {
+          setIsBanned(false);
+          setBanInfo(null);
+        }
+      } catch (error) {
+        console.error('Failed to check ban status:', error);
+      }
+    };
+
+    const init = async () => {
+      await checkBanStatus();
+      await fetchChatSessions();
+      setLoading(false);
+    };
+    init();
+  }, [user, fetchChatSessions]);
+
+  // Realtime subscription for new messages
   useEffect(() => {
     if (!user) return;
 
@@ -215,8 +152,7 @@ const ChatList = () => {
           table: 'chat_messages'
         },
         () => {
-          // 增量刷新，不整页刷新
-          refreshChatSessions();
+          fetchChatSessions();
         }
       )
       .subscribe();
@@ -224,7 +160,7 @@ const ChatList = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, fetchChatSessions]);
 
   const formatLastMessageTime = (timestamp: string) => {
     const now = new Date();
@@ -249,7 +185,7 @@ const ChatList = () => {
     return session.can_chat_until && new Date(session.can_chat_until) < new Date();
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background p-4 pb-24">
         <div className="max-w-md mx-auto pt-8">
@@ -288,8 +224,7 @@ const ChatList = () => {
                   description: t('chat.cleanupDesc', { count: data || 0 }),
                 });
                 
-                // 增量刷新聊天列表
-                refreshChatSessions();
+                fetchChatSessions();
               } catch (error: any) {
                 toast({
                   title: t('chat.cleanupFailed'),
@@ -309,19 +244,19 @@ const ChatList = () => {
           <Alert className="mb-6 border-destructive bg-destructive/10">
             <MessageSquareOff className="h-4 w-4 text-destructive" />
             <AlertDescription className="text-destructive">
-              <div className="font-medium mb-1">您的账户已被禁言</div>
+              <div className="font-medium mb-1">{t('chat.banned', '您的账户已被禁言')}</div>
               {banInfo?.reason && (
-                <div className="text-sm mb-1">原因: {banInfo.reason}</div>
+                <div className="text-sm mb-1">{t('chat.banReason', '原因')}: {banInfo.reason}</div>
               )}
               {banInfo?.until ? (
                 <div className="text-sm">
-                  禁言至: {new Date(banInfo.until).toLocaleString('zh-CN')}
+                  {t('chat.bannedUntil', '禁言至')}: {new Date(banInfo.until).toLocaleString(i18n.language === 'zh' ? 'zh-CN' : 'en-US')}
                 </div>
               ) : (
-                <div className="text-sm">永久禁言</div>
+                <div className="text-sm">{t('chat.permanentBan', '永久禁言')}</div>
               )}
               <div className="text-sm mt-1 text-muted-foreground">
-                在禁言期间，您无法发送消息。如有疑问请联系管理员。
+                {t('chat.banNotice', '在禁言期间，您无法发送消息。如有疑问请联系管理员。')}
               </div>
             </AlertDescription>
           </Alert>
@@ -355,7 +290,7 @@ const ChatList = () => {
                     <div 
                       className="relative cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={(e) => {
-                        e.stopPropagation(); // 阻止卡片的点击事件
+                        e.stopPropagation();
                         if (session.otherUser?.user_id) {
                           navigate(`/user/${session.otherUser.user_id}`);
                         }
@@ -364,7 +299,7 @@ const ChatList = () => {
                       <Avatar className="w-12 h-12">
                         <AvatarImage 
                           src={session.otherUser?.avatar_url || ""} 
-                          alt={session.otherUser?.nickname || "用户"} 
+                          alt={session.otherUser?.nickname || t('myDinners.unknownUser')} 
                         />
                         <AvatarFallback className="bg-primary/10 text-primary">
                           {session.otherUser?.nickname?.[0] || "U"}

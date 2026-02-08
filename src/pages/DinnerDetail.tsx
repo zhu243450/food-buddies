@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import { DinnerReviewSection } from "@/components/DinnerReviewSection";
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Dinner } from '@/types/database';
 
 interface Participant {
@@ -30,7 +30,7 @@ const DinnerDetail = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [dinner, setDinner] = useState<Dinner | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [isParticipant, setIsParticipant] = useState(false);
@@ -41,14 +41,7 @@ const DinnerDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user ?? null);
-    };
 
-    getUser();
-  }, [navigate]);
 
   useEffect(() => {
     const fetchDinnerDetails = async () => {

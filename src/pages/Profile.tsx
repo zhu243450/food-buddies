@@ -19,14 +19,14 @@ import { useSEO } from "@/hooks/useSEO";
 import DinnerMediaUploader from "@/components/DinnerPhotoUploader";
 import PersonalPhotoGallery from "@/components/PersonalPhotoGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Profile = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getPageSEO } = useSEO();
   const { toast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -84,22 +84,25 @@ const Profile = () => {
     setMyPhotos(allPhotos || []);
   };
 
+  // Redirect if not logged in
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
-      
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
+
+  // Load profile data and check admin
+  useEffect(() => {
+    if (!user) return;
+
+    const loadProfile = async () => {
       // 获取现有资料
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
-      
+
       if (profile) {
         setFormData({
           nickname: profile.nickname || "",
@@ -114,79 +117,76 @@ const Profile = () => {
 
       // 检查是否是管理员
       try {
-        const { data: roles } = await supabase.rpc('get_user_roles', { 
-          _user_id: user.id 
+        const { data: roles } = await supabase.rpc('get_user_roles', {
+          _user_id: user.id
         });
         setIsAdmin(roles?.some((role: any) => role.role === 'admin') || false);
       } catch (error) {
         console.error('Failed to check admin role:', error);
       }
-
-      // 设置实时监听用户照片的点赞和评论
-      const likesChannel = supabase
-        .channel('user-photo-likes')
-        .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'photo_likes' },
-          async (payload) => {
-            if (payload.new && 'user_id' in payload.new && payload.new.user_id !== user.id) {
-              // 检查是否是对用户照片的点赞
-              const { data: photo } = await supabase
-                .from('dinner_photos')
-                .select('user_id')
-                .eq('id', (payload.new as any).photo_id)
-                .single();
-              
-              if (photo?.user_id === user.id) {
-                // 显示通知
-                toast({
-                  title: t('photoGallery.newLike'),
-                  description: t('photoGallery.someonelikedYourPhoto'),
-                  className: "border-destructive/50 bg-destructive/10 text-destructive",
-                });
-                // 刷新照片数据
-                fetchUserPhotos();
-              }
-            }
-          })
-        .subscribe();
-
-      const commentsChannel = supabase
-        .channel('user-photo-comments')
-        .on('postgres_changes',
-          { event: '*', schema: 'public', table: 'photo_comments' },
-          async (payload) => {
-            if (payload.new && 'user_id' in payload.new && payload.new.user_id !== user.id) {
-              // 检查是否是对用户照片的评论
-              const { data: photo } = await supabase
-                .from('dinner_photos')
-                .select('user_id')
-                .eq('id', (payload.new as any).photo_id)
-                .single();
-              
-              if (photo?.user_id === user.id) {
-                // 显示通知
-                toast({
-                  title: t('photoGallery.newComment'),
-                  description: t('photoGallery.someoneCommentedYourPhoto'),
-                  className: "border-destructive/50 bg-destructive/10 text-destructive",
-                });
-                // 刷新照片数据
-                fetchUserPhotos();
-              }
-            }
-          })
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(likesChannel);
-        supabase.removeChannel(commentsChannel);
-      };
     };
+    loadProfile();
+  }, [user]);
 
-    getUser();
-  }, [navigate, toast]);
+  // Realtime subscriptions with proper cleanup
+  useEffect(() => {
+    if (!user) return;
 
-  // 当user设置后，获取照片
+    const likesChannel = supabase
+      .channel('user-photo-likes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'photo_likes' },
+        async (payload) => {
+          if (payload.new && 'user_id' in payload.new && payload.new.user_id !== user.id) {
+            const { data: photo } = await supabase
+              .from('dinner_photos')
+              .select('user_id')
+              .eq('id', (payload.new as any).photo_id)
+              .single();
+
+            if (photo?.user_id === user.id) {
+              toast({
+                title: t('photoGallery.newLike'),
+                description: t('photoGallery.someonelikedYourPhoto'),
+                className: "border-destructive/50 bg-destructive/10 text-destructive",
+              });
+              fetchUserPhotos();
+            }
+          }
+        })
+      .subscribe();
+
+    const commentsChannel = supabase
+      .channel('user-photo-comments')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'photo_comments' },
+        async (payload) => {
+          if (payload.new && 'user_id' in payload.new && payload.new.user_id !== user.id) {
+            const { data: photo } = await supabase
+              .from('dinner_photos')
+              .select('user_id')
+              .eq('id', (payload.new as any).photo_id)
+              .single();
+
+            if (photo?.user_id === user.id) {
+              toast({
+                title: t('photoGallery.newComment'),
+                description: t('photoGallery.someoneCommentedYourPhoto'),
+                className: "border-destructive/50 bg-destructive/10 text-destructive",
+              });
+              fetchUserPhotos();
+            }
+          }
+        })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(likesChannel);
+      supabase.removeChannel(commentsChannel);
+    };
+  }, [user, toast, t]);
+
+  // 当user可用时，获取照片
   useEffect(() => {
     if (user) {
       fetchUserPhotos();

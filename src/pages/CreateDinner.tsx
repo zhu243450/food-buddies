@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { MultiSelect } from "@/components/ui/multi-select";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CreateDinner = () => {
   const { t, i18n } = useTranslation();
@@ -84,7 +84,7 @@ const CreateDinner = () => {
     { value: 'themed', emoji: '🎮', labelKey: 'dinnerCategory.themed' },
   ];
 
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [restriction, setRestriction] = useState<{
@@ -112,20 +112,17 @@ const CreateDinner = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
-      
-      // 检查用户创建饭局的限制
+    if (!authLoading && !user) {
+      navigate("/auth");
+      return;
+    }
+    if (!user) return;
+
+    const checkRestrictions = async () => {
       try {
         const { data, error } = await supabase.rpc('check_user_cancellation_restrictions', {
           user_id_param: user.id
         });
-
         if (!error && data && data.length > 0) {
           setRestriction(data[0]);
         }
@@ -133,9 +130,8 @@ const CreateDinner = () => {
         console.error("Error checking restrictions:", error);
       }
     };
-
-    getUser();
-  }, [navigate]);
+    checkRestrictions();
+  }, [user, authLoading, navigate]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -189,7 +185,7 @@ const CreateDinner = () => {
         title: t('dinner.publishSuccess'),
         description: t('dinner.publishSuccessDesc'),
       });
-      navigate("/discover");
+      navigate("/discover?tab=myDinners");
     }
     
     setLoading(false);
