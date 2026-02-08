@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from '@/contexts/AuthContext';
 import { Gift, X, Sparkles, Users, Utensils } from 'lucide-react';
 
@@ -24,6 +24,7 @@ const Auth = () => {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // 从URL获取邀请码
   useEffect(() => {
@@ -33,9 +34,9 @@ const Auth = () => {
     }
   }, [searchParams]);
 
-  // 如果用户已登录，不显示认证页面
+  // 如果用户已登录，重定向到发现页
   if (user) {
-    return null;
+    return <Navigate to="/discover" replace />;
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -155,8 +156,8 @@ const Auth = () => {
         title: t('auth.signInSuccess'),
         description: t('auth.redirecting'),
       });
+      navigate('/discover', { replace: true });
     }
-    
     setLoading(false);
   };
 
