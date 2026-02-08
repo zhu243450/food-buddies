@@ -43,12 +43,26 @@ import "./i18n";
 
 // Routes where bottom navigation should NOT appear
 const HIDE_NAV_ROUTES = ['/', '/auth', '/admin'];
+const HIDE_NAV_PREFIXES = ['/chat/'];
+
+// Routes where footer should NOT appear (mobile-focused pages)
+const HIDE_FOOTER_ROUTES = ['/', '/auth', '/admin', '/chat-list', '/create-dinner', '/notifications', '/feedback'];
+const HIDE_FOOTER_PREFIXES = ['/chat/', '/dinner/', '/user/'];
 
 function GlobalNavigation() {
   const location = useLocation();
-  const shouldHideNav = HIDE_NAV_ROUTES.includes(location.pathname);
+  const shouldHideNav = HIDE_NAV_ROUTES.includes(location.pathname) || 
+    HIDE_NAV_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
   if (shouldHideNav) return null;
   return <Navigation />;
+}
+
+function GlobalFooter() {
+  const location = useLocation();
+  const shouldHideFooter = HIDE_FOOTER_ROUTES.includes(location.pathname) ||
+    HIDE_FOOTER_PREFIXES.some(prefix => location.pathname.startsWith(prefix));
+  if (shouldHideFooter) return null;
+  return <Footer />;
 }
 
 const queryClient = new QueryClient({
@@ -199,7 +213,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
             <GlobalNavigation />
-            <Footer />
+            <GlobalFooter />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

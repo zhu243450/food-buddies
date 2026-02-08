@@ -14,7 +14,7 @@ import { ChatMessage } from "@/components/ChatMessage";
 import { EvidenceImageViewer } from "@/components/EvidenceImageViewer";
 import { MultiImageUploader } from "@/components/chat/MultiImageUploader";
 import { LocationPicker, LocationData } from "@/components/chat/LocationPicker";
-import type { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 import type { ChatSession, ChatMessage as ChatMessageType, Profile } from '@/types/database';
 
 interface MessageWithProfile extends ChatMessageType {
@@ -25,7 +25,7 @@ interface MessageWithProfile extends ChatMessageType {
 const Chat = () => {
   const { t } = useTranslation();
   const { sessionId } = useParams();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading } = useAuth();
   const [session, setChatSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<MessageWithProfile[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -40,17 +40,10 @@ const Chat = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
-    };
-
-    getUser();
-  }, [navigate]);
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (!user || !sessionId || hasFetchedRef.current) {
