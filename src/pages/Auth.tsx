@@ -36,7 +36,7 @@ const Auth = () => {
 
   // 如果用户已登录，重定向到发现页
   if (user) {
-    return <Navigate to="/discover" replace />;
+    return <Navigate to="/discover?tab=myDinners" replace />;
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -156,7 +156,7 @@ const Auth = () => {
         title: t('auth.signInSuccess'),
         description: t('auth.redirecting'),
       });
-      navigate('/discover', { replace: true });
+      navigate('/discover?tab=myDinners', { replace: true });
     }
     setLoading(false);
   };
