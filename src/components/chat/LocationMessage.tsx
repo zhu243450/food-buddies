@@ -23,7 +23,7 @@ export function LocationMessage({ content, isOwn }: LocationMessageProps) {
     // 兼容旧格式或纯文本地址
     return (
       <div className={`rounded-lg px-3 py-2 ${
-        isOwn ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+        isOwn ? "bg-gradient-primary text-white" : "bg-muted text-foreground"
       }`}>
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 flex-shrink-0" />
@@ -49,7 +49,7 @@ export function LocationMessage({ content, isOwn }: LocationMessageProps) {
 
   return (
     <div className={`rounded-lg overflow-hidden max-w-xs ${
-      isOwn ? "bg-primary" : "bg-muted"
+      isOwn ? "bg-gradient-primary" : "bg-muted"
     }`}>
       {/* 地图预览占位 */}
       {hasCoordinates && (
@@ -65,7 +65,7 @@ export function LocationMessage({ content, isOwn }: LocationMessageProps) {
       )}
       
       {/* 位置信息 */}
-      <div className={`p-3 ${isOwn ? "text-primary-foreground" : "text-foreground"}`}>
+      <div className={`p-3 ${isOwn ? "text-white" : "text-foreground"}`}>
         <div className="flex items-start gap-2">
           <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
@@ -86,7 +86,7 @@ export function LocationMessage({ content, isOwn }: LocationMessageProps) {
             size="sm"
             className={`w-full mt-2 h-8 text-xs ${
               isOwn 
-                ? "text-primary-foreground hover:bg-white/20" 
+                ? "text-white hover:bg-white/20" 
                 : "text-foreground hover:bg-black/10"
             }`}
             onClick={openInMaps}
