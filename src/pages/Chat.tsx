@@ -53,7 +53,8 @@ const Chat = () => {
 
   useEffect(() => {
     if (!user || !sessionId) {
-      setLoading(false);
+      // 仅在明确无 sessionId 时停止 loading，等 user 加载完
+      if (!sessionId) setLoading(false);
       return;
     }
 
@@ -135,7 +136,7 @@ const Chat = () => {
 
   // 实时监听新消息和消息更新
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || !user) return;
 
     const channel = supabase
       .channel(`chat:${sessionId}`)
@@ -159,21 +160,25 @@ const Chat = () => {
 
           const messageWithProfile: MessageWithProfile = {
             ...newMessage,
-            message_type: newMessage.message_type as 'text' | 'image' | 'video' | 'location',
+            message_type: (newMessage.message_type || 'text') as 'text' | 'image' | 'video' | 'location',
             sender: senderProfile
           };
 
           setMessages(prev => {
-            // 如果 Realtime 推送的消息 ID 已存在，跳过
-            if (prev.some(m => m.id === messageWithProfile.id)) return prev;
+            // 如果消息 ID 已存在（包括乐观消息被替换的情况），用真实数据替换
+            const existingIndex = prev.findIndex(m => m.id === messageWithProfile.id);
+            if (existingIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIndex] = messageWithProfile;
+              return updated;
+            }
             
-            // 如果是自己发的消息，替换乐观消息（匹配 content + sender_id + message_type）
-            if (newMessage.sender_id === user?.id) {
+            // 如果是自己发的消息，可能有乐观消息需要替换（ID 以 optimistic- 开头）
+            if (newMessage.sender_id === user.id) {
               const optimisticIndex = prev.findIndex(m => 
+                m.id.startsWith('optimistic-') && 
                 m.sender_id === newMessage.sender_id && 
-                m.content === newMessage.content && 
-                m.message_type === (newMessage.message_type as string) &&
-                !prev.some(existing => existing.id === newMessage.id)
+                m.content === newMessage.content
               );
               if (optimisticIndex !== -1) {
                 const updated = [...prev];
@@ -186,7 +191,7 @@ const Chat = () => {
           });
 
           // 如果不是自己发的消息，标记为已读
-          if (newMessage.sender_id !== user?.id) {
+          if (newMessage.sender_id !== user.id) {
             await supabase
               .from("chat_messages")
               .update({ is_read: true })
@@ -206,7 +211,7 @@ const Chat = () => {
           const updatedMessage = payload.new as ChatMessageType;
           setMessages(prev => prev.map(msg => 
             msg.id === updatedMessage.id 
-              ? { ...msg, content: updatedMessage.content, message_type: updatedMessage.message_type as 'text' | 'image' | 'video' | 'location' }
+              ? { ...msg, content: updatedMessage.content, message_type: (updatedMessage.message_type || 'text') as 'text' | 'image' | 'video' | 'location' }
               : msg
           ));
         }
@@ -216,7 +221,7 @@ const Chat = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionId, user?.id]);
+  }, [sessionId, user]);
 
   // 自动滚动到底部
   useEffect(() => {
@@ -247,7 +252,7 @@ const Chat = () => {
       }
 
       // 先构建乐观消息，确保即使 Realtime 失败也能显示
-      const optimisticId = crypto.randomUUID();
+      const optimisticId = `optimistic-${crypto.randomUUID()}`;
       const optimisticMessage: MessageWithProfile = {
         id: optimisticId,
         session_id: sessionId,
@@ -262,19 +267,31 @@ const Chat = () => {
       // 立即在 UI 中显示消息
       setMessages(prev => [...prev, optimisticMessage]);
 
-      const { error } = await supabase
+      const { data: insertedMessage, error } = await supabase
         .from("chat_messages")
         .insert({
           session_id: sessionId,
           sender_id: user.id,
           content: messageContent,
           message_type: messageType
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         // 插入失败，移除乐观消息
         setMessages(prev => prev.filter(m => m.id !== optimisticId));
         throw error;
+      }
+
+      // 用真实数据替换乐观消息
+      if (insertedMessage) {
+        const realMessage: MessageWithProfile = {
+          ...insertedMessage,
+          message_type: (insertedMessage.message_type || 'text') as 'text' | 'image' | 'video' | 'location',
+          sender: null,
+        };
+        setMessages(prev => prev.map(m => m.id === optimisticId ? realMessage : m));
       }
       
       if (messageType === 'text') {
@@ -364,7 +381,7 @@ const Chat = () => {
     );
   }
 
-  if (!session || !otherUser) {
+  if (!session || !otherUser || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center">
