@@ -12,12 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Send } from 'lucide-react';
 import { ImageUploader } from '@/components/ImageUploader';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 
 export default function Feedback() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
+  const { t } = useTranslation();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     category: '',
@@ -30,24 +33,17 @@ export default function Feedback() {
   const seoData = getPageSEO('feedback');
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-      setUser(user);
-    };
-
-    getUser();
-  }, [navigate]);
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   const categories = [
-    { value: 'bug', label: '问题反馈' },
-    { value: 'feature', label: '功能建议' },
-    { value: 'user_experience', label: '用户体验' },
-    { value: 'content', label: '内容问题' },
-    { value: 'other', label: '其他' }
+    { value: 'bug', label: t('feedback.categoryBug') },
+    { value: 'feature', label: t('feedback.categoryFeature') },
+    { value: 'user_experience', label: t('feedback.categoryUX') },
+    { value: 'content', label: t('feedback.categoryContent') },
+    { value: 'other', label: t('feedback.categoryOther') }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,8 +51,8 @@ export default function Feedback() {
     
     if (!formData.category || !formData.title || !formData.description) {
       toast({
-        title: '请填写完整信息',
-        description: '请确保所有必填项都已填写',
+        title: t('feedback.incompleteTitle'),
+        description: t('feedback.incompleteDesc'),
         variant: 'destructive'
       });
       return;
@@ -79,8 +75,8 @@ export default function Feedback() {
       if (error) throw error;
 
       toast({
-        title: '反馈提交成功',
-        description: '感谢您的反馈，我们会认真处理您的建议'
+        title: t('feedback.submitSuccess'),
+        description: t('feedback.submitSuccessDesc')
       });
 
       // 重置表单
@@ -94,8 +90,8 @@ export default function Feedback() {
     } catch (error) {
       console.error('提交反馈失败:', error);
       toast({
-        title: '提交失败',
-        description: '请稍后重试',
+        title: t('feedback.submitFailed'),
+        description: t('feedback.submitFailedDesc'),
         variant: 'destructive'
       });
     } finally {
@@ -110,7 +106,7 @@ export default function Feedback() {
     }));
   };
 
-  if (!user) return null;
+  if (!user || authLoading) return null;
 
   return (
     <>
@@ -142,15 +138,15 @@ export default function Feedback() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-bold">意见反馈</h1>
+            <h1 className="text-2xl font-bold">{t('feedback.title')}</h1>
           </div>
 
           {/* 反馈表单 */}
           <Card>
             <CardHeader>
-              <CardTitle>提交反馈</CardTitle>
+              <CardTitle>{t('feedback.submitFeedback')}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                您的反馈对我们很重要，帮助我们改善产品体验
+                {t('feedback.subtitle')}
               </p>
             </CardHeader>
             
@@ -158,13 +154,13 @@ export default function Feedback() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* 反馈类型 */}
                 <div className="space-y-2">
-                  <Label htmlFor="category">反馈类型 *</Label>
+                  <Label htmlFor="category">{t('feedback.categoryLabel')} *</Label>
                   <Select 
                     value={formData.category} 
                     onValueChange={(value) => handleInputChange('category', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="请选择反馈类型" />
+                      <SelectValue placeholder={t('feedback.categoryPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map(category => (
@@ -178,12 +174,12 @@ export default function Feedback() {
 
                 {/* 标题 */}
                 <div className="space-y-2">
-                  <Label htmlFor="title">反馈标题 *</Label>
+                  <Label htmlFor="title">{t('feedback.titleLabel')} *</Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    placeholder="请简要描述您的反馈"
+                    placeholder={t('feedback.titlePlaceholder')}
                     maxLength={100}
                   />
                   <p className="text-xs text-muted-foreground">
@@ -193,12 +189,12 @@ export default function Feedback() {
 
                 {/* 详细描述 */}
                 <div className="space-y-2">
-                  <Label htmlFor="description">详细描述 *</Label>
+                  <Label htmlFor="description">{t('feedback.descriptionLabel')} *</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="请详细描述您遇到的问题或建议..."
+                    placeholder={t('feedback.descriptionPlaceholder')}
                     className="min-h-[120px] resize-none"
                     maxLength={1000}
                   />
@@ -209,7 +205,7 @@ export default function Feedback() {
 
                 {/* 图片上传 */}
                 <div className="space-y-2">
-                  <Label>相关图片（可选）</Label>
+                  <Label>{t('feedback.imagesLabel')}</Label>
                   <ImageUploader
                     userId={user.id}
                     onImagesChange={setEvidenceUrls}
@@ -225,7 +221,7 @@ export default function Feedback() {
                   disabled={loading}
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  {loading ? '提交中...' : '提交反馈'}
+                  {loading ? t('feedback.submitting') : t('feedback.submitBtn')}
                 </Button>
               </form>
             </CardContent>
@@ -235,13 +231,12 @@ export default function Feedback() {
           <Card className="mt-6">
             <CardContent className="pt-6">
               <div className="text-center space-y-2">
-                <h3 className="font-medium">其他联系方式</h3>
+                <h3 className="font-medium">{t('feedback.otherContact')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  如果您遇到紧急问题，可以通过以下方式联系我们：
+                  {t('feedback.otherContactDesc')}
                 </p>
                 <div className="text-sm space-y-1">
-                  <p>邮箱：support@dinnerapp.com</p>
-                  <p>微信客服：dinnerapp_service</p>
+                  <p>{t('footer.email')}: weishang99@gmail.com</p>
                 </div>
               </div>
             </CardContent>

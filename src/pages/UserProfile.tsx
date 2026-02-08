@@ -9,11 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, User, Calendar, Heart, Utensils, Clock, Camera, MessageCircle, Send, X } from "lucide-react";
 import { FriendActionButton } from "@/components/FriendshipComponents";
-
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserProfileData {
   id: string;
@@ -49,7 +48,7 @@ const UserProfile = () => {
   const { userId } = useParams();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
+  const { user: currentUser, loading: authLoading } = useAuth();
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [userPhotos, setUserPhotos] = useState<any[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<any | null>(null);
@@ -61,17 +60,10 @@ const UserProfile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setCurrentUser(user);
-    };
-
-    getCurrentUser();
-  }, [navigate]);
+    if (!authLoading && !currentUser) {
+      navigate("/auth");
+    }
+  }, [currentUser, authLoading, navigate]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {

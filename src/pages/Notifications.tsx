@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, Check, CheckCheck, Calendar, AlertTriangle, Info } from 'lucide-react';
@@ -9,12 +9,20 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import { SEO } from '@/components/SEO';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Notifications = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  // Auth guard
+  if (!authLoading && !user) {
+    navigate('/auth');
+    return null;
+  }
 
   const getNotificationIcon = (type: string, category: string) => {
     if (category === 'dinner_cancelled') {
@@ -38,9 +46,18 @@ const Notifications = () => {
       await markAsRead(notification.id);
     }
     
-    // 根据通知类型跳转到相应页面
     if (notification.category === 'dinner_cancelled' && notification.related_dinner_id) {
-      navigate('/my-dinners');
+      navigate('/discover?tab=myDinners');
+    }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'dinner_cancelled': return t('notifications.categoryDinnerCancelled');
+      case 'dinner_updated': return t('notifications.categoryDinnerUpdated');
+      case 'chat_message': return t('notifications.categoryChatMessage');
+      case 'general': return t('notifications.categoryGeneral');
+      default: return category;
     }
   };
 
@@ -48,12 +65,14 @@ const Notifications = () => {
     ? notifications.filter(n => !n.is_read)
     : notifications;
 
+  const dateLocale = i18n.language === 'zh' ? { locale: zhCN } : {};
+
   return (
     <>
       <SEO
-        title="通知中心 - 饭约社"
-        description="查看您的饭局通知、消息提醒和系统更新"
-        keywords="通知,消息,饭局提醒,系统更新"
+        title={t('notifications.seoTitle')}
+        description={t('notifications.seoDescription')}
+        keywords={t('notifications.seoKeywords')}
       />
       
       <div className="min-h-screen bg-gradient-to-br from-background to-accent/20 p-4">
@@ -69,10 +88,10 @@ const Notifications = () => {
                     if (document.referrer && document.referrer !== window.location.href) {
                       navigate(-1);
                     } else {
-                      navigate('/my-dinners');
+                      navigate('/discover?tab=myDinners');
                     }
                   } catch {
-                    navigate('/my-dinners');
+                    navigate('/discover?tab=myDinners');
                   }
                 }}
                 className="p-2"
@@ -80,10 +99,10 @@ const Notifications = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">通知中心</h1>
+                <h1 className="text-2xl font-bold">{t('notifications.title')}</h1>
                 {unreadCount > 0 && (
                   <p className="text-muted-foreground text-sm">
-                    您有 {unreadCount} 条未读通知
+                    {t('notifications.unreadCount', { count: unreadCount })}
                   </p>
                 )}
               </div>
@@ -96,7 +115,7 @@ const Notifications = () => {
                 onClick={markAllAsRead}
               >
                 <CheckCheck className="w-4 h-4 mr-2" />
-                全部已读
+                {t('notifications.markAllRead')}
               </Button>
             )}
           </div>
@@ -108,14 +127,14 @@ const Notifications = () => {
               size="sm"
               onClick={() => setFilter('all')}
             >
-              全部通知 ({notifications.length})
+              {t('notifications.allNotifications')} ({notifications.length})
             </Button>
             <Button
               variant={filter === 'unread' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilter('unread')}
             >
-              未读通知 ({unreadCount})
+              {t('notifications.unreadNotifications')} ({unreadCount})
             </Button>
           </div>
 
@@ -123,19 +142,19 @@ const Notifications = () => {
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">加载中...</p>
+              <p className="mt-4 text-muted-foreground">{t('common.loading')}</p>
             </div>
           ) : filteredNotifications.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <Bell className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h3 className="font-medium mb-2">
-                  {filter === 'unread' ? '暂无未读通知' : '暂无通知'}
+                  {filter === 'unread' ? t('notifications.noUnread') : t('notifications.noNotifications')}
                 </h3>
                 <p className="text-muted-foreground text-sm">
                   {filter === 'unread' 
-                    ? '您已查看了所有通知'
-                    : '当有新的饭局消息时，我们会通知您'
+                    ? t('notifications.allRead')
+                    : t('notifications.willNotify')
                   }
                 </p>
               </CardContent>
@@ -185,15 +204,12 @@ const Notifications = () => {
                           <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(notification.created_at), {
                               addSuffix: true,
-                              locale: zhCN,
+                              ...dateLocale,
                             })}
                           </span>
                           {notification.category && (
                             <Badge variant="secondary" className="text-xs">
-                              {notification.category === 'dinner_cancelled' && '饭局取消'}
-                              {notification.category === 'dinner_updated' && '饭局更新'}
-                              {notification.category === 'chat_message' && '聊天消息'}
-                              {notification.category === 'general' && '系统通知'}
+                              {getCategoryLabel(notification.category)}
                             </Badge>
                           )}
                         </div>
