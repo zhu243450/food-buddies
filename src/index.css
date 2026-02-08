@@ -6,48 +6,48 @@
 
 @layer base {
   :root {
-    /* 年轻活泼的渐变配色系统 - 优化版本 */
-    --background: 280 15% 97%;
-    --foreground: 230 15% 15%;
+    /* 年轻活泼的渐变配色系统 - 高对比度优化 */
+    --background: 0 0% 100%;
+    --foreground: 230 20% 10%;
 
-    --card: 280 30% 98%;
-    --card-foreground: 230 15% 15%;
+    --card: 280 20% 97%;
+    --card-foreground: 230 20% 10%;
 
-    --popover: 280 30% 98%;
-    --popover-foreground: 230 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 20% 10%;
 
     /* 主色调：活力紫红渐变 - 加深确保对比度 */
-    --primary: 315 85% 45%;
+    --primary: 315 85% 42%;
     --primary-foreground: 0 0% 100%;
 
     /* 次要色：明亮青蓝 - 加深 */
-    --secondary: 195 85% 35%;
+    --secondary: 195 85% 32%;
     --secondary-foreground: 0 0% 100%;
 
-    /* 静音色：浅紫灰 */
-    --muted: 280 20% 92%;
-    --muted-foreground: 230 25% 45%;
+    /* 静音色：浅紫灰 - 前景色加深 */
+    --muted: 280 15% 93%;
+    --muted-foreground: 230 15% 35%;
 
     /* 强调色：霓虹橙 - 加深 */
-    --accent: 25 95% 45%;
+    --accent: 25 95% 42%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 280 20% 85%;
-    --input: 280 20% 90%;
-    --ring: 315 85% 45%;
+    --border: 280 15% 82%;
+    --input: 280 15% 88%;
+    --ring: 315 85% 42%;
 
     --radius: 1rem;
 
     /* 性能优化的渐变和阴影 - 使用更深的颜色 */
-    --gradient-primary: linear-gradient(135deg, hsl(315 85% 45%), hsl(25 95% 45%));
-    --gradient-secondary: linear-gradient(135deg, hsl(195 85% 35%), hsl(280 70% 45%));
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 45%), hsl(315 85% 45%));
+    --gradient-primary: linear-gradient(135deg, hsl(315 85% 42%), hsl(25 95% 42%));
+    --gradient-secondary: linear-gradient(135deg, hsl(195 85% 32%), hsl(280 70% 42%));
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 42%), hsl(315 85% 42%));
     
-    --shadow-glow: 0 0 30px hsl(315 85% 45% / 0.3);
-    --shadow-card: 0 10px 40px hsl(315 85% 45% / 0.1);
+    --shadow-glow: 0 0 30px hsl(315 85% 42% / 0.3);
+    --shadow-card: 0 10px 40px hsl(315 85% 42% / 0.1);
 
     /* 状态语义色 */
     --warning: 35 95% 50%;
@@ -57,14 +57,14 @@
     --info: 210 80% 50%;
     --info-foreground: 0 0% 100%;
 
-    --sidebar-background: 280 30% 98%;
-    --sidebar-foreground: 230 15% 15%;
-    --sidebar-primary: 315 85% 45%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 230 20% 10%;
+    --sidebar-primary: 315 85% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 280 20% 92%;
-    --sidebar-accent-foreground: 230 15% 15%;
-    --sidebar-border: 280 20% 85%;
-    --sidebar-ring: 315 85% 45%;
+    --sidebar-accent: 280 15% 93%;
+    --sidebar-accent-foreground: 230 20% 10%;
+    --sidebar-border: 280 15% 82%;
+    --sidebar-ring: 315 85% 42%;
   }
 
   .dark {
@@ -173,7 +173,7 @@
   
   /* 渐变背景工具类 - 直接定义确保兼容性 */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(315 85% 45%), hsl(25 95% 45%));
+    background: linear-gradient(135deg, hsl(315 85% 42%), hsl(25 95% 42%));
   }
   .dark .bg-gradient-primary {
     background: linear-gradient(135deg, hsl(315 100% 65%), hsl(25 100% 60%));
