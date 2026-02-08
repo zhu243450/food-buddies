@@ -70,6 +70,16 @@ const getModeConfig = (mode: string | undefined) => {
   }
 };
 
+const categoryConfig: Record<string, { emoji: string; labelKey: string }> = {
+  business: { emoji: '🤝', labelKey: 'dinnerCategory.business' },
+  friends: { emoji: '🎉', labelKey: 'dinnerCategory.friends' },
+  meetup: { emoji: '🆕', labelKey: 'dinnerCategory.meetup' },
+  celebration: { emoji: '🎂', labelKey: 'dinnerCategory.celebration' },
+  foodie: { emoji: '🍜', labelKey: 'dinnerCategory.foodie' },
+  family: { emoji: '🏠', labelKey: 'dinnerCategory.family' },
+  themed: { emoji: '🎮', labelKey: 'dinnerCategory.themed' },
+};
+
 const getMatchScoreConfig = (score: number | undefined) => {
   if (score === undefined || score <= 0) return null;
   if (score >= 70) return { emoji: '🔥', colorClass: 'bg-destructive/10 text-destructive border-destructive/30', label: 'excellent' };
@@ -87,6 +97,8 @@ export const EnhancedDinnerCard = memo<EnhancedDinnerCardProps>(({
   const fillPercent = Math.min((participantCount / dinner.max_participants) * 100, 100);
   const primaryFood = dinner.food_preferences?.[0];
   const scoreConfig = getMatchScoreConfig(matchScore);
+  const dinnerCategory = (dinner as any).dinner_category;
+  const catConfig = dinnerCategory ? categoryConfig[dinnerCategory] : null;
 
   const handleJoinClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -122,8 +134,13 @@ export const EnhancedDinnerCard = memo<EnhancedDinnerCardProps>(({
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Badge variant="outline" className={`text-xs px-2 py-0.5 ${modeConfig.colorClass}`}>
-              {modeConfig.label} {t(`dinner.${dinner.dinner_mode || 'scheduled'}`)}
+            {modeConfig.label} {t(`dinner.${dinner.dinner_mode || 'scheduled'}`)}
             </Badge>
+            {catConfig && (
+              <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 text-foreground border-border/60">
+                {catConfig.emoji} {t(catConfig.labelKey)}
+              </Badge>
+            )}
             {timeInfo.isUrgent && (
               <Badge className="text-xs px-2 py-0.5 bg-destructive/15 text-destructive border border-destructive/30 animate-pulse">
                 🔥 {timeInfo.label}

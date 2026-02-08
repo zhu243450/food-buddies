@@ -142,6 +142,16 @@
     "confirmLeave": "Confirm leaving",
     "normal": "Normal"
   },
+  "dinnerCategory": {
+    "label": "Dinner Scene",
+    "business": "Business",
+    "friends": "Friends",
+    "meetup": "Meetup",
+    "celebration": "Celebration",
+    "foodie": "Foodie",
+    "family": "Family",
+    "themed": "Themed"
+  },
   "profile": {
     "viewProfile": "View Profile",
     "editProfile": "Edit Profile",
