@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Users } from "lucide-react";
-import Navigation from "@/components/Navigation";
+
 import ShareDinner from "@/components/ShareDinner";
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import { SEO } from "@/components/SEO";
@@ -377,7 +377,6 @@ const Discover = () => {
         description={seoData.description}
         keywords={seoData.keywords}
       />
-      <Navigation />
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">

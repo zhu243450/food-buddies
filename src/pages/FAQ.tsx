@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Navigation from '@/components/Navigation';
+
 import { SEO } from '@/components/SEO';
 import { useSEO } from '@/hooks/useSEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -143,7 +143,7 @@ export const FAQ: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO {...seoData} />
-      <Navigation />
+      
       
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}

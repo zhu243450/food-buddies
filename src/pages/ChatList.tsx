@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, Clock, MessageSquareOff } from "lucide-react";
-import Navigation from "@/components/Navigation";
+
 import type { User } from '@supabase/supabase-js';
 import type { ChatSession, Profile } from '@/types/database';
 
@@ -258,7 +258,6 @@ const ChatList = () => {
             <p className="text-muted-foreground">{t('chat.loading')}</p>
           </div>
         </div>
-        <Navigation />
       </div>
     );
   }
@@ -419,7 +418,7 @@ const ChatList = () => {
           </div>
         )}
       </div>
-      <Navigation />
+      
     </div>
   );
 };

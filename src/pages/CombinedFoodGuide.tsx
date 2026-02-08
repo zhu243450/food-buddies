@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import Navigation from '@/components/Navigation';
+
 import { SEO } from '@/components/SEO';
 import { useSEO } from '@/hooks/useSEO';
 import { Card, CardContent } from '@/components/ui/card';
@@ -385,7 +385,6 @@ export const CombinedFoodGuide: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation />
         <OptimizedFoodGuideSkeleton />
       </div>
     );
@@ -394,7 +393,7 @@ export const CombinedFoodGuide: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO {...seoData} />
-      <Navigation />
+      
       
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}

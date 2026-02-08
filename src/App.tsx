@@ -8,6 +8,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { HelmetProvider } from "react-helmet-async";
 import { OptimizedLoader } from "@/components/OptimizedLoader";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import Navigation from "@/components/Navigation";
 // Critical pages (loaded immediately)
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -37,7 +38,18 @@ const GrowthCenter = lazy(() => import("./pages/GrowthCenter"));
 import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import "./i18n";
+
+// Routes where bottom navigation should NOT appear
+const HIDE_NAV_ROUTES = ['/', '/auth', '/admin'];
+
+function GlobalNavigation() {
+  const location = useLocation();
+  const shouldHideNav = HIDE_NAV_ROUTES.includes(location.pathname);
+  if (shouldHideNav) return null;
+  return <Navigation />;
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -186,7 +198,8 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Footer />
+            <GlobalNavigation />
+            <Footer />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

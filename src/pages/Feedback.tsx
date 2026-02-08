@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Send } from 'lucide-react';
 import { ImageUploader } from '@/components/ImageUploader';
-import Navigation from '@/components/Navigation';
+
 
 export default function Feedback() {
   const navigate = useNavigate();
@@ -249,7 +249,7 @@ export default function Feedback() {
         </div>
       </main>
 
-      <Navigation />
+      
     </>
   );
 }
