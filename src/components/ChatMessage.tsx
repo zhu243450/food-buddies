@@ -99,7 +99,7 @@ export function ChatMessage({ message, user, formatTime, onRecall }: ChatMessage
       <div
         className={`rounded-lg px-3 py-2 ${
           isOwn
-            ? "bg-primary text-primary-foreground"
+            ? "bg-gradient-primary text-white shadow-sm"
             : "bg-muted text-foreground"
         }`}
       >
