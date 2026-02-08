@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
-import Navigation from "@/components/Navigation";
+
 import { User as UserIcon, Camera, Shield, LogOut, Gift } from "lucide-react";
 import { PendingRequestsCard, FriendsListCard } from "@/components/FriendshipComponents";
 import { SEO } from "@/components/SEO";
@@ -547,7 +547,7 @@ const Profile = () => {
             </TabsContent>
           </Tabs>
         </div>
-        <Navigation />
+        
       </div>
     </>
   );

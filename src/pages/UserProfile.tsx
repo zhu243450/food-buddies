@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, User, Calendar, Heart, Utensils, Clock, Camera, MessageCircle, Send, X } from "lucide-react";
 import { FriendActionButton } from "@/components/FriendshipComponents";
-import Navigation from "@/components/Navigation";
+
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -646,7 +646,7 @@ const UserProfile = () => {
         </Dialog>
       )}
 
-      <Navigation />
+      
     </div>
   );
 };

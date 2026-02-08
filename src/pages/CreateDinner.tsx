@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Zap, Clock, Users2, MapPin, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Navigation from "@/components/Navigation";
+
 import MapLocationPicker from "@/components/MapLocationPicker";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -540,7 +540,7 @@ const CreateDinner = () => {
           </CardContent>
         </Card>
       </div>
-      <Navigation />
+      
     </div>
     </>
   );

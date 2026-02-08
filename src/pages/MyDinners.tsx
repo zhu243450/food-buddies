@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Navigation from "@/components/Navigation";
+
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import { OptimizedCampaignBanner } from "@/components/OptimizedCampaignBanner";
 import { FastSkeletonCard } from "@/components/FastSkeletonCard";
@@ -153,7 +153,7 @@ const MyDinners = memo(() => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      
       
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

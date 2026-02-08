@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, MapPin, Users, ArrowLeft, Heart, UserCheck, MessageSquare, X, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Navigation from "@/components/Navigation";
+
 import CancelDinnerDialog from "@/components/CancelDinnerDialog";
 import ShareDinner from "@/components/ShareDinner";
 import { useTranslation } from "react-i18next";
@@ -316,7 +316,6 @@ const DinnerDetail = () => {
               </CardContent>
             </Card>
           </div>
-          <Navigation />
         </div>
       </>
     );
@@ -563,7 +562,7 @@ const DinnerDetail = () => {
         loading={cancelling}
       />
       
-      <Navigation />
+      
     </div>
     </>
   );
