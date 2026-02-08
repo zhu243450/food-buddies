@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -35,6 +35,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasFetchedRef = useRef(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,11 +53,12 @@ const Chat = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (!user || !sessionId) {
-      // 仅在明确无 sessionId 时停止 loading，等 user 加载完
+    if (!user || !sessionId || hasFetchedRef.current) {
       if (!sessionId) setLoading(false);
       return;
     }
+
+    hasFetchedRef.current = true;
 
     const fetchChatData = async () => {
       try {
@@ -120,6 +122,7 @@ const Chat = () => {
           .neq("sender_id", user.id);
 
       } catch (error: any) {
+        console.error('fetchChatData error:', error);
         toast({
           title: t('chat.loadFailed'),
           description: error.message,
@@ -132,7 +135,7 @@ const Chat = () => {
     };
 
     fetchChatData();
-  }, [user, sessionId, navigate, toast, t]);
+  }, [user, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 实时监听新消息和消息更新
   useEffect(() => {
@@ -228,9 +231,12 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = async (messageType: 'text' | 'image' | 'video' | 'location' = 'text', content?: string) => {
+  const handleSendMessage = useCallback(async (messageType: 'text' | 'image' | 'video' | 'location' = 'text', content?: string) => {
     const messageContent = content || newMessage.trim();
-    if (!messageContent || !user || !sessionId) return;
+    if (!messageContent || !user || !sessionId) {
+      console.log('[Chat] handleSendMessage blocked:', { hasContent: !!messageContent, hasUser: !!user, sessionId });
+      return;
+    }
 
     setSending(true);
     try {
@@ -240,7 +246,7 @@ const Chat = () => {
       });
 
       if (banCheckError) {
-        console.error('Ban check failed:', banCheckError);
+        console.error('[Chat] Ban check failed:', banCheckError);
       } else if (banCheckResult === true) {
         toast({
           title: t('chat.bannedTitle'),
@@ -251,8 +257,8 @@ const Chat = () => {
         return;
       }
 
-      // 先构建乐观消息，确保即使 Realtime 失败也能显示
-      const optimisticId = `optimistic-${crypto.randomUUID()}`;
+      // 先构建乐观消息
+      const optimisticId = `optimistic-${Date.now()}`;
       const optimisticMessage: MessageWithProfile = {
         id: optimisticId,
         session_id: sessionId,
@@ -261,11 +267,14 @@ const Chat = () => {
         message_type: messageType,
         is_read: false,
         created_at: new Date().toISOString(),
-        sender: null,
+        sender: undefined,
       };
 
       // 立即在 UI 中显示消息
-      setMessages(prev => [...prev, optimisticMessage]);
+      setMessages(prev => {
+        console.log('[Chat] Adding optimistic message, prev count:', prev.length);
+        return [...prev, optimisticMessage];
+      });
 
       const { data: insertedMessage, error } = await supabase
         .from("chat_messages")
@@ -279,19 +288,26 @@ const Chat = () => {
         .single();
 
       if (error) {
+        console.error('[Chat] Insert failed:', error);
         // 插入失败，移除乐观消息
         setMessages(prev => prev.filter(m => m.id !== optimisticId));
         throw error;
       }
+
+      console.log('[Chat] Insert success, real ID:', insertedMessage?.id);
 
       // 用真实数据替换乐观消息
       if (insertedMessage) {
         const realMessage: MessageWithProfile = {
           ...insertedMessage,
           message_type: (insertedMessage.message_type || 'text') as 'text' | 'image' | 'video' | 'location',
-          sender: null,
+          sender: undefined,
         };
-        setMessages(prev => prev.map(m => m.id === optimisticId ? realMessage : m));
+        setMessages(prev => {
+          const updated = prev.map(m => m.id === optimisticId ? realMessage : m);
+          console.log('[Chat] Replaced optimistic with real, count:', updated.length);
+          return updated;
+        });
       }
       
       if (messageType === 'text') {
@@ -304,6 +320,7 @@ const Chat = () => {
         }
       }
     } catch (error: any) {
+      console.error('[Chat] Send error:', error);
       toast({
         title: t('chat.sendFailed'),
         description: error.message,
@@ -312,7 +329,7 @@ const Chat = () => {
     } finally {
       setSending(false);
     }
-  };
+  }, [newMessage, user, sessionId, toast, t]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
