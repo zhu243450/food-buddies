@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Mail, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
@@ -70,10 +70,7 @@ export const About = () => {
                 <div>
                   <h4 className="font-medium mb-2">{t('about.company.basic.title')}</h4>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>{t('about.company.basic.name')}</p>
-                    <p>{t('about.company.basic.address')}</p>
                     <p>{t('about.company.basic.email')}</p>
-                    <p>{t('about.company.basic.phone')}</p>
                   </div>
                 </div>
                 <div>
@@ -94,39 +91,14 @@ export const About = () => {
               <CardTitle>{t('about.contact.title')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="flex items-start gap-3">
-                  <Mail className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <h4 className="font-medium mb-1">{t('about.contact.email.title')}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {t('about.contact.email.customer')}<br />
-                      {t('about.contact.email.business')}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <h4 className="font-medium mb-1">{t('about.contact.phone.title')}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {t('about.contact.phone.number')}<br />
-                      {t('about.contact.phone.hours')}<br />
-                      {t('about.contact.phone.days')}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                  <div>
-                    <h4 className="font-medium mb-1">{t('about.contact.address.title')}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {t('about.contact.address.line1')}<br />
-                      {t('about.contact.address.line2')}
-                    </p>
-                  </div>
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <h4 className="font-medium mb-1">{t('about.contact.email.title')}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {t('about.contact.email.customer')}<br />
+                    {t('about.contact.email.business')}
+                  </p>
                 </div>
               </div>
             </CardContent>

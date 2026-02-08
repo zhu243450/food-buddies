@@ -357,9 +357,7 @@
     "copyright": "© 2024 Dinner Social. All rights reserved.",
     "appName": "Dinner Social",
     "tagline": "Connect through food, share happiness. Make every meal a beautiful memory.",
-    "companyName": "Zhixiang Yunshang Technology Development (Guangdong Dongguan) Co., Ltd.",
-    "email": "Email",
-    "phone": "Phone"
+    "email": "Email"
   },
   "share": {
     "share": "Share",
@@ -650,13 +648,10 @@
     "description": "饭约社 is a platform focused on social dining, dedicated to helping people discover like-minded partners and enjoy food together. Whether you want to meet new friends, explore local cuisine, or organize an interesting gathering, 饭约社 can provide you with the perfect solution.",
     "mission": "We believe that sharing food is not just about satisfying taste buds, but also an important way to build relationships and spread warmth. Through our platform, you can easily find nearby dining activities or initiate your own food gatherings.",
     "company": {
-      "title": "Company Information",
+      "title": "Platform Information",
       "basic": {
         "title": "Basic Information",
-        "name": "Company Name: Zhixiang Cloud Technology Development (Dongguan, Guangdong) Co., Ltd.",
-        "address": "Registered Address: No. 22-1, Tangpu East Road, Tangxia Town, Dongguan City, Guangdong Province",
-        "email": "Contact Email: weishang99@gmail.com",
-        "phone": "Contact Phone: +86 19068522408"
+        "email": "Contact Email: weishang99@gmail.com"
       },
       "business": {
         "title": "Business Scope",
@@ -674,17 +669,6 @@
         "title": "Email Contact",
         "customer": "Customer Service: weishang99@gmail.com",
         "business": "Business Cooperation: weishang99@gmail.com"
-      },
-      "phone": {
-        "title": "Phone Contact",
-        "number": "Customer Hotline: +86 19068522408",
-        "hours": "Working Hours: 9:00-18:00",
-        "days": "(Monday to Friday)"
-      },
-      "address": {
-        "title": "Office Address",
-        "line1": "Dongguan City, Guangdong Province",
-        "line2": "No. 22-1, Tangpu East Road, Tangxia Town"
       }
     }
   },
@@ -922,10 +906,6 @@
       "email": {
         "title": "Email Support",
         "address": "weishang99@gmail.com"
-      },
-      "phone": {
-        "title": "Phone Customer Service",
-        "number": "+86 19068522408"
       }
     },
     "safety": {
