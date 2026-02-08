@@ -175,7 +175,7 @@ const Discover = () => {
     }
 
     return result;
-  }, [allDinners, filters, matchScores, user]);
+  }, [allDinners, filters, matchScores, user, friendIds]);
 
   const handleJoinDinner = async (dinnerId: string) => {
     if (!user) {

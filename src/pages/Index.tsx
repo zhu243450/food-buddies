@@ -18,7 +18,7 @@ const Index = () => {
   // 用户已登录时自动重定向
   useEffect(() => {
     if (!loading && user) {
-      navigate("/discover", { replace: true });
+      navigate("/discover?tab=myDinners", { replace: true });
     }
   }, [user, loading, navigate]);
 

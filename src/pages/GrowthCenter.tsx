@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Gift, Trophy, Users, Ticket, Image } from 'lucide-react';
@@ -14,21 +14,15 @@ import { InvitePoster } from '@/components/growth/InvitePoster';
 const GrowthCenter = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | undefined>();
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-      setUserId(user.id);
-      setLoading(false);
-    };
-    getUser();
-  }, [navigate]);
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  const userId = user?.id;
 
   if (loading) {
     return (
