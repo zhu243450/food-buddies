@@ -51,6 +51,7 @@ const Discover = () => {
     searchQuery: '',
     mode: null as string | null,
     timeRange: null as string | null,
+    category: null as string | null,
   });
 
   // My Dinners tab states
@@ -112,6 +113,11 @@ const Discover = () => {
     // Mode filter
     if (filters.mode) {
       result = result.filter(d => d.dinner_mode === filters.mode);
+    }
+
+    // Category filter
+    if (filters.category) {
+      result = result.filter(d => (d as any).dinner_category === filters.category);
     }
 
     // Time filter

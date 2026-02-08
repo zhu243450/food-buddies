@@ -141,6 +141,16 @@
     "confirmLeave": "确认退出饭局",
     "normal": "正常"
   },
+  "dinnerCategory": {
+    "label": "饭局场景",
+    "business": "商务社交",
+    "friends": "朋友小聚",
+    "meetup": "交友破冰",
+    "celebration": "庆祝聚餐",
+    "foodie": "美食探店",
+    "family": "家庭聚餐",
+    "themed": "兴趣主题"
+  },
   "profile": {
     "viewProfile": "查看个人资料",
     "editProfile": "编辑个人资料",

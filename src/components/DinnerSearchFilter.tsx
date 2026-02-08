@@ -8,6 +8,7 @@ interface FilterState {
   searchQuery: string;
   mode: string | null;
   timeRange: string | null;
+  category: string | null;
 }
 
 interface DinnerSearchFilterProps {
@@ -29,10 +30,20 @@ const timeOptions = [
   { value: 'thisWeek', labelKey: 'filter.thisWeek', emoji: '📋' },
 ];
 
+const categoryOptions = [
+  { value: 'business', labelKey: 'dinnerCategory.business', emoji: '🤝' },
+  { value: 'friends', labelKey: 'dinnerCategory.friends', emoji: '🎉' },
+  { value: 'meetup', labelKey: 'dinnerCategory.meetup', emoji: '🆕' },
+  { value: 'celebration', labelKey: 'dinnerCategory.celebration', emoji: '🎂' },
+  { value: 'foodie', labelKey: 'dinnerCategory.foodie', emoji: '🍜' },
+  { value: 'family', labelKey: 'dinnerCategory.family', emoji: '🏠' },
+  { value: 'themed', labelKey: 'dinnerCategory.themed', emoji: '🎮' },
+];
+
 export const DinnerSearchFilter = memo<DinnerSearchFilterProps>(({ filters, onFiltersChange, resultCount }) => {
   const { t } = useTranslation();
 
-  const activeFilterCount = [filters.mode, filters.timeRange, filters.searchQuery].filter(Boolean).length;
+  const activeFilterCount = [filters.mode, filters.timeRange, filters.searchQuery, filters.category].filter(Boolean).length;
 
   const toggleMode = (mode: string) => {
     onFiltersChange({ ...filters, mode: filters.mode === mode ? null : mode });
@@ -42,8 +53,12 @@ export const DinnerSearchFilter = memo<DinnerSearchFilterProps>(({ filters, onFi
     onFiltersChange({ ...filters, timeRange: filters.timeRange === time ? null : time });
   };
 
+  const toggleCategory = (category: string) => {
+    onFiltersChange({ ...filters, category: filters.category === category ? null : category });
+  };
+
   const clearAll = () => {
-    onFiltersChange({ searchQuery: '', mode: null, timeRange: null });
+    onFiltersChange({ searchQuery: '', mode: null, timeRange: null, category: null });
   };
 
   return (
@@ -93,6 +108,23 @@ export const DinnerSearchFilter = memo<DinnerSearchFilterProps>(({ filters, onFi
             onClick={() => toggleTime(opt.value)}
             className={`flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
               filters.timeRange === opt.value
+                ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                : 'bg-card text-muted-foreground border-border/60 hover:border-primary/40 hover:text-foreground'
+            }`}
+          >
+            {opt.emoji} {t(opt.labelKey)}
+          </button>
+        ))}
+      </div>
+
+      {/* Category filter chips - scrollable */}
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        {categoryOptions.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => toggleCategory(opt.value)}
+            className={`flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+              filters.category === opt.value
                 ? 'bg-primary text-primary-foreground border-primary shadow-md'
                 : 'bg-card text-muted-foreground border-border/60 hover:border-primary/40 hover:text-foreground'
             }`}

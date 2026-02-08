@@ -686,6 +686,7 @@ export type Database = {
           created_by: string
           description: string | null
           dietary_restrictions: string[] | null
+          dinner_category: string | null
           dinner_mode: string | null
           dinner_time: string
           food_preferences: string[] | null
@@ -705,6 +706,7 @@ export type Database = {
           created_by: string
           description?: string | null
           dietary_restrictions?: string[] | null
+          dinner_category?: string | null
           dinner_mode?: string | null
           dinner_time: string
           food_preferences?: string[] | null
@@ -724,6 +726,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           dietary_restrictions?: string[] | null
+          dinner_category?: string | null
           dinner_mode?: string | null
           dinner_time?: string
           food_preferences?: string[] | null

@@ -74,6 +74,16 @@ const CreateDinner = () => {
     { value: "opposite_gender", label: t('createDinner.genderPrefs.opposite_gender.label'), desc: t('createDinner.genderPrefs.opposite_gender.desc') }
   ];
 
+  const DINNER_CATEGORIES = [
+    { value: 'business', emoji: '🤝', labelKey: 'dinnerCategory.business' },
+    { value: 'friends', emoji: '🎉', labelKey: 'dinnerCategory.friends' },
+    { value: 'meetup', emoji: '🆕', labelKey: 'dinnerCategory.meetup' },
+    { value: 'celebration', emoji: '🎂', labelKey: 'dinnerCategory.celebration' },
+    { value: 'foodie', emoji: '🍜', labelKey: 'dinnerCategory.foodie' },
+    { value: 'family', emoji: '🏠', labelKey: 'dinnerCategory.family' },
+    { value: 'themed', emoji: '🎮', labelKey: 'dinnerCategory.themed' },
+  ];
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -95,6 +105,7 @@ const CreateDinner = () => {
     gender_preference: "no_preference",
     personality_tags: [] as string[],
     dietary_restrictions: [] as string[],
+    dinner_category: "",
   });
   
   const navigate = useNavigate();
@@ -156,13 +167,16 @@ const CreateDinner = () => {
     
     setLoading(true);
     
+    const insertData = {
+      created_by: user.id,
+      status: 'active',
+      ...formData,
+      dinner_category: formData.dinner_category || null,
+    };
+    
     const { error } = await supabase
       .from("dinners")
-      .insert({
-        created_by: user.id,
-        status: 'active', // 设置默认状态
-        ...formData,
-      });
+      .insert(insertData as any);
 
     if (error) {
       toast({
@@ -304,6 +318,33 @@ const CreateDinner = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* 饭局场景分类 */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  🏷️ {t('dinnerCategory.label')}
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {DINNER_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.value}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ 
+                        ...prev, 
+                        dinner_category: prev.dinner_category === cat.value ? '' : cat.value 
+                      }))}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border ${
+                        formData.dinner_category === cat.value
+                          ? 'bg-primary text-primary-foreground border-primary shadow-md scale-[1.02]'
+                          : 'bg-card text-muted-foreground border-border/60 hover:border-primary/40 hover:text-foreground'
+                      }`}
+                    >
+                      <span className="text-lg">{cat.emoji}</span>
+                      {t(cat.labelKey)}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* 紧急程度 */}

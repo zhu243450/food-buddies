@@ -98,6 +98,7 @@ export interface Database {
           personality_tags?: string[];
           dietary_restrictions?: string[];
           status?: string;
+          dinner_category?: string;
           created_at: string;
           updated_at: string;
         };
@@ -117,6 +118,7 @@ export interface Database {
           personality_tags?: string[];
           dietary_restrictions?: string[];
           status?: string;
+          dinner_category?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -136,6 +138,7 @@ export interface Database {
           personality_tags?: string[];
           dietary_restrictions?: string[];
           status?: string;
+          dinner_category?: string;
           created_at?: string;
           updated_at?: string;
         };
