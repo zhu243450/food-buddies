@@ -131,8 +131,8 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="p-5 pb-0">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] flex flex-col">
+        <DialogHeader className="p-5 pb-0 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Image className="w-5 h-5 text-primary" />
             {isZh ? '生成分享海报' : 'Generate Share Poster'}
@@ -142,7 +142,7 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
           </DialogDescription>
         </DialogHeader>
 
-        <div className="px-5 py-3">
+        <div className="px-5 py-3 overflow-y-auto flex-1 min-h-0">
           {/* Show generated image (long-pressable) or loading state */}
           {posterImageUrl ? (
             <div className="rounded-xl overflow-hidden shadow-lg border border-border">
@@ -299,7 +299,7 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
         </div>
 
         {/* Action buttons */}
-        <div className="p-5 pt-2 flex flex-col gap-3">
+        <div className="p-5 pt-2 flex flex-col gap-2 shrink-0 border-t border-border/40 bg-background">
           <Button
             onClick={handleSaveImage}
             disabled={!posterImageUrl || saving}
