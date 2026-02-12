@@ -143,7 +143,7 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden max-h-[90vh] flex flex-col top-[50%] translate-y-[-50%] data-[state=closed]:slide-out-to-top-[50%] data-[state=open]:slide-in-from-top-[50%]">
         <DialogHeader className="p-5 pb-0 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Image className="w-5 h-5 text-primary" />
