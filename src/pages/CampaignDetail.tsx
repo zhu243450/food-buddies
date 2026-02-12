@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, Gift, Calendar, Star, Camera, Trophy, Heart, ImageIcon, MessageCircle, Send, X } from "lucide-react";
+import { ArrowLeft, Clock, Users, Gift, Calendar, Star, Camera, Trophy, Heart, ImageIcon, MessageCircle, Send, X, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CampaignSharePoster } from "@/components/CampaignSharePoster";
 
 interface Campaign {
   id: string;
@@ -90,6 +91,7 @@ export const CampaignDetail = () => {
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [showSharePoster, setShowSharePoster] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -516,10 +518,16 @@ export const CampaignDetail = () => {
       <SEO title={getDisplayTitle()} description={getDisplayDescription()} />
 
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <Button variant="ghost" onClick={() => navigate('/')} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          {t('common.back')}
-        </Button>
+        <div className="flex items-center justify-between mb-4">
+          <Button variant="ghost" onClick={() => navigate('/')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {t('common.back')}
+          </Button>
+          <Button variant="outline" onClick={() => setShowSharePoster(true)}>
+            <Share2 className="h-4 w-4 mr-2" />
+            {i18n.language === 'zh' ? '分享海报' : 'Share Poster'}
+          </Button>
+        </div>
 
         {/* Campaign Header */}
         <Card className="overflow-hidden mb-6">
@@ -853,6 +861,15 @@ export const CampaignDetail = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Campaign Share Poster */}
+      {campaign && (
+        <CampaignSharePoster
+          campaign={campaign}
+          open={showSharePoster}
+          onOpenChange={setShowSharePoster}
+        />
+      )}
     </>
   );
 };
