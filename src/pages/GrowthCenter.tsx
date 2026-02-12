@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Gift, Trophy, Users, Ticket, Image } from 'lucide-react';
+import { ArrowLeft, Gift, Trophy, Users, Ticket, Image, Wallet } from 'lucide-react';
 import { InviteCard } from '@/components/growth/InviteCard';
 import { LeaderboardCard } from '@/components/growth/LeaderboardCard';
 import { AchievementsCard } from '@/components/growth/AchievementsCard';
 import { PointsDisplay } from '@/components/growth/PointsDisplay';
 import { CouponCard } from '@/components/growth/CouponCard';
 import { InvitePoster } from '@/components/growth/InvitePoster';
+import { WithdrawalCard } from '@/components/growth/WithdrawalCard';
 const GrowthCenter = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -56,38 +57,45 @@ const GrowthCenter = () => {
 
         {/* 标签页 */}
         <Tabs defaultValue="invite" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-gradient-primary shadow-lg">
+          <TabsList className="grid w-full grid-cols-6 bg-gradient-primary shadow-lg">
             <TabsTrigger 
               value="invite" 
-              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-2"
+              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-1"
             >
               <Gift className="h-4 w-4" />
               <span className="hidden sm:inline">{i18n.language === 'zh' ? '邀请' : 'Invite'}</span>
             </TabsTrigger>
             <TabsTrigger 
+              value="withdrawal"
+              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-1"
+            >
+              <Wallet className="h-4 w-4" />
+              <span className="hidden sm:inline">{i18n.language === 'zh' ? '提现' : 'Cash'}</span>
+            </TabsTrigger>
+            <TabsTrigger 
               value="poster"
-              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-2"
+              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-1"
             >
               <Image className="h-4 w-4" />
               <span className="hidden sm:inline">{i18n.language === 'zh' ? '海报' : 'Poster'}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="coupons"
-              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-2"
+              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-1"
             >
               <Ticket className="h-4 w-4" />
               <span className="hidden sm:inline">{i18n.language === 'zh' ? '优惠券' : 'Coupons'}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="leaderboard"
-              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-2"
+              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-1"
             >
               <Trophy className="h-4 w-4" />
               <span className="hidden sm:inline">{i18n.language === 'zh' ? '排行' : 'Rank'}</span>
             </TabsTrigger>
             <TabsTrigger 
               value="achievements"
-              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-2"
+              className="data-[state=active]:bg-background text-primary-foreground data-[state=active]:text-primary gap-1 text-xs px-1"
             >
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">{i18n.language === 'zh' ? '成就' : 'Badge'}</span>
@@ -96,6 +104,10 @@ const GrowthCenter = () => {
 
           <TabsContent value="invite" className="mt-4 space-y-4">
             <InviteCard userId={userId!} />
+          </TabsContent>
+
+          <TabsContent value="withdrawal" className="mt-4">
+            <WithdrawalCard userId={userId} />
           </TabsContent>
 
           <TabsContent value="poster" className="mt-4">

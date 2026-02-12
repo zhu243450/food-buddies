@@ -1438,6 +1438,51 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          cash_amount: number
+          created_at: string
+          id: string
+          payment_account: string | null
+          payment_method: string | null
+          points_amount: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          cash_amount: number
+          created_at?: string
+          id?: string
+          payment_account?: string | null
+          payment_method?: string | null
+          points_amount: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          cash_amount?: number
+          created_at?: string
+          id?: string
+          payment_account?: string | null
+          payment_method?: string | null
+          points_amount?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1510,6 +1555,15 @@ export type Database = {
       create_user_invite_code: {
         Args: { target_user_id: string }
         Returns: string
+      }
+      create_withdrawal_request: {
+        Args: {
+          payment_account_param?: string
+          payment_method_param?: string
+          points_amount_param: number
+          user_id_param: string
+        }
+        Returns: Json
       }
       delete_expired_chats: { Args: { user_id_param: string }; Returns: number }
       generate_invite_code: { Args: never; Returns: string }
