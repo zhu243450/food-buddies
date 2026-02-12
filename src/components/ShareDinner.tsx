@@ -40,7 +40,7 @@ const ShareDinner = ({ dinner, participantCount, hostName }: ShareDinnerProps) =
     });
   };
 
-  const publishedOrigin = 'https://food-buddies.lovable.app';
+  const publishedOrigin = 'https://dinemate.xyz';
   const shareUrl = `${publishedOrigin}/dinner/${dinner.id}`;
   const shareText = `🍽️ ${dinner.title}\n📅 ${formatDateTime(dinner.dinner_time)}\n📍 ${dinner.location}\n👥 ${participantCount}/${dinner.max_participants}${t('share.people')}\n\n${dinner.description || t('share.defaultMessage')}\n\n${t('share.clickToJoin')}:`;
 
