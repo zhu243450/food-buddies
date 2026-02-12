@@ -484,8 +484,11 @@ export const CampaignDetail = () => {
     return i18n.language === 'en' && campaign.description_en ? campaign.description_en : campaign.description;
   };
 
+  const now = new Date();
+  const isNotStarted = campaign ? now < new Date(campaign.start_date) : false;
   const isActive = campaign ?
-    new Date() >= new Date(campaign.start_date) && new Date() <= new Date(campaign.end_date) : false;
+    now >= new Date(campaign.start_date) && now <= new Date(campaign.end_date) : false;
+  const isEnded = campaign ? now > new Date(campaign.end_date) : false;
 
   if (loading) {
     return (
@@ -541,8 +544,8 @@ export const CampaignDetail = () => {
 
           <CardContent className="pt-4 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={isActive ? "default" : "secondary"}>
-                {isActive ? '🔥 进行中' : '已结束'}
+              <Badge variant={isActive ? "default" : isNotStarted ? "outline" : "secondary"}>
+                {isActive ? '🔥 进行中' : isNotStarted ? '⏳ 即将开始' : '已结束'}
               </Badge>
               <Badge variant="outline">
                 <Users className="h-3 w-3 mr-1" />{participantCount} 人参与
@@ -565,7 +568,7 @@ export const CampaignDetail = () => {
             </div>
 
             {/* Participation & Checkin */}
-            {isActive && (
+            {(isActive || isNotStarted) && (
               <div className="flex gap-3">
                 <Button
                   onClick={handleParticipate}
