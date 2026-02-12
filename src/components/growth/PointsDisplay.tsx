@@ -58,6 +58,9 @@ export function PointsDisplay({ userId }: PointsDisplayProps) {
               <p className="text-4xl font-bold mt-1">
                 {rewards.totalPoints.toLocaleString()}
               </p>
+              <p className="text-xs text-primary-foreground/60 mt-1">
+                ≈ ¥{(rewards.totalPoints / 50).toFixed(2)}
+              </p>
             </div>
             <div className="text-right">
               <Badge className="bg-white/20 text-white border-0">
