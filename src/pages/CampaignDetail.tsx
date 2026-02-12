@@ -4,12 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, Gift, Calendar, Star, Camera, Trophy, Heart, ImageIcon } from "lucide-react";
+import { ArrowLeft, Clock, Users, Gift, Calendar, Star, Camera, Trophy, Heart, ImageIcon, MessageCircle, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Campaign {
   id: string;
@@ -37,6 +40,16 @@ interface CampaignPhoto {
   profiles?: { nickname: string; avatar_url: string | null };
   like_count: number;
   user_liked: boolean;
+  comment_count: number;
+}
+
+interface PhotoComment {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  nickname: string;
+  avatar_url: string | null;
 }
 
 interface LeaderboardEntry {
@@ -70,6 +83,13 @@ export const CampaignDetail = () => {
   // Achievement state
   const [userCheckinCount, setUserCheckinCount] = useState(0);
   const [achievementUnlocked, setAchievementUnlocked] = useState(false);
+
+  // Photo detail dialog state
+  const [selectedPhoto, setSelectedPhoto] = useState<CampaignPhoto | null>(null);
+  const [comments, setComments] = useState<PhotoComment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -141,22 +161,26 @@ export const CampaignDetail = () => {
       const userIds = [...new Set(photosData.map(p => p.user_id))];
       const photoIds = photosData.map(p => p.id);
 
-      const [profilesRes, likesRes, userLikesRes] = await Promise.all([
+      const [profilesRes, likesRes, userLikesRes, commentsRes] = await Promise.all([
         supabase.from('profiles').select('user_id, nickname, avatar_url').in('user_id', userIds),
         supabase.from('photo_likes').select('photo_id').in('photo_id', photoIds),
         userId ? supabase.from('photo_likes').select('photo_id').in('photo_id', photoIds).eq('user_id', userId) : Promise.resolve({ data: [] }),
+        supabase.from('photo_comments').select('photo_id').in('photo_id', photoIds),
       ]);
 
       const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
       const likeCountMap = new Map<string, number>();
       (likesRes.data || []).forEach(l => likeCountMap.set(l.photo_id, (likeCountMap.get(l.photo_id) || 0) + 1));
       const userLikedSet = new Set((userLikesRes.data || []).map(l => l.photo_id));
+      const commentCountMap = new Map<string, number>();
+      (commentsRes.data || []).forEach(c => commentCountMap.set(c.photo_id, (commentCountMap.get(c.photo_id) || 0) + 1));
 
       setPhotos(photosData.map(p => ({
         ...p,
         profiles: profileMap.get(p.user_id) || { nickname: '用户', avatar_url: null },
         like_count: likeCountMap.get(p.id) || 0,
         user_liked: userLikedSet.has(p.id),
+        comment_count: commentCountMap.get(p.id) || 0,
       })));
     } catch (error) {
       console.error('Failed to load photos:', error);
@@ -342,6 +366,81 @@ export const CampaignDetail = () => {
     }
   };
 
+  const openPhotoDetail = async (photo: CampaignPhoto) => {
+    setSelectedPhoto(photo);
+    setCommentsLoading(true);
+    setComments([]);
+    try {
+      const { data } = await supabase
+        .from('photo_comments')
+        .select('id, content, created_at, user_id')
+        .eq('photo_id', photo.id)
+        .order('created_at', { ascending: true });
+
+      if (data?.length) {
+        const uids = [...new Set(data.map(c => c.user_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, nickname, avatar_url')
+          .in('user_id', uids);
+        const pMap = new Map((profiles || []).map(p => [p.user_id, p]));
+        setComments(data.map(c => ({
+          ...c,
+          nickname: pMap.get(c.user_id)?.nickname || '用户',
+          avatar_url: pMap.get(c.user_id)?.avatar_url || null,
+        })));
+      }
+    } catch (e) {
+      console.error('Failed to load comments:', e);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() || !selectedPhoto || !currentUserId) {
+      if (!currentUserId) toast.error('请先登录');
+      return;
+    }
+    setSubmittingComment(true);
+    try {
+      const { data, error } = await supabase
+        .from('photo_comments')
+        .insert({
+          photo_id: selectedPhoto.id,
+          user_id: currentUserId,
+          content: newComment.trim(),
+        })
+        .select('id, content, created_at, user_id')
+        .single();
+
+      if (error) throw error;
+
+      // Get current user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nickname, avatar_url')
+        .eq('user_id', currentUserId)
+        .single();
+
+      setComments(prev => [...prev, {
+        ...data,
+        nickname: profile?.nickname || '用户',
+        avatar_url: profile?.avatar_url || null,
+      }]);
+      setNewComment('');
+
+      // Update comment count in photo list
+      setPhotos(prev => prev.map(p => p.id === selectedPhoto.id
+        ? { ...p, comment_count: p.comment_count + 1 } : p));
+    } catch (e) {
+      console.error('Failed to submit comment:', e);
+      toast.error('评论失败');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
   const handleLikePhoto = async (photoId: string, liked: boolean) => {
     if (!currentUserId) {
       toast.error('请先登录');
@@ -354,11 +453,15 @@ export const CampaignDetail = () => {
       await supabase.from('photo_likes').insert({ photo_id: photoId, user_id: currentUserId });
     }
 
-    setPhotos(prev => prev.map(p => p.id === photoId ? {
+    const updater = (p: CampaignPhoto) => p.id === photoId ? {
       ...p,
       user_liked: !liked,
       like_count: liked ? p.like_count - 1 : p.like_count + 1,
-    } : p));
+    } : p;
+
+    setPhotos(prev => prev.map(updater));
+    // Sync selected photo state
+    setSelectedPhoto(prev => prev && prev.id === photoId ? updater(prev) : prev);
   };
 
   const formatDate = (dateString: string) => {
@@ -565,7 +668,11 @@ export const CampaignDetail = () => {
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {photos.map((photo) => (
-                      <div key={photo.id} className="relative group rounded-lg overflow-hidden border">
+                      <div
+                        key={photo.id}
+                        className="relative group rounded-lg overflow-hidden border cursor-pointer"
+                        onClick={() => openPhotoDetail(photo)}
+                      >
                         <img
                           src={photo.photo_url}
                           alt="打卡照片"
@@ -581,13 +688,19 @@ export const CampaignDetail = () => {
                               </Avatar>
                               <span className="text-white text-xs truncate max-w-[80px]">{photo.profiles?.nickname}</span>
                             </div>
-                            <button
-                              onClick={() => handleLikePhoto(photo.id, photo.user_liked)}
-                              className="flex items-center gap-0.5 text-white text-xs"
-                            >
-                              <Heart className={`h-3.5 w-3.5 ${photo.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
-                              {photo.like_count > 0 && photo.like_count}
-                            </button>
+                            <div className="flex items-center gap-2 text-white text-xs">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleLikePhoto(photo.id, photo.user_liked); }}
+                                className="flex items-center gap-0.5"
+                              >
+                                <Heart className={`h-3.5 w-3.5 ${photo.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
+                                {photo.like_count > 0 && photo.like_count}
+                              </button>
+                              <span className="flex items-center gap-0.5">
+                                <MessageCircle className="h-3.5 w-3.5" />
+                                {photo.comment_count > 0 && photo.comment_count}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -644,6 +757,102 @@ export const CampaignDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Photo Detail Dialog */}
+      <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
+        <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
+          {selectedPhoto && (
+            <div className="flex flex-col max-h-[85vh]">
+              {/* Photo */}
+              <div className="relative">
+                <img
+                  src={selectedPhoto.photo_url}
+                  alt="打卡照片"
+                  className="w-full max-h-[40vh] object-contain bg-muted"
+                />
+              </div>
+
+              {/* Author & Actions */}
+              <div className="flex items-center justify-between p-3 border-b">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={selectedPhoto.profiles?.avatar_url || undefined} />
+                    <AvatarFallback className="text-xs">{selectedPhoto.profiles?.nickname?.[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{selectedPhoto.profiles?.nickname}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(selectedPhoto.created_at).toLocaleDateString('zh-CN')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleLikePhoto(selectedPhoto.id, selectedPhoto.user_liked)}
+                    className="flex items-center gap-1 text-sm"
+                  >
+                    <Heart className={`h-4 w-4 ${selectedPhoto.user_liked ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
+                    <span>{selectedPhoto.like_count}</span>
+                  </button>
+                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <MessageCircle className="h-4 w-4" />
+                    {selectedPhoto.comment_count}
+                  </span>
+                </div>
+              </div>
+
+              {/* Comments */}
+              <ScrollArea className="flex-1 min-h-0 max-h-[30vh]">
+                <div className="p-3 space-y-3">
+                  {commentsLoading ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">加载评论中...</p>
+                  ) : comments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">暂无评论，快来说点什么吧</p>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-2">
+                        <Avatar className="h-6 w-6 shrink-0">
+                          <AvatarImage src={comment.avatar_url || undefined} />
+                          <AvatarFallback className="text-[10px]">{comment.nickname[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-xs font-medium">{comment.nickname}</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(comment.created_at).toLocaleDateString('zh-CN')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground break-words">{comment.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Comment Input */}
+              <div className="flex items-center gap-2 p-3 border-t">
+                <Input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="写一条评论..."
+                  className="flex-1 h-9 text-sm"
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSubmitComment()}
+                  disabled={submittingComment || !currentUserId}
+                />
+                <Button
+                  size="sm"
+                  onClick={handleSubmitComment}
+                  disabled={!newComment.trim() || submittingComment || !currentUserId}
+                  className="h-9 px-3"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
