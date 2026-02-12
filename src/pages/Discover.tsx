@@ -72,14 +72,7 @@ const Discover = () => {
     setSearchParams(newParams);
   };
 
-  const isGuestMode = searchParams.get('guest') === 'true';
-  const showGuestPrompt = !user && isGuestMode;
-
-  useEffect(() => {
-    if (!user && !isGuestMode) {
-      navigate("/auth");
-    }
-  }, [user, navigate, isGuestMode]);
+  const showGuestPrompt = !user;
 
   // Recommendation engine
   const { matchScores, matchReasons, isReady: recommendationReady } = useRecommendation(user, allDinners);
@@ -367,9 +360,6 @@ const Discover = () => {
     fetchDinners();
   }, [user]);
 
-  if (!user && !isGuestMode) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-background">
