@@ -460,7 +460,7 @@ const DinnerDetail = () => {
                       variant="outline"
                       className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                     >
-                      {t('common.register')}
+                      {t('auth.register')}
                     </Button>
                   </div>
                 </div>
