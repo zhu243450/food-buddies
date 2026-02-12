@@ -64,7 +64,6 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
         .from('campaigns')
         .select('*')
         .eq('is_active', true)
-        .lte('start_date', new Date().toISOString())
         .gte('end_date', new Date().toISOString())
         .order('display_priority', { ascending: false })
         .order('created_at', { ascending: false })
