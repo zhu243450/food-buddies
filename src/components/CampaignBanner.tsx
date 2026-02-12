@@ -186,7 +186,7 @@ export const CampaignBanner = ({ className = "" }: CampaignBannerProps) => {
                 <Button 
                   onClick={() => handleCampaignClick(currentCampaign)}
                   size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  variant="accent"
                 >
                   {t('campaign.viewDetails')}
                 </Button>
