@@ -661,6 +661,37 @@ export const CampaignDetail = () => {
                     </Card>
                   </div>
                 )}
+
+                {/* 积分价值说明 */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">💰 积分说明</h3>
+                  <Card className="bg-muted/50">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex justify-between p-2 rounded-lg bg-background/60">
+                          <span>🎯 参与活动</span>
+                          <span className="font-bold text-primary">+10</span>
+                        </div>
+                        <div className="flex justify-between p-2 rounded-lg bg-background/60">
+                          <span>📸 打卡上传</span>
+                          <span className="font-bold text-primary">+20</span>
+                        </div>
+                        <div className="flex justify-between p-2 rounded-lg bg-background/60">
+                          <span>🏆 排行前三</span>
+                          <span className="font-bold text-primary">+500</span>
+                        </div>
+                        <div className="flex justify-between p-2 rounded-lg bg-background/60">
+                          <span>🎖️ 解锁成就</span>
+                          <span className="font-bold text-primary">+10~100</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground bg-background/60 rounded-lg p-2.5 space-y-1">
+                        <p>💱 兑换比例：50积分 = 1元，可提现或兑换优惠券</p>
+                        <p>📍 前往 <span className="text-primary font-medium">增长中心</span> 查看完整积分明细</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
