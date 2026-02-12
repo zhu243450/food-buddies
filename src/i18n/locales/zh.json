@@ -227,7 +227,8 @@
     "enterChat": "进入聊天",
     "leaveDinner": "退出饭局",
     "yourDinner": "这是您发起的饭局",
-    "cancelDinner": "取消饭局"
+    "cancelDinner": "取消饭局",
+    "loginToJoin": "登录即可加入这场精彩饭局，结识志同道合的美食伙伴！"
   },
   "filter": {
     "description": "设置筛选条件找到最适合的饭局",
