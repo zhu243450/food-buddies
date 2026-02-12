@@ -387,10 +387,6 @@ const Discover = () => {
             <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">
               {t('nav.dinners')}
             </h1>
-            <p className="text-muted-foreground text-lg mb-4">
-              {t('dinner.description')}
-            </p>
-            {user && <RandomMatchButton />}
           </div>
           
           <GuestBrowsePrompt show={showGuestPrompt} />
@@ -420,6 +416,13 @@ const Discover = () => {
           </TabsList>
 
           <TabsContent value="discover" className="space-y-4">
+            {/* Random Match & Description */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
+              <p className="text-muted-foreground text-sm flex-1 text-center sm:text-left">
+                {t('dinner.description')}
+              </p>
+              {user && <RandomMatchButton />}
+            </div>
             {/* Search & Filter */}
             <DinnerSearchFilter
               filters={filters}
