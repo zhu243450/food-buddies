@@ -551,7 +551,7 @@ const DinnerDetail = () => {
         onConfirm={handleCancelDinner}
         dinnerTitle={dinner.title}
         dinnerTime={dinner.dinner_time}
-        isCreator={dinner.created_by === user.id}
+        isCreator={!!user && dinner.created_by === user.id}
         loading={cancelling}
       />
       
