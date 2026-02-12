@@ -309,10 +309,10 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
                 )}
                 <div style={{ flex: 1, textAlign: 'left' }}>
                   <div style={{ fontSize: '14px', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>
-                    {isZh ? '📱 微信扫码加入饭局' : '📱 Scan to join dinner'}
+                    {isZh ? '📱 扫码加入饭局' : '📱 Scan to join dinner'}
                   </div>
                   <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.4' }}>
-                    {isZh ? '打开微信扫一扫，直接查看饭局详情' : 'Open WeChat scan to view details'}
+                    {isZh ? '用手机相机扫码，即可查看详情' : 'Use phone camera to scan & view details'}
                   </div>
                 </div>
               </div>
