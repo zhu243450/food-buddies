@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Download, Image, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { toPng } from "html-to-image";
+import QRCode from "qrcode";
 
 interface DinnerSharePosterProps {
   dinner: {
@@ -40,6 +41,7 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
   const [generating, setGenerating] = useState(false);
   const [posterImageUrl, setPosterImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   const isZh = i18n.language === 'zh';
   const shareUrl = `${window.location.origin}/dinner/${dinner.id}`;
@@ -61,8 +63,17 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
     if (!posterRef.current) return;
     setGenerating(true);
     try {
-      // Small delay to ensure DOM is fully rendered
-      await new Promise(r => setTimeout(r, 100));
+      // Generate QR code first
+      const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+        width: 120,
+        margin: 1,
+        color: { dark: '#1a1a2e', light: '#ffffff' },
+        errorCorrectionLevel: 'M',
+      });
+      setQrCodeUrl(qrDataUrl);
+
+      // Wait for QR code image to render in DOM
+      await new Promise(r => setTimeout(r, 300));
       const dataUrl = await toPng(posterRef.current, {
         quality: 1,
         pixelRatio: 3,
@@ -79,7 +90,7 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
     } finally {
       setGenerating(false);
     }
-  }, [dinner, isZh, toast]);
+  }, [dinner, isZh, toast, shareUrl]);
 
   // Reset and regenerate when dialog opens
   useEffect(() => {
@@ -282,16 +293,26 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
                 )}
               </div>
 
-              {/* Footer */}
+              {/* Footer with QR code */}
               <div style={{
                 background: 'linear-gradient(135deg, #c026d3, #f97316)',
-                padding: '16px 24px', textAlign: 'center',
+                padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px',
               }}>
-                <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', marginBottom: '6px' }}>
-                  {isZh ? '🍴 搜索「饭约社」加入我们' : '🍴 Search "FoodBuddies" to join'}
-                </div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', wordBreak: 'break-all' }}>
-                  {shareUrl}
+                {qrCodeUrl && (
+                  <div style={{
+                    background: '#ffffff', borderRadius: '8px', padding: '6px',
+                    flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  }}>
+                    <img src={qrCodeUrl} alt="QR Code" style={{ width: '80px', height: '80px', display: 'block' }} />
+                  </div>
+                )}
+                <div style={{ flex: 1, textAlign: 'left' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>
+                    {isZh ? '📱 微信扫码加入饭局' : '📱 Scan to join dinner'}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.4' }}>
+                    {isZh ? '打开微信扫一扫，直接查看饭局详情' : 'Open WeChat scan to view details'}
+                  </div>
                 </div>
               </div>
             </div>
