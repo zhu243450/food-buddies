@@ -44,7 +44,8 @@ export const DinnerSharePoster = ({ dinner, participantCount, hostName, open, on
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   const isZh = i18n.language === 'zh';
-  const shareUrl = `${window.location.origin}/dinner/${dinner.id}`;
+  const publishedOrigin = 'https://food-buddies.lovable.app';
+  const shareUrl = `${publishedOrigin}/dinner/${dinner.id}`;
   const spotsLeft = dinner.max_participants - participantCount;
 
   const formatDateTime = (dateString: string) => {
