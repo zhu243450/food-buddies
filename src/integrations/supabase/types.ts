@@ -578,6 +578,7 @@ export type Database = {
       }
       dinner_photos: {
         Row: {
+          campaign_id: string | null
           created_at: string
           description: string | null
           dinner_id: string | null
@@ -593,6 +594,7 @@ export type Database = {
           width: number | null
         }
         Insert: {
+          campaign_id?: string | null
           created_at?: string
           description?: string | null
           dinner_id?: string | null
@@ -608,6 +610,7 @@ export type Database = {
           width?: number | null
         }
         Update: {
+          campaign_id?: string | null
           created_at?: string
           description?: string | null
           dinner_id?: string | null
@@ -623,6 +626,13 @@ export type Database = {
           width?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "dinner_photos_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dinner_photos_dinner_id_fkey"
             columns: ["dinner_id"]
