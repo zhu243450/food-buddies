@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Users, Gift, Calendar, Star } from "lucide-react";
+import { ArrowLeft, Clock, Users, Gift, Calendar, Star, Camera, Trophy, Heart, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Campaign {
   id: string;
@@ -22,7 +24,27 @@ interface Campaign {
   rules?: any;
   view_count: number;
   click_count: number;
+  participant_count: number;
   created_at: string;
+}
+
+interface CampaignPhoto {
+  id: string;
+  photo_url: string;
+  description: string | null;
+  created_at: string;
+  user_id: string;
+  profiles?: { nickname: string; avatar_url: string | null };
+  like_count: number;
+  user_liked: boolean;
+}
+
+interface LeaderboardEntry {
+  user_id: string;
+  nickname: string;
+  avatar_url: string | null;
+  checkin_count: number;
+  total_likes: number;
 }
 
 export const CampaignDetail = () => {
@@ -33,17 +55,34 @@ export const CampaignDetail = () => {
   const [loading, setLoading] = useState(true);
   const [hasParticipated, setHasParticipated] = useState(false);
   const [participantCount, setParticipantCount] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Photo wall state
+  const [photos, setPhotos] = useState<CampaignPhoto[]>([]);
+  const [photosLoading, setPhotosLoading] = useState(false);
+
+  // Leaderboard state
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+
+  // Achievement state
+  const [userCheckinCount, setUserCheckinCount] = useState(0);
+  const [achievementUnlocked, setAchievementUnlocked] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      loadCampaign(id);
-    }
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+      if (id) loadCampaign(id, user?.id || null);
+    };
+    init();
   }, [id]);
 
-  const loadCampaign = async (campaignId: string) => {
+  const loadCampaign = async (campaignId: string, userId: string | null) => {
     try {
       setLoading(true);
-      
       const { data, error } = await supabase
         .from('campaigns')
         .select('*')
@@ -51,93 +90,282 @@ export const CampaignDetail = () => {
         .single();
 
       if (error) throw error;
-      
       if (!data) {
-        toast.error(t('campaign.notFound', '活动不存在'));
+        toast.error('活动不存在');
         navigate('/');
         return;
       }
 
       setCampaign(data);
-      
-      // 从campaigns表直接读取参与人数(已通过触发器维护)
       setParticipantCount(data.participant_count);
-      
-      // 检查用户是否已参与
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+
+      if (userId) {
         const { data: participation } = await supabase
           .from('campaign_participations')
           .select('id')
           .eq('campaign_id', campaignId)
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single();
-        
         setHasParticipated(!!participation);
       }
+
+      // Load photos, leaderboard, and user checkin count in parallel
+      await Promise.all([
+        loadPhotos(campaignId, userId),
+        loadLeaderboard(campaignId),
+        userId ? loadUserCheckinCount(campaignId, userId) : Promise.resolve(),
+      ]);
     } catch (error) {
       console.error('Failed to load campaign:', error);
-      toast.error(t('campaign.loadFailed', '加载活动详情失败'));
+      toast.error('加载活动详情失败');
       navigate('/');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleParticipate = async () => {
+  const loadPhotos = async (campaignId: string, userId: string | null) => {
+    setPhotosLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error(t('auth.pleaseLogin', '请先登录'));
-        navigate('/auth');
-        return;
-      }
+      const { data: photosData, error } = await supabase
+        .from('dinner_photos')
+        .select('id, photo_url, description, created_at, user_id')
+        .eq('campaign_id', campaignId)
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      if (!campaign) return;
+      if (error) throw error;
+      if (!photosData?.length) { setPhotos([]); return; }
 
-      const { error } = await supabase
-        .from('campaign_participations')
-        .insert({
-          campaign_id: campaign.id,
-          user_id: user.id,
-          participation_data: { joined_at: new Date().toISOString() }
-        });
+      // Fetch profiles and like counts
+      const userIds = [...new Set(photosData.map(p => p.user_id))];
+      const photoIds = photosData.map(p => p.id);
 
-      if (error) {
-        if (error.code === '23505') { // 唯一约束违反
-          toast.error(t('campaign.alreadyParticipated', '您已经参与过此活动'));
-        } else {
-          throw error;
-        }
-      } else {
-        setHasParticipated(true);
-        setParticipantCount((c) => c + 1);
-        toast.success(t('campaign.participateSuccess', '成功参与活动！'));
-      }
+      const [profilesRes, likesRes, userLikesRes] = await Promise.all([
+        supabase.from('profiles').select('user_id, nickname, avatar_url').in('user_id', userIds),
+        supabase.from('photo_likes').select('photo_id').in('photo_id', photoIds),
+        userId ? supabase.from('photo_likes').select('photo_id').in('photo_id', photoIds).eq('user_id', userId) : Promise.resolve({ data: [] }),
+      ]);
+
+      const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
+      const likeCountMap = new Map<string, number>();
+      (likesRes.data || []).forEach(l => likeCountMap.set(l.photo_id, (likeCountMap.get(l.photo_id) || 0) + 1));
+      const userLikedSet = new Set((userLikesRes.data || []).map(l => l.photo_id));
+
+      setPhotos(photosData.map(p => ({
+        ...p,
+        profiles: profileMap.get(p.user_id) || { nickname: '用户', avatar_url: null },
+        like_count: likeCountMap.get(p.id) || 0,
+        user_liked: userLikedSet.has(p.id),
+      })));
     } catch (error) {
-      console.error('Failed to participate:', error);
-      toast.error(t('campaign.participateFailed', '参与活动失败'));
+      console.error('Failed to load photos:', error);
+    } finally {
+      setPhotosLoading(false);
     }
   };
 
-  const handleGoBack = () => {
-    console.log('返回按钮被点击');
+  const loadLeaderboard = async (campaignId: string) => {
     try {
-      navigate('/');
+      // Get checkin counts per user
+      const { data: photosData } = await supabase
+        .from('dinner_photos')
+        .select('user_id')
+        .eq('campaign_id', campaignId);
+
+      if (!photosData?.length) { setLeaderboard([]); return; }
+
+      const checkinMap = new Map<string, number>();
+      photosData.forEach(p => checkinMap.set(p.user_id, (checkinMap.get(p.user_id) || 0) + 1));
+
+      const userIds = [...checkinMap.keys()];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, nickname, avatar_url')
+        .in('user_id', userIds);
+
+      // Get total likes per user for this campaign's photos
+      const { data: allPhotos } = await supabase
+        .from('dinner_photos')
+        .select('id, user_id')
+        .eq('campaign_id', campaignId);
+
+      const photoIds = (allPhotos || []).map(p => p.id);
+      const { data: allLikes } = photoIds.length > 0
+        ? await supabase.from('photo_likes').select('photo_id').in('photo_id', photoIds)
+        : { data: [] };
+
+      const photoOwnerMap = new Map((allPhotos || []).map(p => [p.id, p.user_id]));
+      const userLikesMap = new Map<string, number>();
+      (allLikes || []).forEach(l => {
+        const owner = photoOwnerMap.get(l.photo_id);
+        if (owner) userLikesMap.set(owner, (userLikesMap.get(owner) || 0) + 1);
+      });
+
+      const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+
+      const entries: LeaderboardEntry[] = userIds.map(uid => ({
+        user_id: uid,
+        nickname: profileMap.get(uid)?.nickname || '用户',
+        avatar_url: profileMap.get(uid)?.avatar_url || null,
+        checkin_count: checkinMap.get(uid) || 0,
+        total_likes: userLikesMap.get(uid) || 0,
+      }));
+
+      entries.sort((a, b) => b.checkin_count - a.checkin_count || b.total_likes - a.total_likes);
+      setLeaderboard(entries.slice(0, 20));
     } catch (error) {
-      console.error('导航失败:', error);
-      window.location.href = '/';
+      console.error('Failed to load leaderboard:', error);
     }
+  };
+
+  const loadUserCheckinCount = async (campaignId: string, userId: string) => {
+    const { count } = await supabase
+      .from('dinner_photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('campaign_id', campaignId)
+      .eq('user_id', userId);
+    
+    const cnt = count || 0;
+    setUserCheckinCount(cnt);
+
+    // Check if achievement unlocked
+    if (cnt >= 3) {
+      const { data: achievement } = await supabase
+        .from('achievements')
+        .select('id')
+        .eq('requirement_type', 'campaign_checkin')
+        .single();
+
+      if (achievement) {
+        const { data: ua } = await supabase
+          .from('user_achievements')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('achievement_id', achievement.id)
+          .single();
+        
+        if (ua) {
+          setAchievementUnlocked(true);
+        } else {
+          // Unlock achievement
+          await supabase.from('user_achievements').insert({
+            user_id: userId,
+            achievement_id: achievement.id,
+          });
+          setAchievementUnlocked(true);
+          toast.success('🎆 恭喜解锁「跨年饭友」限定成就徽章！');
+        }
+      }
+    }
+  };
+
+  const handleParticipate = async () => {
+    if (!currentUserId) {
+      toast.error('请先登录');
+      navigate('/auth');
+      return;
+    }
+    if (!campaign) return;
+
+    const { error } = await supabase
+      .from('campaign_participations')
+      .insert({
+        campaign_id: campaign.id,
+        user_id: currentUserId,
+        participation_data: { joined_at: new Date().toISOString() }
+      });
+
+    if (error) {
+      if (error.code === '23505') {
+        toast.error('您已经参与过此活动');
+      } else {
+        toast.error('参与活动失败');
+      }
+    } else {
+      setHasParticipated(true);
+      setParticipantCount(c => c + 1);
+      toast.success('成功参与活动！');
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !campaign || !currentUserId) return;
+
+    if (!hasParticipated) {
+      toast.error('请先参与活动再打卡');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUserId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('dinner-photos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('dinner-photos')
+        .getPublicUrl(fileName);
+
+      const { error: insertError } = await supabase
+        .from('dinner_photos')
+        .insert({
+          user_id: currentUserId,
+          photo_url: publicUrl,
+          campaign_id: campaign.id,
+          media_type: 'image',
+          description: '活动打卡',
+        });
+
+      if (insertError) throw insertError;
+
+      toast.success('打卡成功！获得20积分奖励 🎉');
+      
+      // Reload data
+      await Promise.all([
+        loadPhotos(campaign.id, currentUserId),
+        loadLeaderboard(campaign.id),
+        loadUserCheckinCount(campaign.id, currentUserId),
+      ]);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error('上传失败，请重试');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleLikePhoto = async (photoId: string, liked: boolean) => {
+    if (!currentUserId) {
+      toast.error('请先登录');
+      return;
+    }
+
+    if (liked) {
+      await supabase.from('photo_likes').delete().eq('photo_id', photoId).eq('user_id', currentUserId);
+    } else {
+      await supabase.from('photo_likes').insert({ photo_id: photoId, user_id: currentUserId });
+    }
+
+    setPhotos(prev => prev.map(p => p.id === photoId ? {
+      ...p,
+      user_liked: !liked,
+      like_count: liked ? p.like_count - 1 : p.like_count + 1,
+    } : p));
   };
 
   const formatDate = (dateString: string) => {
     const locale = i18n.language === 'en' ? 'en-US' : 'zh-CN';
     return new Date(dateString).toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
     });
   };
 
@@ -151,11 +379,7 @@ export const CampaignDetail = () => {
     return i18n.language === 'en' && campaign.description_en ? campaign.description_en : campaign.description;
   };
 
-  const getCampaignTypeName = (type: string) => {
-    return t(`campaign.types.${type}`, t('campaign.types.default'));
-  };
-
-  const isActive = campaign ? 
+  const isActive = campaign ?
     new Date() >= new Date(campaign.start_date) && new Date() <= new Date(campaign.end_date) : false;
 
   if (loading) {
@@ -170,138 +394,255 @@ export const CampaignDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg mb-4">{t('campaign.notFound', '活动不存在')}</div>
-          <Button onClick={() => navigate('/')}>{t('common.backToHome', '返回首页')}</Button>
+          <div className="text-lg mb-4">活动不存在</div>
+          <Button onClick={() => navigate('/')}>返回首页</Button>
         </div>
       </div>
     );
   }
 
+  const getRankMedal = (index: number) => {
+    if (index === 0) return '🥇';
+    if (index === 1) return '🥈';
+    if (index === 2) return '🥉';
+    return `${index + 1}`;
+  };
+
   return (
     <>
-      <SEO 
-        title={getDisplayTitle()}
-        description={getDisplayDescription()}
-        keywords={t('campaign.keywords', '活动,优惠,饭约社,美食社交')}
-      />
-      
+      <SEO title={getDisplayTitle()} description={getDisplayDescription()} />
+
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={handleGoBack}
-          className="mb-4"
-        >
+        <Button variant="ghost" onClick={() => navigate('/')} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t('common.back')}
         </Button>
 
-        <Card className="overflow-hidden">
-          {campaign.image_url && (
-            <div className="relative h-64 bg-gradient-to-r from-primary/10 to-accent/10">
-              <img 
-                src={campaign.image_url} 
-                alt={getDisplayTitle()}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/20" />
+        {/* Campaign Header */}
+        <Card className="overflow-hidden mb-6">
+          <div className="relative h-48 bg-gradient-to-r from-red-500/20 via-orange-500/20 to-yellow-500/20 flex items-center justify-center">
+            <div className="text-6xl">🎆</div>
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4">
+              <h1 className="text-2xl font-bold">{getDisplayTitle()}</h1>
             </div>
-          )}
-          
-          <CardHeader>
-            <div className="flex items-center justify-between mb-4">
+          </div>
+
+          <CardContent className="pt-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant={isActive ? "default" : "secondary"}>
-                {getCampaignTypeName(campaign.campaign_type)}
+                {isActive ? '🔥 进行中' : '已结束'}
               </Badge>
-              <Badge variant={isActive ? "default" : "outline"}>
-                {isActive ? t('campaign.active', '进行中') : t('campaign.ended', '已结束')}
+              <Badge variant="outline">
+                <Users className="h-3 w-3 mr-1" />{participantCount} 人参与
               </Badge>
+              {achievementUnlocked && (
+                <Badge className="bg-red-500/10 text-red-500 border-red-500/20">
+                  🎆 跨年饭友
+                </Badge>
+              )}
             </div>
-            
-            <CardTitle className="text-2xl mb-2">{getDisplayTitle()}</CardTitle>
-            
+
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                {t('campaign.startTime', '开始')}：{formatDate(campaign.start_date)}
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {t('campaign.endTime', '结束')}：{formatDate(campaign.end_date)}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                {t('campaign.views', '浏览')}：{campaign.view_count}
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4" />
-                {t('campaign.clicks', '点击')}：{campaign.click_count}
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold text-lg mb-3">{t('campaign.details', '活动详情')}</h3>
-              <div className="prose prose-sm max-w-none text-muted-foreground">
-                {getDisplayDescription().split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-2">{paragraph}</p>
-                ))}
-              </div>
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" /> {formatDate(campaign.start_date)}
+              </span>
+              <span>至</span>
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" /> {formatDate(campaign.end_date)}
+              </span>
             </div>
 
-            {campaign.rules && (
-              <div>
-                <h3 className="font-semibold text-lg mb-3">{t('campaign.rules', '活动规则')}</h3>
-                <Card className="bg-muted/50">
-                  <CardContent className="p-4">
-                    <div className="prose prose-sm max-w-none">
-                      {typeof campaign.rules === 'object' ? (
-                        <div className="space-y-2">
-                          {Object.entries(campaign.rules).map(([key, value]) => (
-                            <div key={key} className="flex gap-2">
-                              <span className="font-medium min-w-fit">{key}:</span>
-                              <span className="text-muted-foreground">{String(value)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">{String(campaign.rules)}</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
+            {/* Participation & Checkin */}
             {isActive && (
-              <div className="space-y-3">
-                <div className="text-sm text-muted-foreground">
-                  {t('campaign.participantCount', '已参与人数')}：{participantCount}
-                </div>
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={handleParticipate}
-                    disabled={hasParticipated}
-                    className="flex-1"
-                    size="lg"
-                  >
-                    <Gift className="h-4 w-4 mr-2" />
-                    {hasParticipated ? t('campaign.participated', '已参与') : t('campaign.participate', '参与活动')}
-                  </Button>
-                </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleParticipate}
+                  disabled={hasParticipated}
+                  variant={hasParticipated ? "outline" : "default"}
+                  className="flex-1"
+                >
+                  <Gift className="h-4 w-4 mr-2" />
+                  {hasParticipated ? '✅ 已参与' : '参与活动'}
+                </Button>
+                {hasParticipated && (
+                  <div className="relative flex-1">
+                    <Button className="w-full" disabled={uploading} asChild>
+                      <label htmlFor="campaign-photo-upload" className="cursor-pointer flex items-center justify-center gap-2">
+                        <Camera className="h-4 w-4" />
+                        {uploading ? '上传中...' : `📸 拍照打卡 (${userCheckinCount}/3)`}
+                      </label>
+                    </Button>
+                    <input
+                      id="campaign-photo-upload"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handlePhotoUpload}
+                      disabled={uploading}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
-            {!isActive && (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">{t('campaign.ended', '此活动已结束')}</p>
+            {/* Progress toward achievement */}
+            {hasParticipated && userCheckinCount < 3 && (
+              <div className="bg-muted/50 rounded-lg p-3 text-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🎆</span>
+                  <span className="font-medium">距离解锁「跨年饭友」徽章还需打卡 {3 - userCheckinCount} 次</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div
+                    className="bg-primary rounded-full h-2 transition-all"
+                    style={{ width: `${(userCheckinCount / 3) * 100}%` }}
+                  />
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Tabs: Details / Photo Wall / Leaderboard */}
+        <Tabs defaultValue="details" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">活动详情</TabsTrigger>
+            <TabsTrigger value="photos" className="flex items-center gap-1">
+              <ImageIcon className="h-4 w-4" />照片墙 ({photos.length})
+            </TabsTrigger>
+            <TabsTrigger value="leaderboard" className="flex items-center gap-1">
+              <Trophy className="h-4 w-4" />排行榜
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Details Tab */}
+          <TabsContent value="details">
+            <Card>
+              <CardContent className="pt-6 space-y-6">
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">活动详情</h3>
+                  <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-line">
+                    {getDisplayDescription()}
+                  </div>
+                </div>
+
+                {campaign.rules && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3">活动规则</h3>
+                    <Card className="bg-muted/50">
+                      <CardContent className="p-4 space-y-2">
+                        {typeof campaign.rules === 'object' ? (
+                          Object.entries(campaign.rules).map(([key, value]) => (
+                            <div key={key} className="flex gap-2 text-sm">
+                              <span className="font-medium text-primary">{key}:</span>
+                              <span className="text-muted-foreground">{String(value)}</span>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-muted-foreground">{String(campaign.rules)}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Photo Wall Tab */}
+          <TabsContent value="photos">
+            <Card>
+              <CardContent className="pt-6">
+                {photosLoading ? (
+                  <div className="text-center py-8 text-muted-foreground">{t('common.loading')}</div>
+                ) : photos.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Camera className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">还没有人打卡哦，快来做第一个！</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {photos.map((photo) => (
+                      <div key={photo.id} className="relative group rounded-lg overflow-hidden border">
+                        <img
+                          src={photo.photo_url}
+                          alt="打卡照片"
+                          className="w-full aspect-square object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Avatar className="h-5 w-5">
+                                <AvatarImage src={photo.profiles?.avatar_url || undefined} />
+                                <AvatarFallback className="text-[10px]">{photo.profiles?.nickname?.[0]}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-white text-xs truncate max-w-[80px]">{photo.profiles?.nickname}</span>
+                            </div>
+                            <button
+                              onClick={() => handleLikePhoto(photo.id, photo.user_liked)}
+                              className="flex items-center gap-0.5 text-white text-xs"
+                            >
+                              <Heart className={`h-3.5 w-3.5 ${photo.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
+                              {photo.like_count > 0 && photo.like_count}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Leaderboard Tab */}
+          <TabsContent value="leaderboard">
+            <Card>
+              <CardContent className="pt-6">
+                {leaderboard.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Trophy className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">暂无排行数据，快来打卡冲榜！</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {leaderboard.map((entry, index) => (
+                      <div
+                        key={entry.user_id}
+                        className={`flex items-center gap-3 p-3 rounded-lg ${
+                          index < 3 ? 'bg-primary/5 border border-primary/10' : 'bg-muted/30'
+                        } ${entry.user_id === currentUserId ? 'ring-2 ring-primary/30' : ''}`}
+                      >
+                        <span className="text-xl w-8 text-center">{getRankMedal(index)}</span>
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={entry.avatar_url || undefined} />
+                          <AvatarFallback>{entry.nickname[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {entry.nickname}
+                            {entry.user_id === currentUserId && <span className="text-primary ml-1">(我)</span>}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            打卡 {entry.checkin_count} 次 · 获赞 {entry.total_likes}
+                          </p>
+                        </div>
+                        {index < 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +500积分
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );
