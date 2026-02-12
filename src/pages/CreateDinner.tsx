@@ -163,10 +163,16 @@ const CreateDinner = () => {
     
     setLoading(true);
     
+    // 将本地 datetime-local 值转为带时区的 ISO 字符串
+    const dinnerTimeISO = formData.dinner_time 
+      ? new Date(formData.dinner_time).toISOString() 
+      : formData.dinner_time;
+    
     const insertData = {
       created_by: user.id,
       status: 'active',
       ...formData,
+      dinner_time: dinnerTimeISO,
       dinner_category: formData.dinner_category || null,
     };
     
@@ -419,6 +425,7 @@ const CreateDinner = () => {
                   id="dinner_time"
                   type="datetime-local"
                   value={formData.dinner_time}
+                  min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
                   onChange={(e) => setFormData(prev => ({ ...prev, dinner_time: e.target.value }))}
                   required
                   className="border-2 focus:border-primary transition-colors"

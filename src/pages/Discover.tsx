@@ -283,6 +283,7 @@ const Discover = () => {
       const { data, error } = await supabase
         .from("dinners")
         .select("*")
+        .gte("dinner_time", new Date().toISOString())
         .order("dinner_time", { ascending: true });
 
       if (error) {
