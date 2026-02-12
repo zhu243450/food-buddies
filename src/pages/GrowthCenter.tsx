@@ -9,6 +9,7 @@ import { InviteCard } from '@/components/growth/InviteCard';
 import { LeaderboardCard } from '@/components/growth/LeaderboardCard';
 import { AchievementsCard } from '@/components/growth/AchievementsCard';
 import { PointsDisplay } from '@/components/growth/PointsDisplay';
+import { PointsRulesCard } from '@/components/growth/PointsRulesCard';
 import { CouponCard } from '@/components/growth/CouponCard';
 import { InvitePoster } from '@/components/growth/InvitePoster';
 import { WithdrawalCard } from '@/components/growth/WithdrawalCard';
@@ -54,6 +55,7 @@ const GrowthCenter = () => {
       <div className="container max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* 积分显示 */}
         <PointsDisplay userId={userId} />
+        <PointsRulesCard />
 
         {/* 标签页 */}
         <Tabs defaultValue="invite" className="w-full">
