@@ -15,7 +15,7 @@ export const SEO = ({
   title,
   description,
   keywords,
-  image = "https://food-buddies.lovable.app/og-image.jpg",
+  image = "https://dinemate.xyz/og-image.jpg",
   url,
   type = 'website',
   structuredData
@@ -31,24 +31,22 @@ export const SEO = ({
   const metaDescription = description || defaultDescription;
   const metaKeywords = keywords || defaultKeywords;
   
+  const BASE_URL = 'https://dinemate.xyz';
+
   const getCanonicalUrl = () => {
     if (url) return url;
     
-    const baseUrl = 'https://food-buddies.lovable.app';
     const pathname = window.location.pathname;
     
+    // Normalize alternate routes to their canonical version
     if (pathname === '/my-dinners') {
-      return `${baseUrl}/discover`;
+      return `${BASE_URL}/discover`;
     }
     
-    return `${baseUrl}${pathname}`;
+    return `${BASE_URL}${pathname}`;
   };
   
   const canonicalUrl = getCanonicalUrl();
-  
-  const getLocalizedUrl = (lang: string) => {
-    return canonicalUrl;
-  };
 
   // English description for international social media
   const socialDescription = i18n.language === 'zh' 
@@ -63,11 +61,6 @@ export const SEO = ({
       <meta name="keywords" content={metaKeywords} />
       <meta name="author" content="饭约社团队 DineMate Team" />
       <link rel="canonical" href={canonicalUrl} />
-
-      {/* Hreflang alternates */}
-      <link rel="alternate" href={getLocalizedUrl('x-default')} hrefLang="x-default" />
-      <link rel="alternate" href={getLocalizedUrl('en')} hrefLang="en" />
-      <link rel="alternate" href={getLocalizedUrl('zh-CN')} hrefLang="zh-CN" />
       
       {/* Language */}
       <html lang={i18n.language === 'zh' ? 'zh-CN' : 'en-US'} />
