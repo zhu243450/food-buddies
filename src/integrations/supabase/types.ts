@@ -157,6 +157,41 @@ export type Database = {
           },
         ]
       }
+      anonymous_tags: {
+        Row: {
+          created_at: string
+          dinner_id: string
+          id: string
+          reviewed_user_id: string
+          reviewer_id: string
+          tags: string[]
+        }
+        Insert: {
+          created_at?: string
+          dinner_id: string
+          id?: string
+          reviewed_user_id: string
+          reviewer_id: string
+          tags?: string[]
+        }
+        Update: {
+          created_at?: string
+          dinner_id?: string
+          id?: string
+          reviewed_user_id?: string
+          reviewer_id?: string
+          tags?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_tags_dinner_id_fkey"
+            columns: ["dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_participations: {
         Row: {
           campaign_id: string
@@ -1047,6 +1082,50 @@ export type Database = {
         }
         Relationships: []
       }
+      random_match_queue: {
+        Row: {
+          created_at: string
+          cuisine_type: string
+          expires_at: string
+          id: string
+          location: string | null
+          matched_dinner_id: string | null
+          matched_with_user_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cuisine_type: string
+          expires_at?: string
+          id?: string
+          location?: string | null
+          matched_dinner_id?: string | null
+          matched_with_user_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cuisine_type?: string
+          expires_at?: string
+          id?: string
+          location?: string | null
+          matched_dinner_id?: string | null
+          matched_with_user_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "random_match_queue_matched_dinner_id_fkey"
+            columns: ["matched_dinner_id"]
+            isOneToOne: false
+            referencedRelation: "dinners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           admin_notes: string | null
@@ -1541,6 +1620,7 @@ export type Database = {
           success: boolean
         }[]
       }
+      cancel_random_match: { Args: { user_id_param: string }; Returns: boolean }
       check_user_cancellation_restrictions: {
         Args: { user_id_param: string }
         Returns: {
@@ -1672,6 +1752,14 @@ export type Database = {
           reason?: string
         }
         Returns: undefined
+      }
+      try_random_match: {
+        Args: {
+          cuisine_type_param: string
+          location_param?: string
+          user_id_param: string
+        }
+        Returns: Json
       }
     }
     Enums: {

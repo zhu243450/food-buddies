@@ -16,6 +16,7 @@ import { OptimizedMyDinnersCard } from "@/components/OptimizedMyDinnersCard";
 import { useOptimizedDinners } from "@/hooks/useOptimizedDinners";
 import { useAuth } from '@/contexts/AuthContext';
 import { RandomMatchButton } from "@/components/RandomMatchButton";
+import { RandomMatchChallenge } from "@/components/RandomMatchChallenge";
 import { GuestBrowsePrompt } from "@/components/GuestBrowsePrompt";
 import { useToast } from "@/hooks/use-toast";
 import { EnhancedDinnerCard } from "@/components/EnhancedDinnerCard";
@@ -411,7 +412,12 @@ const Discover = () => {
               <p className="text-muted-foreground text-sm flex-1 text-center sm:text-left">
                 {t('dinner.description')}
               </p>
-              {user && <RandomMatchButton />}
+              {user && (
+                <div className="flex gap-2">
+                  <RandomMatchChallenge />
+                  <RandomMatchButton />
+                </div>
+              )}
             </div>
             {/* Search & Filter */}
             <DinnerSearchFilter

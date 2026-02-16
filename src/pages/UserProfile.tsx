@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, User, Calendar, Heart, Utensils, Clock, Camera, MessageCircle, Send, X } from "lucide-react";
 import { FriendActionButton } from "@/components/FriendshipComponents";
+import { ReceivedTagsDisplay } from "@/components/ReceivedTagsDisplay";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -450,6 +451,8 @@ const UserProfile = () => {
                 </div>
               </div>
             )}
+            {/* 饭友印象 - 匿名标签 */}
+            {userId && <ReceivedTagsDisplay targetUserId={userId} />}
 
                 {/* 加入时间 */}
                 <div className="text-center p-3 bg-muted/50 rounded-lg">

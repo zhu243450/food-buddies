@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
 import { DinnerReviewSection } from "@/components/DinnerReviewSection";
+import { AnonymousTagSection } from "@/components/AnonymousTagSection";
 import { useAuth } from '@/contexts/AuthContext';
 import type { Dinner } from '@/types/database';
 
@@ -541,6 +542,9 @@ const DinnerDetail = () => {
             )}
             {/* Review section - shows after dinner completes */}
             <DinnerReviewSection dinnerId={dinner.id} userId={user?.id} />
+            
+            {/* Anonymous positive tags - shows after dinner completes */}
+            <AnonymousTagSection dinnerId={dinner.id} userId={user?.id} />
           </CardContent>
         </Card>
       </div>
