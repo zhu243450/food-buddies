@@ -20,6 +20,7 @@ import DinnerMediaUploader from "@/components/DinnerPhotoUploader";
 import PersonalPhotoGallery from "@/components/PersonalPhotoGallery";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/contexts/AuthContext';
+import { ReceivedTagsDisplay } from '@/components/ReceivedTagsDisplay';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -514,6 +515,8 @@ const Profile = () => {
             </TabsContent>
             
             <TabsContent value="friends" className="space-y-4">
+              {/* 饭友印象 - 我收到的匿名标签 */}
+              {user && <ReceivedTagsDisplay targetUserId={user.id} />}
               <PendingRequestsCard />
               <FriendsListCard />
             </TabsContent>
