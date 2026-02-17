@@ -134,6 +134,9 @@ const DiningBuddies = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-lg font-bold text-foreground flex-1">我的饭搭子</h1>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/dining-report')} className="text-xs text-muted-foreground">
+            饮食报告 →
+          </Button>
         </div>
       </div>
 

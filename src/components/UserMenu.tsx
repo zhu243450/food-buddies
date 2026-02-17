@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   User, 
+  Users,
   Bell, 
   MessageSquare, 
   Settings, 
@@ -260,6 +261,20 @@ export const UserMenu = () => {
               >
                 <Gift className="mr-2 h-4 w-4" />
                 <span>{i18n.language === 'zh' ? '增长中心' : 'Growth Center'}</span>
+              </button>
+              <button 
+                onClick={() => handleMenuItemClick('/dining-report')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                <span>{i18n.language === 'zh' ? '饮食报告' : 'Dining Report'}</span>
+              </button>
+              <button 
+                onClick={() => handleMenuItemClick('/dining-buddies')}
+                className="flex items-center w-full px-2 py-2 text-sm hover:bg-accent rounded"
+              >
+                <Users className="mr-2 h-4 w-4" />
+                <span>{i18n.language === 'zh' ? '我的饭搭子' : 'Dining Buddies'}</span>
               </button>
             </div>
             
