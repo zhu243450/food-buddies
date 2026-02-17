@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "@/components/UserMenu";
-import { Home, Search, Plus, MessageCircle } from "lucide-react";
+import { Home, Search, Plus, MessageCircle, Newspaper } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigationData } from "@/hooks/useNavigationData";
@@ -46,7 +46,7 @@ const Navigation = () => {
   // 使用useMemo稳定navItems引用
   const navItems = useMemo(() => [
     { icon: Search, label: t('nav.dinners'), path: "/discover" },
-    { icon: Home, label: t('nav.foodGuide'), path: "/food-guide" },
+    { icon: Newspaper, label: '动态', path: "/social" },
     { icon: Plus, label: t('dinner.create'), path: "/create-dinner", special: true },
     { icon: MessageCircle, label: t('nav.chat'), path: "/chat-list", hasNotification: unreadCount > 0 },
   ], [t, unreadCount]);

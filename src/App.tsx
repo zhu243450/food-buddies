@@ -34,6 +34,7 @@ const CampaignDetail = lazy(() => import("./pages/CampaignDetail").then(module =
 const CombinedFoodGuide = lazy(() => import("./pages/CombinedFoodGuide").then(module => ({ default: module.CombinedFoodGuide })));
 const FAQ = lazy(() => import("./pages/FAQ").then(module => ({ default: module.FAQ })));
 const GrowthCenter = lazy(() => import("./pages/GrowthCenter"));
+const SocialFeed = lazy(() => import("./pages/SocialFeed"));
 
 import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
@@ -207,6 +208,11 @@ const App = () => (
             <Route path="/growth" element={
               <Suspense fallback={<OptimizedLoader />}>
                 <GrowthCenter />
+              </Suspense>
+            } />
+            <Route path="/social" element={
+              <Suspense fallback={<OptimizedLoader />}>
+                <SocialFeed />
               </Suspense>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
