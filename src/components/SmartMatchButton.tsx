@@ -231,22 +231,22 @@ export const SmartMatchButton = () => {
     return date.toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
-  if (!user) return null;
-
   return (
     <>
-      <Button
-        onClick={handleOpen}
-        size="lg"
-        className="relative overflow-hidden w-full bg-gradient-primary text-primary-foreground shadow-lg hover:opacity-90 transition-opacity"
-      >
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5" />
-          <span className="font-bold">智能匹配饭局</span>
-          <Dice5 className="w-4 h-4" />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
-      </Button>
+      {user && (
+        <Button
+          onClick={handleOpen}
+          size="lg"
+          className="relative overflow-hidden w-full bg-gradient-primary text-primary-foreground shadow-lg hover:opacity-90 transition-opacity"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5" />
+            <span className="font-bold">智能匹配饭局</span>
+            <Dice5 className="w-4 h-4" />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
+        </Button>
+      )}
 
       <Dialog open={showDialog} onOpenChange={(open) => {
         if (!open && step === 'waiting') handleCancelWaiting();
