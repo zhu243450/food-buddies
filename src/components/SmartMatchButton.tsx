@@ -33,6 +33,7 @@ interface RandomDinner {
   max_participants: number;
   description: string | null;
   food_preferences: string[] | null;
+  created_by: string;
 }
 
 export const SmartMatchButton = () => {
@@ -131,22 +132,33 @@ export const SmartMatchButton = () => {
       const now = new Date().toISOString();
       const { data: dinners, error } = await supabase
         .from('dinners')
-        .select('id, title, location, dinner_time, max_participants, description, food_preferences')
+        .select('id, title, location, dinner_time, max_participants, description, food_preferences, created_by')
         .gte('dinner_time', now)
         .or('status.is.null,status.eq.active')
-        .neq('created_by', user.id)
         .order('dinner_time', { ascending: true })
         .limit(20);
       if (error) throw error;
 
       if (dinners && dinners.length > 0) {
-        const { data: participants } = await supabase
-          .from('dinner_participants')
-          .select('dinner_id')
-          .in('dinner_id', dinners.map(d => d.id));
+        const [{ data: participants }, { data: myParticipations }] = await Promise.all([
+          supabase
+            .from('dinner_participants')
+            .select('dinner_id')
+            .in('dinner_id', dinners.map(d => d.id)),
+          supabase
+            .from('dinner_participants')
+            .select('dinner_id')
+            .eq('user_id', user.id)
+            .in('dinner_id', dinners.map(d => d.id))
+        ]);
         const counts: Record<string, number> = {};
         participants?.forEach(p => { counts[p.dinner_id] = (counts[p.dinner_id] || 0) + 1; });
-        const available = dinners.filter(d => (counts[d.id] || 0) + 1 < d.max_participants);
+        const joinedIds = new Set(myParticipations?.map(p => p.dinner_id) || []);
+        const available = dinners.filter(d => 
+          (counts[d.id] || 0) + 1 < d.max_participants && 
+          !joinedIds.has(d.id) &&
+          d.created_by !== user.id
+        );
 
         await new Promise(resolve => setTimeout(resolve, 2000));
         if (available.length > 0) {
