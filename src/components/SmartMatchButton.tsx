@@ -60,7 +60,19 @@ export const SmartMatchButton = () => {
   const [spinIndex, setSpinIndex] = useState(0);
   const [countdown, setCountdown] = useState(30 * 60);
 
-  // Spin animation for cuisine
+  // Cleanup overlay on unmount or when dialog closes
+  useEffect(() => {
+    if (!showDialog) {
+      // Force cleanup any stuck overlay/body styles
+      document.body.style.pointerEvents = '';
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.pointerEvents = '';
+      document.body.style.overflow = '';
+    };
+  }, [showDialog]);
+
   useEffect(() => {
     if (step !== 'spinning') return;
     const interval = setInterval(() => {
@@ -249,7 +261,14 @@ export const SmartMatchButton = () => {
       )}
 
       <Dialog open={showDialog} onOpenChange={(open) => {
-        if (!open && step === 'waiting') handleCancelWaiting();
+        if (!open) {
+          if (step === 'waiting') handleCancelWaiting();
+          // Force cleanup body styles that Radix may leave behind
+          setTimeout(() => {
+            document.body.style.pointerEvents = '';
+            document.body.style.overflow = '';
+          }, 100);
+        }
         setShowDialog(open);
       }} modal={true}>
         <DialogContent 
