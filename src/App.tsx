@@ -35,6 +35,9 @@ const CombinedFoodGuide = lazy(() => import("./pages/CombinedFoodGuide").then(mo
 const FAQ = lazy(() => import("./pages/FAQ").then(module => ({ default: module.FAQ })));
 const GrowthCenter = lazy(() => import("./pages/GrowthCenter"));
 const SocialFeed = lazy(() => import("./pages/SocialFeed"));
+const DinnerMap = lazy(() => import("./pages/DinnerMap"));
+const DiningReport = lazy(() => import("./pages/DiningReport"));
+const DiningBuddies = lazy(() => import("./pages/DiningBuddies"));
 
 import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
@@ -47,7 +50,7 @@ const HIDE_NAV_ROUTES = ['/', '/auth', '/admin'];
 const HIDE_NAV_PREFIXES = ['/chat/'];
 
 // Routes where footer should NOT appear (mobile-focused pages)
-const HIDE_FOOTER_ROUTES = ['/', '/auth', '/admin', '/chat-list', '/create-dinner', '/notifications', '/feedback'];
+const HIDE_FOOTER_ROUTES = ['/', '/auth', '/admin', '/chat-list', '/create-dinner', '/notifications', '/feedback', '/dinner-map', '/dining-report'];
 const HIDE_FOOTER_PREFIXES = ['/chat/', '/dinner/', '/user/'];
 
 function GlobalNavigation() {
@@ -213,6 +216,21 @@ const App = () => (
             <Route path="/social" element={
               <Suspense fallback={<OptimizedLoader />}>
                 <SocialFeed />
+              </Suspense>
+            } />
+            <Route path="/dinner-map" element={
+              <Suspense fallback={<OptimizedLoader />}>
+                <DinnerMap />
+              </Suspense>
+            } />
+            <Route path="/dining-report" element={
+              <Suspense fallback={<OptimizedLoader />}>
+                <DiningReport />
+              </Suspense>
+            } />
+            <Route path="/dining-buddies" element={
+              <Suspense fallback={<OptimizedLoader />}>
+                <DiningBuddies />
               </Suspense>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

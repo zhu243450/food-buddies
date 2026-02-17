@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -17,13 +17,11 @@ export interface Post {
   shares_count: number;
   created_at: string;
   updated_at: string;
-  // joined profile
   profile?: {
     nickname: string;
     avatar_url: string | null;
     user_id: string;
   };
-  // user interaction state
   is_liked?: boolean;
 }
 
@@ -40,18 +38,59 @@ export interface PostComment {
   };
 }
 
-export function usePosts(filter?: 'all' | 'following' | 'hashtag', hashtag?: string) {
+const PAGE_SIZE = 15;
+
+async function enrichPosts(data: any[], userId?: string): Promise<Post[]> {
+  const userIds = [...new Set((data || []).map(p => p.user_id))];
+  if (userIds.length === 0) return [];
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('user_id, nickname, avatar_url')
+    .in('user_id', userIds);
+
+  let userLikes: string[] = [];
+  if (userId) {
+    const postIds = (data || []).map(p => p.id);
+    const { data: likes } = await supabase
+      .from('post_likes')
+      .select('post_id')
+      .eq('user_id', userId)
+      .in('post_id', postIds);
+    userLikes = (likes || []).map(l => l.post_id);
+  }
+
+  const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+
+  return (data || []).map(post => ({
+    ...post,
+    profile: profileMap.get(post.user_id),
+    is_liked: userLikes.includes(post.id),
+  })) as Post[];
+}
+
+export type SortMode = 'latest' | 'hot';
+
+export function usePosts(filter?: 'all' | 'following' | 'hashtag', hashtag?: string, sortMode: SortMode = 'latest') {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const postsQuery = useQuery({
-    queryKey: ['posts', filter, hashtag],
-    queryFn: async () => {
+  const postsInfiniteQuery = useInfiniteQuery({
+    queryKey: ['posts', filter, hashtag, sortMode],
+    queryFn: async ({ pageParam = 0 }) => {
       let query = supabase
         .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .select('*');
+
+      if (sortMode === 'hot') {
+        query = query.order('likes_count', { ascending: false })
+                     .order('comments_count', { ascending: false })
+                     .order('created_at', { ascending: false });
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+
+      query = query.range(pageParam * PAGE_SIZE, (pageParam + 1) * PAGE_SIZE - 1);
 
       if (hashtag) {
         query = query.contains('hashtags', [hashtag]);
@@ -60,32 +99,20 @@ export function usePosts(filter?: 'all' | 'following' | 'hashtag', hashtag?: str
       const { data, error } = await query;
       if (error) throw error;
 
-      // Fetch profiles for all posts
-      const userIds = [...new Set((data || []).map(p => p.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, nickname, avatar_url')
-        .in('user_id', userIds);
-
-      // Fetch user likes
-      let userLikes: string[] = [];
-      if (user) {
-        const { data: likes } = await supabase
-          .from('post_likes')
-          .select('post_id')
-          .eq('user_id', user.id);
-        userLikes = (likes || []).map(l => l.post_id);
-      }
-
-      const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
-
-      return (data || []).map(post => ({
-        ...post,
-        profile: profileMap.get(post.user_id),
-        is_liked: userLikes.includes(post.id),
-      })) as Post[];
+      const enriched = await enrichPosts(data || [], user?.id);
+      return { posts: enriched, nextPage: (data || []).length === PAGE_SIZE ? pageParam + 1 : undefined };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
   });
+
+  // Legacy flat query for backward compat
+  const postsQuery = {
+    isLoading: postsInfiniteQuery.isLoading,
+    data: postsInfiniteQuery.data?.pages.flatMap(p => p.posts),
+    error: postsInfiniteQuery.error,
+    refetch: postsInfiniteQuery.refetch,
+  };
 
   const createPost = useMutation({
     mutationFn: async (postData: {
@@ -178,7 +205,7 @@ export function usePosts(filter?: 'all' | 'following' | 'hashtag', hashtag?: str
     },
   });
 
-  return { postsQuery, createPost, toggleLike, deletePost, addComment };
+  return { postsQuery, postsInfiniteQuery, createPost, toggleLike, deletePost, addComment };
 }
 
 export function usePostComments(postId: string) {
