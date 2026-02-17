@@ -169,7 +169,7 @@ export const RandomMatchChallenge = () => {
       <Button
         onClick={handleStart}
         size="lg"
-        className="relative overflow-hidden bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white shadow-lg"
+        className="relative overflow-hidden w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white shadow-lg"
       >
         <div className="flex items-center gap-2">
           <Dice5 className="w-5 h-5" />

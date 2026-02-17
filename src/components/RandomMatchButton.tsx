@@ -118,7 +118,7 @@ export const RandomMatchButton = () => {
         onClick={handleRandomMatch}
         disabled={isMatching}
         size="lg"
-        className="relative overflow-hidden"
+        className="relative overflow-hidden w-full"
       >
         <div className={`flex items-center gap-2 ${isMatching ? 'animate-pulse' : ''}`}>
           <Shuffle className={`w-5 h-5 ${isMatching ? 'animate-spin' : ''}`} />
