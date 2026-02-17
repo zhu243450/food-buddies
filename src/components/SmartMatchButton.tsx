@@ -238,7 +238,7 @@ export const SmartMatchButton = () => {
         if (!open && step === 'waiting') handleCancelWaiting();
         setShowDialog(open);
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
