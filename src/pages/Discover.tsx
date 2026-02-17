@@ -15,8 +15,7 @@ import { FastSkeletonCard } from "@/components/FastSkeletonCard";
 import { OptimizedMyDinnersCard } from "@/components/OptimizedMyDinnersCard";
 import { useOptimizedDinners } from "@/hooks/useOptimizedDinners";
 import { useAuth } from '@/contexts/AuthContext';
-import { RandomMatchButton } from "@/components/RandomMatchButton";
-import { RandomMatchChallenge } from "@/components/RandomMatchChallenge";
+import { SmartMatchButton } from "@/components/SmartMatchButton";
 import { GuestBrowsePrompt } from "@/components/GuestBrowsePrompt";
 import { useToast } from "@/hooks/use-toast";
 import { EnhancedDinnerCard } from "@/components/EnhancedDinnerCard";
@@ -407,12 +406,9 @@ const Discover = () => {
           </TabsList>
 
           <TabsContent value="discover" className="space-y-4">
-            {/* Random Match Buttons */}
+            {/* Smart Match Button */}
             {user && (
-              <div className="grid grid-cols-2 gap-3">
-                <RandomMatchChallenge />
-                <RandomMatchButton />
-              </div>
+              <SmartMatchButton />
             )}
 
             {/* Search & Filter */}
