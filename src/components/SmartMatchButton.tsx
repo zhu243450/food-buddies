@@ -237,8 +237,14 @@ export const SmartMatchButton = () => {
       <Dialog open={showDialog} onOpenChange={(open) => {
         if (!open && step === 'waiting') handleCancelWaiting();
         setShowDialog(open);
-      }}>
-        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+      }} modal={true}>
+        <DialogContent 
+          className="sm:max-w-md" 
+          onPointerDownOutside={(e) => e.preventDefault()} 
+          onInteractOutside={(e) => e.preventDefault()}
+          onFocusOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => { if (step === 'waiting') e.preventDefault(); }}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
