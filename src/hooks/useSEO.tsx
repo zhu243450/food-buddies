@@ -6,7 +6,7 @@ export const useSEO = () => {
   const location = useLocation();
   
   const getPageSEO = (pageType: string, data?: any) => {
-    const baseUrl = 'https://food-buddies.lovable.app';
+    const baseUrl = 'https://dinemate.xyz';
     const currentUrl = `${baseUrl}${location.pathname}`;
     
     switch (pageType) {
@@ -60,46 +60,52 @@ export const useSEO = () => {
         };
         
       case 'dinner-detail':
-        const dinnerTitle = data?.title ? `${data.title} - ${t('seo.dinnerDetail.title', 'Dinner Event Details')}` : t('seo.dinnerDetail.title', 'Dinner Event Details');
-        const dinnerDescription = data?.description || t('seo.dinnerDetail.description', 'View detailed dinner event information, understand activity arrangements, and interact with dining companions.');
+        const dinnerTitle = data?.title ? `${data.title}` : t('seo.dinnerDetail.title', '饭局详情');
+        const dinnerDescription = data?.description || t('seo.dinnerDetail.description', '查看饭局详情，了解活动安排，与饭友互动交流。');
+        const dinnerUrl = data?.id ? `${baseUrl}/dinner/${data.id}` : currentUrl;
         return {
           title: dinnerTitle,
-          description: dinnerDescription,
-          keywords: t('seo.dinnerDetail.keywords', 'dinner details,meal information,food activity,social dining,food meetup'),
+          description: `${dinnerDescription.slice(0, 150)}`,
+          keywords: [
+            data?.title,
+            data?.location,
+            ...(data?.food_preferences || []),
+            '饭局', '约饭', '拼饭', '聚餐', 'DineMate'
+          ].filter(Boolean).join(','),
+          url: dinnerUrl,
           structuredData: data ? {
             "@context": "https://schema.org",
-            "@type": "Event",
+            "@type": "FoodEvent",
             "name": data.title,
             "description": data.description,
             "startDate": data.dinner_time,
-            "endDate": data.dinner_time, // Add end time estimate
-            "eventStatus": "EventScheduled",
-            "eventAttendanceMode": "OfflineEventAttendanceMode",
+            "eventStatus": "https://schema.org/EventScheduled",
+            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
             "location": {
               "@type": "Place",
               "name": data.location,
               "address": {
                 "@type": "PostalAddress",
-                "streetAddress": data.location
+                "streetAddress": data.location,
+                "addressCountry": "CN"
               }
             },
             "organizer": {
-              "@type": "Person",
-              "name": data.organizer_name || "FanYueShe User"
+              "@type": "Organization",
+              "name": "饭约社 DineMate",
+              "url": baseUrl
             },
             "offers": {
               "@type": "Offer",
               "price": "0",
-              "priceCurrency": "USD",
-              "availability": "InStock"
+              "priceCurrency": "CNY",
+              "availability": "https://schema.org/InStock",
+              "url": dinnerUrl
             },
             "maximumAttendeeCapacity": data.max_participants,
-            "keywords": (data.food_preferences || []).join(", "),
             "isAccessibleForFree": true,
-            "potentialAction": {
-              "@type": "JoinAction",
-              "target": window.location.href
-            }
+            "inLanguage": "zh-CN",
+            "url": dinnerUrl
           } : undefined
         };
         
