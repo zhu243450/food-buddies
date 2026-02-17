@@ -43,7 +43,7 @@ import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
-import "./i18n";
+import "./i18n"; // app init
 
 // Routes where bottom navigation should NOT appear
 const HIDE_NAV_ROUTES = ['/', '/auth', '/admin'];
