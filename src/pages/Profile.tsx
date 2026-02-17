@@ -12,7 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 
-import { User as UserIcon, Camera, Shield, LogOut, Gift } from "lucide-react";
+import { User as UserIcon, Camera, Shield, LogOut, Gift, BarChart3, Users } from "lucide-react";
 import { PendingRequestsCard, FriendsListCard } from "@/components/FriendshipComponents";
 import { SEO } from "@/components/SEO";
 import { useSEO } from "@/hooks/useSEO";
@@ -468,6 +468,28 @@ const Profile = () => {
                     checked={formData.accept_strangers}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, accept_strangers: checked }))}
                   />
+                </div>
+
+                {/* 快捷入口 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/dining-report')}
+                    className="h-11 border-primary/30 text-primary hover:bg-primary/10 font-semibold rounded-lg"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    饮食报告
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/dining-buddies')}
+                    className="h-11 border-primary/30 text-primary hover:bg-primary/10 font-semibold rounded-lg"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    我的饭搭子
+                  </Button>
                 </div>
 
                 {/* 管理员入口 */}
