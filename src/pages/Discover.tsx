@@ -406,10 +406,8 @@ const Discover = () => {
           </TabsList>
 
           <TabsContent value="discover" className="space-y-4">
-            {/* Smart Match Button */}
-            {user && (
-              <SmartMatchButton />
-            )}
+            {/* Smart Match Button - always render to preserve dialog state */}
+            <SmartMatchButton />
 
             {/* Search & Filter */}
             <DinnerSearchFilter

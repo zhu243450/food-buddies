@@ -219,6 +219,8 @@ export const SmartMatchButton = () => {
     return date.toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
+  if (!user) return null;
+
   return (
     <>
       <Button
