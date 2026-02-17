@@ -104,8 +104,9 @@ export function CreatePostDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-primary text-primary-foreground shadow-lg rounded-full w-14 h-14 fixed bottom-24 right-4 z-40">
-          <Plus className="w-6 h-6" />
+        <Button className="bg-gradient-primary text-primary-foreground shadow-xl rounded-full w-16 h-16 fixed bottom-24 right-4 z-40 animate-bounce-slow ring-4 ring-primary/30 hover:ring-primary/50 hover:scale-110 transition-all duration-300">
+          <Plus className="w-7 h-7" strokeWidth={3} />
+          <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">发布</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
