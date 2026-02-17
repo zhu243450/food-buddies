@@ -407,18 +407,14 @@ const Discover = () => {
           </TabsList>
 
           <TabsContent value="discover" className="space-y-4">
-            {/* Random Match & Description */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 mb-2">
-              <p className="text-muted-foreground text-sm flex-1 text-center sm:text-left">
-                {t('dinner.description')}
-              </p>
-              {user && (
-                <div className="flex gap-2">
-                  <RandomMatchChallenge />
-                  <RandomMatchButton />
-                </div>
-              )}
-            </div>
+            {/* Random Match Buttons */}
+            {user && (
+              <div className="grid grid-cols-2 gap-3">
+                <RandomMatchChallenge />
+                <RandomMatchButton />
+              </div>
+            )}
+
             {/* Search & Filter */}
             <DinnerSearchFilter
               filters={filters}
